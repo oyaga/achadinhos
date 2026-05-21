@@ -5854,7 +5854,10 @@ textarea.field-input {
    ============================================================ */
 
 .admin-shell {
-  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background: var(--bone-50);
   color: var(--ink-900);
   padding-bottom: 60px;
@@ -5877,7 +5880,7 @@ textarea.field-input {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 20px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 16px;
   background: var(--navy-900);
   color: #fff;
   flex-wrap: wrap;
