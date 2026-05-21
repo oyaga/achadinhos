@@ -20,21 +20,17 @@ import {
   setTokens,
   type User,
   type RegisterSindicoPayload,
-  type RegisterPrestadorPayload,
-  type RegisterSellerPayload,
 } from "@/lib/api";
 
-export type { RegisterSindicoPayload, RegisterPrestadorPayload, RegisterSellerPayload };
+export type { RegisterSindicoPayload };
 
 export interface AuthContextValue {
   user: User | null;
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   registerSindico: (data: RegisterSindicoPayload) => Promise<void>;
-  registerPrestador: (data: RegisterPrestadorPayload) => Promise<void>;
-  registerSeller: (data: RegisterSellerPayload) => Promise<void>;
   logout: () => void;
   updateUser: (patch: Partial<User>) => void;
 }
@@ -108,29 +104,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("auth:logout", onLogout);
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string): Promise<User> => {
     const data = await authApi.login({ email, password });
     setTokens(data.access_token, data.refresh_token);
     setAccessToken(data.access_token);
     setUser(data.user);
+    return data.user;
   }, []);
 
   const registerSindico = useCallback(async (data: RegisterSindicoPayload) => {
     const res = await authApi.registerSindico(data);
-    setTokens(res.access_token, res.refresh_token);
-    setAccessToken(res.access_token);
-    setUser(res.user);
-  }, []);
-
-  const registerPrestador = useCallback(async (data: RegisterPrestadorPayload) => {
-    const res = await authApi.registerPrestador(data);
-    setTokens(res.access_token, res.refresh_token);
-    setAccessToken(res.access_token);
-    setUser(res.user);
-  }, []);
-
-  const registerSeller = useCallback(async (data: RegisterSellerPayload) => {
-    const res = await authApi.registerSeller(data);
     setTokens(res.access_token, res.refresh_token);
     setAccessToken(res.access_token);
     setUser(res.user);
@@ -153,12 +136,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       login,
       registerSindico,
-      registerPrestador,
-      registerSeller,
       logout,
       updateUser,
     }),
-    [user, accessToken, isLoading, login, registerSindico, registerPrestador, registerSeller, logout, updateUser]
+    [user, accessToken, isLoading, login, registerSindico, logout, updateUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

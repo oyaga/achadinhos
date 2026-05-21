@@ -22,20 +22,18 @@ import { ProviderDetail } from "./screens/provider-detail";
 import { CategoryScreen } from "./screens/category-screen";
 import { AllCategoriesScreen } from "./screens/all-categories-screen";
 import { HighlightsScreen } from "./screens/highlights-screen";
-import { SignupWizard } from "./screens/signup-wizard";
 import { RateScreen } from "./screens/rate-screen";
 import { FavoritesScreen } from "./screens/favorites-screen";
 import { OrdersScreen } from "./screens/orders-screen";
 import { ShoppingScreen } from "./shop/shopping-screen";
 import { ProductDetail } from "./shop/product-detail";
 import { ProfileScreen } from "./screens/profile-screen";
-import { SellerPanelScreen } from "./screens/seller-panel-screen";
 import { TopNav } from "./web/top-nav";
 import { cn } from "@/lib/utils";
 
 export function App() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { toggle: toggleFavRaw, isFav } = useFavorites();
   const { toast, showToast } = useToast();
   const { canInstall, promptInstall } = useInstallPrompt();
@@ -88,10 +86,7 @@ export function App() {
     if (id === "fav") navigate({ name: "favorites" });
     else if (id === "home") navigate({ name: "home" });
     else if (id === "orders") navigate({ name: "orders" });
-    else if (id === "profile") {
-      if (user?.role === "seller") navigate({ name: "seller-panel" });
-      else navigate({ name: "profile" });
-    }
+    else if (id === "profile") navigate({ name: "profile" });
   };
 
   const [homeProviders, setHomeProviders] = useState<Provider[]>([]);
@@ -110,8 +105,7 @@ export function App() {
         onSearchClick={() => setSearchOpen(true)}
         onProfile={() => {
           setActiveNav("profile");
-          if (user?.role === "seller") navigate({ name: "seller-panel" });
-          else navigate({ name: "profile" });
+          navigate({ name: "profile" });
         }}
       />
       <div className="app">
@@ -138,7 +132,7 @@ export function App() {
         <BottomNav
           active={activeNav}
           onSelect={onNavSelect}
-          onAddClick={() => navigate({ name: "signup" })}
+          onAddClick={() => setSearchOpen(true)}
           canInstall={canInstall}
           onInstall={() => void promptInstall()}
         />
@@ -178,15 +172,6 @@ export function App() {
         )}
         {route.name === "highlights" && (
           <HighlightsScreen onBack={back} onProvider={goProvider} />
-        )}
-        {route.name === "signup" && (
-          <SignupWizard
-            onBack={back}
-            onComplete={() => {
-              back();
-              showToast("Cadastro recebido!");
-            }}
-          />
         )}
         {route.name === "rate" && (
           <RateScreen
@@ -240,14 +225,6 @@ export function App() {
         )}
         {route.name === "profile" && (
           <ProfileScreen
-            onBack={() => {
-              setActiveNav("home");
-              back();
-            }}
-          />
-        )}
-        {route.name === "seller-panel" && (
-          <SellerPanelScreen
             onBack={() => {
               setActiveNav("home");
               back();

@@ -4,8 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/achadinhos/backend/internal/dto"
-	"github.com/achadinhos/backend/internal/middleware"
 	"github.com/achadinhos/backend/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -94,62 +92,6 @@ func (h *ProvidersHandler) Get(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, p)
-}
-
-// Create handles POST /providers (auth, role=prestador).
-func (h *ProvidersHandler) Create(c *gin.Context) {
-	uid := middleware.MustUserID(c)
-	if uid == uuid.Nil {
-		JSONError(c, http.StatusUnauthorized, "unauthenticated")
-		return
-	}
-
-	var req dto.CreateProviderRequest
-	if !BindJSON(c, &req) {
-		return
-	}
-
-	// Sanity: category exists.
-	var cat models.Category
-	if err := h.db.WithContext(c.Request.Context()).First(&cat, "id = ?", req.CategoryID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			JSONError(c, http.StatusBadRequest, "unknown category_id")
-			return
-		}
-		JSONError(c, http.StatusInternalServerError, "failed to validate category")
-		return
-	}
-
-	avatar := req.Avatar
-	if avatar == "" && len(req.Name) > 0 {
-		avatar = string([]rune(req.Name)[0])
-	}
-
-	p := &models.Provider{
-		Name:              req.Name,
-		CategoryID:        req.CategoryID,
-		Avatar:            avatar,
-		Description:       req.Description,
-		Services:          models.StringSlice(req.Services),
-		YearsActive:       req.YearsActive,
-		JobsDone:          req.JobsDone,
-		WhatsApp:          req.WhatsApp,
-		PriceLabel:        req.PriceLabel,
-		ResponseTimeLabel: req.ResponseTimeLabel,
-		DistanceLabel:     req.DistanceLabel,
-		Coverage:          models.Coverage(req.Coverage),
-		RadiusKM:          req.RadiusKM,
-		OwnerUserID:       &uid,
-	}
-	if err := h.db.WithContext(c.Request.Context()).Create(p).Error; err != nil {
-		JSONError(c, http.StatusInternalServerError, "failed to create provider")
-		return
-	}
-
-	// Link the user record to this provider.
-	_ = h.db.WithContext(c.Request.Context()).Model(&models.User{}).Where("id = ?", uid).Update("provider_id", p.ID).Error
-
-	c.JSON(http.StatusCreated, p)
 }
 
 // ListReviews handles GET /providers/:id/reviews.

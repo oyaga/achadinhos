@@ -8,6 +8,7 @@ import (
 	"github.com/achadinhos/backend/internal/config"
 	"github.com/achadinhos/backend/internal/handlers"
 	"github.com/achadinhos/backend/internal/middleware"
+	"github.com/achadinhos/backend/internal/models"
 	"github.com/achadinhos/backend/internal/static"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -40,16 +41,14 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	favH := handlers.NewFavoritesHandler(db)
 	prodH := handlers.NewProductsHandler(db)
 	sellH := handlers.NewSellersHandler(db)
+	adminH := handlers.NewAdminHandler(db)
 
 	v1 := r.Group("/api/v1")
 
-	// Public auth.
+	// Public auth. Síndico register is the only public sign-up flow.
 	v1Auth := v1.Group("/auth")
 	{
-		v1Auth.POST("/register", authH.Register)
 		v1Auth.POST("/register/sindico", authH.RegisterSindico)
-		v1Auth.POST("/register/prestador", authH.RegisterPrestador)
-		v1Auth.POST("/register/seller", authH.RegisterSeller)
 		v1Auth.POST("/login", authH.Login)
 		v1Auth.POST("/refresh", authH.Refresh)
 	}
@@ -65,24 +64,9 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	v1.GET("/products", prodH.List)
 	v1.GET("/products/:id", prodH.Get)
 
-	// Seller "me" routes must be registered BEFORE /sellers/:id so Gin's
-	// radix tree resolves the static segment "me" ahead of the param.
-	sellerAuth := v1.Group("/sellers")
-	sellerAuth.Use(middleware.RequireAuth(cfg.JWTSecret))
-	{
-		sellerAuth.GET("/me", sellH.GetMe)
-		sellerAuth.PATCH("/me", sellH.PatchMe)
-		sellerAuth.POST("/me/products", sellH.CreateProduct)
-		sellerAuth.PATCH("/me/products/:id", sellH.UpdateProduct)
-		sellerAuth.DELETE("/me/products/:id", sellH.DeleteProduct)
-		sellerAuth.POST("/me/products/:id/photos", sellH.UploadProductPhoto)
-		sellerAuth.DELETE("/me/products/:id/photos/:photo_id", sellH.DeleteProductPhoto)
-	}
-
-	// Public seller lookup — registered after /sellers/me so "me" isn't swallowed.
 	v1.GET("/sellers/:id", sellH.Get)
 
-	// Authenticated.
+	// Authenticated (any logged-in user: síndico or admin).
 	authed := v1.Group("")
 	authed.Use(middleware.RequireAuth(cfg.JWTSecret))
 	{
@@ -96,11 +80,29 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		authed.GET("/favorites", favH.List)
 		authed.POST("/favorites", favH.Create)
 		authed.DELETE("/favorites", favH.Delete)
+	}
 
-		// Provider creation: prestador only.
-		prestador := authed.Group("")
-		prestador.Use(middleware.RequireRole(string("prestador"), "admin"))
-		prestador.POST("/providers", provH.Create)
+	// Admin panel — products, empresas (sellers) and prestadores (providers).
+	admin := v1.Group("/admin")
+	admin.Use(middleware.RequireAuth(cfg.JWTSecret))
+	admin.Use(middleware.RequireRole(string(models.RoleAdmin)))
+	{
+		admin.GET("/sellers", adminH.ListSellers)
+		admin.POST("/sellers", adminH.CreateSeller)
+		admin.PATCH("/sellers/:id", adminH.UpdateSeller)
+		admin.DELETE("/sellers/:id", adminH.DeleteSeller)
+
+		admin.GET("/providers", adminH.ListProviders)
+		admin.POST("/providers", adminH.CreateProvider)
+		admin.PATCH("/providers/:id", adminH.UpdateProvider)
+		admin.DELETE("/providers/:id", adminH.DeleteProvider)
+
+		admin.GET("/products", adminH.ListProducts)
+		admin.POST("/products", adminH.CreateProduct)
+		admin.PATCH("/products/:id", adminH.UpdateProduct)
+		admin.DELETE("/products/:id", adminH.DeleteProduct)
+		admin.POST("/products/:id/photos", adminH.UploadProductPhoto)
+		admin.DELETE("/products/:id/photos/:photo_id", adminH.DeleteProductPhoto)
 	}
 
 	if err := static.Mount(r); err != nil {

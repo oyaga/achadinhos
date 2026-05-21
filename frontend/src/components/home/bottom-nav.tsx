@@ -49,9 +49,9 @@ export function BottomNav({ active, onSelect, onAddClick, canInstall, onInstall 
         type="button"
         className="nav-fab"
         onClick={canInstall ? onInstall : onAddClick}
-        aria-label={canInstall ? "Instalar app" : "Pedir orçamento"}
+        aria-label={canInstall ? "Instalar app" : "Buscar"}
       >
-        <Icon.Plus size={24} />
+        {canInstall ? <Icon.Plus size={24} /> : <Icon.Search size={22} />}
       </button>
       {ITEMS_RIGHT.map((it) => {
         const I = Icon[it.icon];

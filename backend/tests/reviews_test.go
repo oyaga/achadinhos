@@ -21,7 +21,7 @@ func TestReviewsFlow(t *testing.T) {
 		t.Fatalf("seed provider: %v", err)
 	}
 
-	access, _ := registerUser(t, env.Router, "rev@test.com", "supersecret", "Reviewer", "sindico")
+	access, _ := createUser(t, env, "rev@test.com", "supersecret", "Reviewer", models.RoleSindico)
 
 	t.Run("create review recalcs rating", func(t *testing.T) {
 		rec, _ := doJSON(t, env.Router, http.MethodPost, "/api/v1/providers/"+provID.String()+"/reviews", map[string]any{

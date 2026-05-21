@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export function LoginScreen() {
   const router = useRouter();
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { login, user, isAuthenticated, isLoading } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,12 +22,13 @@ export function LoginScreen() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [pwdError, setPwdError] = useState<string | null>(null);
 
-  // If already authenticated and the auth bootstrap finished, bounce home.
+  // If already authenticated and the auth bootstrap finished, bounce home
+  // (admins go straight to the admin panel).
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace("/");
+      router.replace(user?.role === "admin" ? "/admin" : "/");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, user, router]);
 
   function validate(): boolean {
     let ok = true;
@@ -54,8 +55,8 @@ export function LoginScreen() {
 
     setSubmitting(true);
     try {
-      await login(email.trim(), password);
-      router.replace("/");
+      const loggedIn = await login(email.trim(), password);
+      router.replace(loggedIn.role === "admin" ? "/admin" : "/");
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 401 || err.status === 403) {

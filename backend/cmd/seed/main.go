@@ -84,8 +84,8 @@ var providers = []providerSeed{
 	{Slug: "prov-12", Name: "BPS Condomínios", Cat: "parceiros", Avatar: "B", Rating: 4.9, Reviews: 264, Badge: "Ouro", Verified: true, Distance: "1,8km", Price: "Sob consulta", ResponseTime: "30min", Desc: "Empresa auditada e homologada. Acordos preferenciais negociados pela administradora.", Services: []string{"Manutenção predial", "Reformas", "Pintura", "Hidráulica"}, YearsActive: 18, JobsDone: 740, WhatsApp: "11987654332"},
 }
 
-// All products belong to the one registered seller so they appear in the
-// seller panel (loja@higicond.com.br) and can be managed via the UI.
+// Sample products. Each references a seller (empresa) by name; the seller
+// records are derived from this list and managed through the admin panel.
 var products = []productSeed{
 	{ID: "p1", Name: "Saco de lixo reforçado 100L (cx c/ 100)", Cat: "limpeza", Price: 89.9, OldPrice: ptr(119.9), Rating: 4.8, Reviews: 64, Seller: "Distribuidora Higicond", Tag: "Mais vendido", WhatsApp: "11987654401", Link: "https://exemplo.com/p/saco100l", Badge: "OFERTA", Stock: "Em estoque"},
 	{ID: "p2", Name: "Vassoura industrial 60cm com cabo", Cat: "limpeza", Price: 38.5, Rating: 4.6, Reviews: 28, Seller: "Distribuidora Higicond", WhatsApp: "11987654401", Link: "https://exemplo.com/p/vassoura", Stock: "Em estoque"},
@@ -99,112 +99,6 @@ var products = []productSeed{
 	{ID: "p10", Name: "Mangueira flex 50m com esguicho", Cat: "jardim", Price: 129.0, Rating: 4.4, Reviews: 22, Seller: "Distribuidora Higicond", WhatsApp: "11987654401", Link: "https://exemplo.com/p/mangueira", Stock: "Em estoque"},
 	{ID: "p11", Name: "Kit limpeza piscina (peneira + escova)", Cat: "piscina", Price: 145.0, Rating: 4.6, Reviews: 31, Seller: "Distribuidora Higicond", WhatsApp: "11987654401", Link: "https://exemplo.com/p/kit-piscina", Stock: "Em estoque"},
 	{ID: "p12", Name: "Resma papel A4 75g (caixa 10x)", Cat: "escritorio", Price: 159.9, Rating: 4.5, Reviews: 87, Seller: "Distribuidora Higicond", WhatsApp: "11987654401", Link: "https://exemplo.com/p/papel-a4", Stock: "Em estoque"},
-}
-
-type prestadorSeed struct {
-	Email        string
-	Name         string
-	ProviderSlug string // links to an existing provider
-	CompanyName  string
-	DocType      string // "cnpj" or "cpf"
-	Document     string
-	Phone        string
-	Whatsapp     string
-	CEP          string
-	Street       string
-	Number       string
-	Complement   string
-	Neighborhood string
-	City         string
-	State        string
-}
-
-var prestadores = []prestadorSeed{
-	{
-		Email:        "turboelev@teste.com",
-		Name:         "Ricardo Souza",
-		ProviderSlug: "prov-1",
-		CompanyName:  "TurboElev Manutenção Ltda.",
-		DocType:      "cnpj",
-		Document:     "12345678000195",
-		Phone:        "11987654321",
-		Whatsapp:     "11987654321",
-		CEP:          "01310-100",
-		Street:       "Av. Paulista",
-		Number:       "1578",
-		Complement:   "Conj. 1204",
-		Neighborhood: "Bela Vista",
-		City:         "São Paulo",
-		State:        "SP",
-	},
-	{
-		Email:        "alphaeletrica@teste.com",
-		Name:         "Marcos Almeida",
-		ProviderSlug: "prov-2",
-		CompanyName:  "Alpha Elétrica 24h ME",
-		DocType:      "cnpj",
-		Document:     "98765432000187",
-		Phone:        "11987654322",
-		Whatsapp:     "11987654322",
-		CEP:          "04538-132",
-		Street:       "Av. Brigadeiro Faria Lima",
-		Number:       "3064",
-		Complement:   "Sala 42",
-		Neighborhood: "Itaim Bibi",
-		City:         "São Paulo",
-		State:        "SP",
-	},
-	{
-		Email:        "cleanpro@teste.com",
-		Name:         "Patrícia Nunes",
-		ProviderSlug: "prov-4",
-		CompanyName:  "CleanPro Condomínios Eireli",
-		DocType:      "cnpj",
-		Document:     "11223344000156",
-		Phone:        "11987654324",
-		Whatsapp:     "11987654324",
-		CEP:          "09520-010",
-		Street:       "Rua das Figueiras",
-		Number:       "290",
-		Complement:   "",
-		Neighborhood: "Centro",
-		City:         "São Caetano do Sul",
-		State:        "SP",
-	},
-	{
-		Email:        "pestzero@teste.com",
-		Name:         "Diego Ferreira",
-		ProviderSlug: "prov-8",
-		CompanyName:  "PestZero Controle de Pragas LTDA",
-		DocType:      "cnpj",
-		Document:     "55667788000134",
-		Phone:        "11987654328",
-		Whatsapp:     "11987654328",
-		CEP:          "06454-020",
-		Street:       "Rua Benedito Laino",
-		Number:       "405",
-		Complement:   "Galpão 2",
-		Neighborhood: "Jardim Maria Antônia",
-		City:         "Barueri",
-		State:        "SP",
-	},
-	{
-		Email:        "facilitymaster@teste.com",
-		Name:         "Luciana Bastos",
-		ProviderSlug: "prov-10",
-		CompanyName:  "FacilityMaster Gestão Predial S.A.",
-		DocType:      "cnpj",
-		Document:     "33445566000178",
-		Phone:        "11987654330",
-		Whatsapp:     "11987654330",
-		CEP:          "04711-130",
-		Street:       "Av. Santo Amaro",
-		Number:       "2337",
-		Complement:   "8º andar",
-		Neighborhood: "Vila Olímpia",
-		City:         "São Paulo",
-		State:        "SP",
-	},
 }
 
 type reviewSeed struct {
@@ -299,6 +193,23 @@ func Run(ctx context.Context, gdb *gorm.DB) error {
 		return err
 	}
 
+	// Admin account — manages products, empresas and prestadores via the admin panel.
+	adminHash, err := auth.HashPassword("senha123")
+	if err != nil {
+		return err
+	}
+	admin := &models.User{
+		ID:           uuid.New(),
+		Email:        "admin@achadinhos.com",
+		PasswordHash: adminHash,
+		Name:         "Administrador",
+		Role:         models.RoleAdmin,
+	}
+	if err := gdb.WithContext(ctx).Create(admin).Error; err != nil {
+		return err
+	}
+	slog.Info("admin user created", "email", admin.Email)
+
 	// Providers (slug -> uuid map).
 	provIDs := make(map[string]uuid.UUID, len(providers))
 	for _, p := range providers {
@@ -329,57 +240,7 @@ func Run(ctx context.Context, gdb *gorm.DB) error {
 		provIDs[p.Slug] = mp.ID
 	}
 
-	// Prestador users — each linked to an existing provider.
-	for _, ps := range prestadores {
-		provID, ok := provIDs[ps.ProviderSlug]
-		if !ok {
-			continue
-		}
-		psHash, err := auth.HashPassword("senha123")
-		if err != nil {
-			return err
-		}
-		u := &models.User{
-			ID:           uuid.New(),
-			Email:        ps.Email,
-			PasswordHash: psHash,
-			Name:         ps.Name,
-			Role:         models.RolePrestador,
-			ProviderID:   &provID,
-			Phone:        ps.Phone,
-			Whatsapp:     ps.Whatsapp,
-			CompanyName:  ps.CompanyName,
-			DocumentType: ps.DocType,
-			Document:     ps.Document,
-			CEP:          ps.CEP,
-			Street:       ps.Street,
-			Number:       ps.Number,
-			Complement:   ps.Complement,
-			Neighborhood: ps.Neighborhood,
-			City:         ps.City,
-			State:        ps.State,
-		}
-		if err := gdb.WithContext(ctx).Create(u).Error; err != nil {
-			return err
-		}
-		// Link provider back to its owner.
-		if err := gdb.WithContext(ctx).Model(&models.Provider{}).
-			Where("id = ?", provID).
-			Update("owner_user_id", u.ID).Error; err != nil {
-			return err
-		}
-		slog.Info("prestador created", "email", ps.Email, "company", ps.CompanyName)
-	}
-
-	// ── Seller test account (Distribuidora Higicond).
-	// Created before products so sellerIDs map is populated below.
-	sellerTestHash, err := auth.HashPassword("senha123")
-	if err != nil {
-		return err
-	}
-	_ = sellerTestHash // used after sellers map is built
-
-	// Sellers, derived from product list.
+	// Sellers (empresas), derived from product list.
 	sellerNames := map[string]struct{}{}
 	for _, p := range products {
 		sellerNames[p.Seller] = struct{}{}
@@ -397,34 +258,6 @@ func Run(ctx context.Context, gdb *gorm.DB) error {
 			return err
 		}
 		sellerIDs[name] = s.ID
-	}
-
-	// Seller user account linked to Distribuidora Higicond.
-	if higicondID, ok := sellerIDs["Distribuidora Higicond"]; ok {
-		sellerUser := &models.User{
-			ID:           uuid.New(),
-			Email:        "loja@higicond.com.br",
-			PasswordHash: sellerTestHash,
-			Name:         "Amanda Lima",
-			Role:         models.RoleSeller,
-			SellerID:     &higicondID,
-			Phone:        "11987654401",
-			Whatsapp:     "11987654401",
-			CompanyName:  "Distribuidora Higicond",
-			DocumentType: "cnpj",
-			Document:     "77889900000181",
-			CEP:          "01310100",
-			Street:       "Av. Paulista",
-			Number:       "2300",
-			Complement:   "Loja 14",
-			Neighborhood: "Bela Vista",
-			City:         "São Paulo",
-			State:        "SP",
-		}
-		if err := gdb.WithContext(ctx).Create(sellerUser).Error; err != nil {
-			return err
-		}
-		slog.Info("seller user created", "email", sellerUser.Email)
 	}
 
 	// Products.

@@ -116,13 +116,11 @@ export type Route =
   | { name: "category"; categoryId: CategoryId }
   | { name: "allcats" }
   | { name: "highlights" }
-  | { name: "signup" }
   | { name: "rate"; provider: Provider }
   | { name: "favorites" }
   | { name: "orders" }
   | { name: "shopping" }
   | { name: "product"; product: Product }
-  | { name: "profile" }
-  | { name: "seller-panel" };
+  | { name: "profile" };
 
 export type RouteName = Route["name"];
