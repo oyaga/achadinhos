@@ -18,6 +18,7 @@ import { CategoriesSection } from "./home/categories-section";
 import { ProvidersSection } from "./home/providers-section";
 import { BottomNav, type NavId } from "./home/bottom-nav";
 import { SearchOverlay } from "./home/search-overlay";
+import { InstallSheet } from "./home/install-sheet";
 import { ProviderDetail } from "./screens/provider-detail";
 import { CategoryScreen } from "./screens/category-screen";
 import { AllCategoriesScreen } from "./screens/all-categories-screen";
@@ -36,14 +37,26 @@ export function App() {
   const { isAuthenticated } = useAuth();
   const { toggle: toggleFavRaw, isFav } = useFavorites();
   const { toast, showToast } = useToast();
-  const { promptInstall } = useInstallPrompt();
+  const { canInstall, isIOS, isStandalone, promptInstall } = useInstallPrompt();
   const { history: waHistory, record: recordWa, clear: clearWa } = useWhatsappHistory();
 
   const [activeCat, setActiveCat] = useState<CategoryId>("destaque");
   const [activeNav, setActiveNav] = useState<NavId>("home");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
+  const [installHelpOpen, setInstallHelpOpen] = useState(false);
   const [route, setRoute] = useState<Route>({ name: "home" });
+
+  // The "+" button installs the PWA. Browsers with a native install prompt
+  // (Android/Chrome) trigger it directly; iOS Safari has none, so we show the
+  // "Add to Home Screen" instructions instead.
+  const handleInstall = () => {
+    if (canInstall) {
+      void promptInstall();
+    } else {
+      setInstallHelpOpen(true);
+    }
+  };
 
   const navigate = (r: Route) => setRoute(r);
   const back = () => setRoute({ name: "home" });
@@ -132,7 +145,7 @@ export function App() {
         <BottomNav
           active={activeNav}
           onSelect={onNavSelect}
-          onInstall={() => void promptInstall()}
+          onInstall={handleInstall}
           authed={isAuthenticated}
         />
 
@@ -144,6 +157,13 @@ export function App() {
             setSearchOpen(false);
             setSearchQ("");
           }}
+        />
+
+        <InstallSheet
+          open={installHelpOpen}
+          onClose={() => setInstallHelpOpen(false)}
+          isIOS={isIOS}
+          isStandalone={isStandalone}
         />
 
         {/* Routed overlays */}
