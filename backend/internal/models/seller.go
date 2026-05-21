@@ -7,19 +7,24 @@ import (
 	"gorm.io/gorm"
 )
 
-// Seller is a vendor of products in the shopping section.
+// Seller is a company (empresa) that sells products in the shopping section.
 type Seller struct {
-	ID          uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
-	Name        string    `gorm:"size:255;not null;uniqueIndex" json:"name"`
-	Avatar      string    `gorm:"size:8" json:"avatar"`
-	Description string    `gorm:"type:text" json:"description,omitempty"`
-	WhatsApp    string    `gorm:"size:32" json:"whatsapp"`
-	Link        string    `gorm:"size:500" json:"link,omitempty"`
-	Partner     bool      `gorm:"default:false" json:"partner"`
+	ID           uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	Name         string    `gorm:"size:255;not null;uniqueIndex" json:"name"`
+	Avatar       string    `gorm:"size:8" json:"avatar"`
+	LogoURL      string    `gorm:"size:500" json:"logo_url,omitempty"`
+	Description  string    `gorm:"type:text" json:"description,omitempty"`
+	WhatsApp     string    `gorm:"size:32" json:"whatsapp"`
+	Link         string    `gorm:"size:500" json:"link,omitempty"`
+	Partner      bool      `gorm:"default:false" json:"partner"`
+	DocumentType string    `gorm:"size:4" json:"document_type,omitempty"`
+	Document     string    `gorm:"size:18" json:"document,omitempty"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+
+	PortfolioPhotos []PortfolioPhoto `gorm:"polymorphic:Owner;polymorphicValue:seller" json:"portfolio_photos,omitempty"`
 }
 
 func (s *Seller) BeforeCreate(tx *gorm.DB) error {

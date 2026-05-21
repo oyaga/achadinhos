@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { providersApi } from "@/lib/api";
+import { providersApi, getImageUrl } from "@/lib/api";
 import { adaptReview } from "@/lib/adapters";
 import type { Provider, Review } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -33,10 +33,18 @@ export function ProviderDetail({
   onWhatsapp,
 }: ProviderDetailProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [portfolio, setPortfolio] = useState<string[]>(provider.portfolio ?? []);
 
   useEffect(() => {
     void providersApi.listReviews(provider.id).then((res) => {
       setReviews(res.data.map(adaptReview));
+    }).catch(() => {});
+  }, [provider.id]);
+
+  // Fetch the full provider record — the list endpoint omits portfolio photos.
+  useEffect(() => {
+    void providersApi.get(provider.id).then((p) => {
+      setPortfolio((p.portfolio_photos ?? []).map((ph) => ph.url));
     }).catch(() => {});
   }, [provider.id]);
 
@@ -81,7 +89,16 @@ export function ProviderDetail({
             <div
               className={cn("pd-avatar", provider.verified && "verified")}
             >
-              {provider.avatar}
+              {provider.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={getImageUrl(provider.logoUrl)}
+                  alt={provider.name}
+                  className="pd-avatar-img"
+                />
+              ) : (
+                provider.avatar
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div className="pd-name">{provider.name}</div>
@@ -126,6 +143,26 @@ export function ProviderDetail({
             ))}
           </div>
         </div>
+
+        {portfolio.length > 0 && (
+          <div className="pd-section">
+            <h3>Portfólio</h3>
+            <div className="pd-portfolio">
+              {portfolio.map((url) => (
+                <a
+                  key={url}
+                  href={getImageUrl(url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="pd-portfolio-item"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={getImageUrl(url)} alt="Portfólio" />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="pd-section">
           <div

@@ -390,6 +390,12 @@ export interface ProductPhoto {
   created_at?: string;
 }
 
+export interface PortfolioPhoto {
+  id: string;
+  url: string;
+  position: number;
+}
+
 export function getImageUrl(path: string): string {
   if (!path) return "";
   if (path.startsWith("http")) return path;
@@ -421,6 +427,7 @@ export interface ApiProvider {
   category_id: string;
   category?: ApiCategory;
   avatar: string;
+  logo_url?: string;
   rating: number;
   reviews_count: number;
   badge?: string;
@@ -435,6 +442,9 @@ export interface ApiProvider {
   whatsapp: string;
   highlight: boolean;
   owner_user_id?: string;
+  document_type?: string;
+  document?: string;
+  portfolio_photos?: PortfolioPhoto[];
   created_at?: string;
 }
 
@@ -493,10 +503,14 @@ export interface AdminSeller {
   id: string;
   name: string;
   avatar?: string;
+  logo_url?: string;
   description?: string;
   whatsapp: string;
   link?: string;
   partner: boolean;
+  document_type?: string;
+  document?: string;
+  portfolio_photos?: PortfolioPhoto[];
   created_at?: string;
 }
 
@@ -506,6 +520,8 @@ export interface AdminSellerPayload {
   whatsapp: string;
   link?: string;
   partner?: boolean;
+  document_type: "cpf" | "cnpj";
+  document: string;
 }
 
 export interface AdminProviderPayload {
@@ -524,6 +540,8 @@ export interface AdminProviderPayload {
   verified?: boolean;
   highlight?: boolean;
   badge?: string;
+  document_type: "cpf" | "cnpj";
+  document: string;
 }
 
 export interface AdminProductPayload {
@@ -537,6 +555,29 @@ export interface AdminProductPayload {
   stock?: string;
   link?: string;
   manufacturer?: string;
+}
+
+// Multipart upload of a single image file under the "file" field.
+async function uploadImage<T>(path: string, file: File): Promise<T> {
+  const token = getAccessToken();
+  const formData = new FormData();
+  formData.append("file", file);
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+  if (!res.ok) {
+    let msg = `Erro ${res.status}`;
+    try {
+      const j = (await res.json()) as { message?: string };
+      if (j.message) msg = j.message;
+    } catch {}
+    throw new ApiError({ status: res.status, message: msg });
+  }
+  return res.json() as Promise<T>;
 }
 
 export const adminApi = {
@@ -554,6 +595,18 @@ export const adminApi = {
   async deleteSeller(id: string): Promise<void> {
     return request<void>(`/admin/sellers/${id}`, { method: "DELETE", parseAs: "none" });
   },
+  async uploadSellerLogo(id: string, file: File): Promise<{ logo_url: string }> {
+    return uploadImage(`/admin/sellers/${id}/logo`, file);
+  },
+  async uploadSellerPortfolio(id: string, file: File): Promise<PortfolioPhoto> {
+    return uploadImage(`/admin/sellers/${id}/portfolio`, file);
+  },
+  async deleteSellerPortfolio(id: string, photoId: string): Promise<void> {
+    return request<void>(`/admin/sellers/${id}/portfolio/${photoId}`, {
+      method: "DELETE",
+      parseAs: "none",
+    });
+  },
 
   // ── Prestadores (providers) ──
   async listProviders(): Promise<ApiProvider[]> {
@@ -568,6 +621,18 @@ export const adminApi = {
   },
   async deleteProvider(id: string): Promise<void> {
     return request<void>(`/admin/providers/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+  async uploadProviderLogo(id: string, file: File): Promise<{ logo_url: string }> {
+    return uploadImage(`/admin/providers/${id}/logo`, file);
+  },
+  async uploadProviderPortfolio(id: string, file: File): Promise<PortfolioPhoto> {
+    return uploadImage(`/admin/providers/${id}/portfolio`, file);
+  },
+  async deleteProviderPortfolio(id: string, photoId: string): Promise<void> {
+    return request<void>(`/admin/providers/${id}/portfolio/${photoId}`, {
+      method: "DELETE",
+      parseAs: "none",
+    });
   },
 
   // ── Produtos ──
@@ -585,19 +650,7 @@ export const adminApi = {
     return request<void>(`/admin/products/${id}`, { method: "DELETE", parseAs: "none" });
   },
   async uploadProductPhoto(productId: string, file: File): Promise<ProductPhoto> {
-    const token = getAccessToken();
-    const formData = new FormData();
-    formData.append("file", file);
-    const url = `${BASE_URL}/admin/products/${productId}/photos`;
-    const headers: Record<string, string> = { Accept: "application/json" };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const res = await fetch(url, { method: "POST", headers, body: formData });
-    if (!res.ok) {
-      let msg = `Erro ${res.status}`;
-      try { const j = (await res.json()) as { message?: string }; if (j.message) msg = j.message; } catch {}
-      throw new ApiError({ status: res.status, message: msg });
-    }
-    return res.json() as Promise<ProductPhoto>;
+    return uploadImage(`/admin/products/${productId}/photos`, file);
   },
   async deleteProductPhoto(productId: string, photoId: string): Promise<void> {
     return request<void>(`/admin/products/${productId}/photos/${photoId}`, {

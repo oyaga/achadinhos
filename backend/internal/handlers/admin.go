@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/achadinhos/backend/internal/auth"
 	"github.com/achadinhos/backend/internal/dto"
 	"github.com/achadinhos/backend/internal/models"
 	"github.com/gin-gonic/gin"
@@ -26,12 +27,17 @@ func NewAdminHandler(db *gorm.DB) *AdminHandler {
 	return &AdminHandler{db: db}
 }
 
+const maxPortfolioPhotos = 5
+
 // ── Empresas (sellers) ───────────────────────────────────────────────────────
 
 // ListSellers handles GET /admin/sellers.
 func (h *AdminHandler) ListSellers(c *gin.Context) {
 	var sellers []models.Seller
-	if err := h.db.WithContext(c.Request.Context()).Order("name ASC").Find(&sellers).Error; err != nil {
+	if err := h.db.WithContext(c.Request.Context()).
+		Preload("PortfolioPhotos", orderByPosition).
+		Order("name ASC").
+		Find(&sellers).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to list sellers")
 		return
 	}
@@ -44,14 +50,20 @@ func (h *AdminHandler) CreateSeller(c *gin.Context) {
 	if !BindJSON(c, &req) {
 		return
 	}
+	doc, ok := validateDocument(c, req.DocumentType, req.Document)
+	if !ok {
+		return
+	}
 	name := strings.TrimSpace(req.Name)
 	s := &models.Seller{
-		Name:        name,
-		Avatar:      firstRune(name),
-		Description: strings.TrimSpace(req.Description),
-		WhatsApp:    strings.TrimSpace(req.WhatsApp),
-		Link:        strings.TrimSpace(req.Link),
-		Partner:     req.Partner,
+		Name:         name,
+		Avatar:       firstRune(name),
+		Description:  strings.TrimSpace(req.Description),
+		WhatsApp:     strings.TrimSpace(req.WhatsApp),
+		Link:         strings.TrimSpace(req.Link),
+		Partner:      req.Partner,
+		DocumentType: req.DocumentType,
+		Document:     doc,
 	}
 	if err := h.db.WithContext(c.Request.Context()).Create(s).Error; err != nil {
 		JSONError(c, http.StatusConflict, "failed to create seller (name may already exist)")
@@ -98,6 +110,22 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 	if req.Partner != nil {
 		updates["partner"] = *req.Partner
 	}
+	if req.Document != nil || req.DocumentType != nil {
+		docType := s.DocumentType
+		if req.DocumentType != nil {
+			docType = *req.DocumentType
+		}
+		raw := s.Document
+		if req.Document != nil {
+			raw = *req.Document
+		}
+		doc, ok := validateDocument(c, docType, raw)
+		if !ok {
+			return
+		}
+		updates["document_type"] = docType
+		updates["document"] = doc
+	}
 	if len(updates) > 0 {
 		if err := h.db.WithContext(c.Request.Context()).Model(&s).Updates(updates).Error; err != nil {
 			JSONError(c, http.StatusInternalServerError, "failed to update seller")
@@ -135,6 +163,21 @@ func (h *AdminHandler) DeleteSeller(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// UploadSellerLogo handles POST /admin/sellers/:id/logo.
+func (h *AdminHandler) UploadSellerLogo(c *gin.Context) {
+	h.uploadLogo(c, &models.Seller{})
+}
+
+// UploadSellerPortfolio handles POST /admin/sellers/:id/portfolio.
+func (h *AdminHandler) UploadSellerPortfolio(c *gin.Context) {
+	h.uploadPortfolio(c, "seller", &models.Seller{})
+}
+
+// DeleteSellerPortfolio handles DELETE /admin/sellers/:id/portfolio/:photo_id.
+func (h *AdminHandler) DeleteSellerPortfolio(c *gin.Context) {
+	h.deletePortfolio(c, "seller")
+}
+
 // ── Prestadores (providers) ──────────────────────────────────────────────────
 
 // ListProviders handles GET /admin/providers.
@@ -142,6 +185,7 @@ func (h *AdminHandler) ListProviders(c *gin.Context) {
 	var providers []models.Provider
 	if err := h.db.WithContext(c.Request.Context()).
 		Preload("Category").
+		Preload("PortfolioPhotos", orderByPosition).
 		Order("name ASC").
 		Find(&providers).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to list providers")
@@ -157,6 +201,10 @@ func (h *AdminHandler) CreateProvider(c *gin.Context) {
 		return
 	}
 	if !h.categoryExists(c, req.CategoryID) {
+		return
+	}
+	doc, ok := validateDocument(c, req.DocumentType, req.Document)
+	if !ok {
 		return
 	}
 	coverage := models.Coverage(req.Coverage)
@@ -185,6 +233,8 @@ func (h *AdminHandler) CreateProvider(c *gin.Context) {
 		Verified:          req.Verified,
 		Highlight:         req.Highlight,
 		Badge:             strings.TrimSpace(req.Badge),
+		DocumentType:      req.DocumentType,
+		Document:          doc,
 	}
 	if err := h.db.WithContext(c.Request.Context()).Create(p).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to create provider")
@@ -264,6 +314,22 @@ func (h *AdminHandler) UpdateProvider(c *gin.Context) {
 	if req.Badge != nil {
 		updates["badge"] = strings.TrimSpace(*req.Badge)
 	}
+	if req.Document != nil || req.DocumentType != nil {
+		docType := p.DocumentType
+		if req.DocumentType != nil {
+			docType = *req.DocumentType
+		}
+		raw := p.Document
+		if req.Document != nil {
+			raw = *req.Document
+		}
+		doc, ok := validateDocument(c, docType, raw)
+		if !ok {
+			return
+		}
+		updates["document_type"] = docType
+		updates["document"] = doc
+	}
 	if len(updates) > 0 {
 		if err := h.db.WithContext(c.Request.Context()).Model(&p).Updates(updates).Error; err != nil {
 			JSONError(c, http.StatusInternalServerError, "failed to update provider")
@@ -292,6 +358,21 @@ func (h *AdminHandler) DeleteProvider(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// UploadProviderLogo handles POST /admin/providers/:id/logo.
+func (h *AdminHandler) UploadProviderLogo(c *gin.Context) {
+	h.uploadLogo(c, &models.Provider{})
+}
+
+// UploadProviderPortfolio handles POST /admin/providers/:id/portfolio.
+func (h *AdminHandler) UploadProviderPortfolio(c *gin.Context) {
+	h.uploadPortfolio(c, "provider", &models.Provider{})
+}
+
+// DeleteProviderPortfolio handles DELETE /admin/providers/:id/portfolio/:photo_id.
+func (h *AdminHandler) DeleteProviderPortfolio(c *gin.Context) {
+	h.deletePortfolio(c, "provider")
+}
+
 // ── Produtos ─────────────────────────────────────────────────────────────────
 
 // ListProducts handles GET /admin/products.
@@ -299,7 +380,7 @@ func (h *AdminHandler) ListProducts(c *gin.Context) {
 	var products []models.Product
 	if err := h.db.WithContext(c.Request.Context()).
 		Preload("Seller").
-		Preload("Photos", func(db *gorm.DB) *gorm.DB { return db.Order("position ASC") }).
+		Preload("Photos", orderByPosition).
 		Order("created_at DESC").
 		Find(&products).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to list products")
@@ -436,7 +517,6 @@ func (h *AdminHandler) DeleteProduct(c *gin.Context) {
 }
 
 // UploadProductPhoto handles POST /admin/products/:id/photos.
-// Accepts a multipart field "file" (jpg/png/webp/gif, max 5 MB).
 func (h *AdminHandler) UploadProductPhoto(c *gin.Context) {
 	pid := c.Param("id")
 	var p models.Product
@@ -448,7 +528,6 @@ func (h *AdminHandler) UploadProductPhoto(c *gin.Context) {
 		JSONError(c, http.StatusInternalServerError, "failed to fetch product")
 		return
 	}
-
 	var count int64
 	if err := h.db.WithContext(c.Request.Context()).
 		Model(&models.ProductPhoto{}).
@@ -457,71 +536,16 @@ func (h *AdminHandler) UploadProductPhoto(c *gin.Context) {
 		JSONError(c, http.StatusInternalServerError, "failed to count photos")
 		return
 	}
-	if count >= 5 {
+	if count >= maxPortfolioPhotos {
 		JSONError(c, http.StatusBadRequest, "máximo de 5 fotos por produto")
 		return
 	}
-
-	fileHeader, err := c.FormFile("file")
-	if err != nil {
-		JSONError(c, http.StatusBadRequest, "campo 'file' ausente ou inválido")
-		return
-	}
-
-	allowed := map[string]string{
-		"image/jpeg": ".jpg",
-		"image/png":  ".png",
-		"image/webp": ".webp",
-		"image/gif":  ".gif",
-	}
-	ext, ok := allowed[fileHeader.Header.Get("Content-Type")]
+	url, ok := saveUploadedImage(c, "products")
 	if !ok {
-		JSONError(c, http.StatusBadRequest, "tipo de arquivo não permitido (use jpg, png, webp)")
 		return
 	}
-	const maxSize = 5 << 20
-	if fileHeader.Size > maxSize {
-		JSONError(c, http.StatusBadRequest, "arquivo muito grande (máx 5 MB)")
-		return
-	}
-	if origExt := filepath.Ext(fileHeader.Filename); origExt != "" {
-		ext = strings.ToLower(origExt)
-	}
-
-	filename := uuid.New().String() + ext
-	dir := filepath.Join(".", "uploads", "products")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		JSONError(c, http.StatusInternalServerError, "failed to create upload directory")
-		return
-	}
-	destPath := filepath.Join(dir, filename)
-
-	src, err := fileHeader.Open()
-	if err != nil {
-		JSONError(c, http.StatusInternalServerError, "failed to open uploaded file")
-		return
-	}
-	defer src.Close()
-
-	dst, err := os.Create(destPath)
-	if err != nil {
-		JSONError(c, http.StatusInternalServerError, "failed to save file")
-		return
-	}
-	defer dst.Close()
-
-	if _, err := io.Copy(dst, src); err != nil {
-		JSONError(c, http.StatusInternalServerError, "failed to write file")
-		return
-	}
-
-	photo := &models.ProductPhoto{
-		ProductID: pid,
-		URL:       "/uploads/products/" + filename,
-		Position:  int(count),
-	}
+	photo := &models.ProductPhoto{ProductID: pid, URL: url, Position: int(count)}
 	if err := h.db.WithContext(c.Request.Context()).Create(photo).Error; err != nil {
-		_ = os.Remove(destPath)
 		JSONError(c, http.StatusInternalServerError, "failed to save photo record")
 		return
 	}
@@ -547,13 +571,196 @@ func (h *AdminHandler) DeleteProductPhoto(c *gin.Context) {
 		JSONError(c, http.StatusInternalServerError, "failed to delete photo")
 		return
 	}
-	if photo.URL != "" {
-		_ = os.Remove(filepath.Join(".", photo.URL))
+	removeUploadedFile(photo.URL)
+	c.Status(http.StatusNoContent)
+}
+
+// ── Shared logo / portfolio handlers ─────────────────────────────────────────
+
+// uploadLogo saves an uploaded image and sets logo_url on the given record
+// (model must be a *models.Seller or *models.Provider).
+func (h *AdminHandler) uploadLogo(c *gin.Context, model any) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "invalid id")
+		return
 	}
+	res := h.db.WithContext(c.Request.Context()).Model(model).Where("id = ?", id)
+	var count int64
+	if err := res.Count(&count).Error; err != nil || count == 0 {
+		JSONError(c, http.StatusNotFound, "registro não encontrado")
+		return
+	}
+	url, ok := saveUploadedImage(c, "logos")
+	if !ok {
+		return
+	}
+	if err := h.db.WithContext(c.Request.Context()).Model(model).Where("id = ?", id).
+		Update("logo_url", url).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to save logo")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"logo_url": url})
+}
+
+// uploadPortfolio saves an uploaded image as a portfolio photo for the owner.
+func (h *AdminHandler) uploadPortfolio(c *gin.Context, ownerType string, model any) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+	var count int64
+	if err := h.db.WithContext(c.Request.Context()).Model(model).Where("id = ?", id).
+		Count(&count).Error; err != nil || count == 0 {
+		JSONError(c, http.StatusNotFound, "registro não encontrado")
+		return
+	}
+	var photoCount int64
+	if err := h.db.WithContext(c.Request.Context()).Model(&models.PortfolioPhoto{}).
+		Where("owner_type = ? AND owner_id = ?", ownerType, id).
+		Count(&photoCount).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to count photos")
+		return
+	}
+	if photoCount >= maxPortfolioPhotos {
+		JSONError(c, http.StatusBadRequest, "máximo de 5 fotos no portfólio")
+		return
+	}
+	url, ok := saveUploadedImage(c, "portfolio")
+	if !ok {
+		return
+	}
+	photo := &models.PortfolioPhoto{
+		OwnerType: ownerType,
+		OwnerID:   id,
+		URL:       url,
+		Position:  int(photoCount),
+	}
+	if err := h.db.WithContext(c.Request.Context()).Create(photo).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to save photo record")
+		return
+	}
+	c.JSON(http.StatusCreated, photo)
+}
+
+// deletePortfolio removes a portfolio photo.
+func (h *AdminHandler) deletePortfolio(c *gin.Context, ownerType string) {
+	ownerID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+	photoID, err := uuid.Parse(c.Param("photo_id"))
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "invalid photo id")
+		return
+	}
+	var photo models.PortfolioPhoto
+	if err := h.db.WithContext(c.Request.Context()).
+		Where("id = ? AND owner_type = ? AND owner_id = ?", photoID, ownerType, ownerID).
+		First(&photo).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			JSONError(c, http.StatusNotFound, "photo not found")
+			return
+		}
+		JSONError(c, http.StatusInternalServerError, "failed to fetch photo")
+		return
+	}
+	if err := h.db.WithContext(c.Request.Context()).Delete(&photo).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to delete photo")
+		return
+	}
+	removeUploadedFile(photo.URL)
 	c.Status(http.StatusNoContent)
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────────
+
+// orderByPosition is a GORM preload scope that orders photos by position.
+func orderByPosition(db *gorm.DB) *gorm.DB {
+	return db.Order("position ASC")
+}
+
+// validateDocument strips and validates a CPF/CNPJ. On failure it writes a 422
+// response and returns ok=false.
+func validateDocument(c *gin.Context, docType, raw string) (string, bool) {
+	doc := auth.StripDocument(raw)
+	if err := auth.ValidateDocument(strings.ToLower(strings.TrimSpace(docType)), doc); err != nil {
+		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, ErrorResponse{
+			Error:   "validation_error",
+			Code:    http.StatusUnprocessableEntity,
+			Details: map[string]string{"document": "invalid"},
+		})
+		return "", false
+	}
+	return doc, true
+}
+
+// saveUploadedImage reads the "file" multipart field, validates it as an image
+// (jpg/png/webp/gif, max 5 MB) and stores it under ./uploads/<subdir>/.
+// Returns the public URL path. On failure it writes the error and returns false.
+func saveUploadedImage(c *gin.Context, subdir string) (string, bool) {
+	fileHeader, err := c.FormFile("file")
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "campo 'file' ausente ou inválido")
+		return "", false
+	}
+	allowed := map[string]string{
+		"image/jpeg": ".jpg",
+		"image/png":  ".png",
+		"image/webp": ".webp",
+		"image/gif":  ".gif",
+	}
+	ext, ok := allowed[fileHeader.Header.Get("Content-Type")]
+	if !ok {
+		JSONError(c, http.StatusBadRequest, "tipo de arquivo não permitido (use jpg, png, webp)")
+		return "", false
+	}
+	const maxSize = 5 << 20
+	if fileHeader.Size > maxSize {
+		JSONError(c, http.StatusBadRequest, "arquivo muito grande (máx 5 MB)")
+		return "", false
+	}
+	if origExt := filepath.Ext(fileHeader.Filename); origExt != "" {
+		ext = strings.ToLower(origExt)
+	}
+
+	filename := uuid.New().String() + ext
+	dir := filepath.Join(".", "uploads", subdir)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to create upload directory")
+		return "", false
+	}
+	destPath := filepath.Join(dir, filename)
+
+	src, err := fileHeader.Open()
+	if err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to open uploaded file")
+		return "", false
+	}
+	defer src.Close()
+
+	dst, err := os.Create(destPath)
+	if err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to save file")
+		return "", false
+	}
+	defer dst.Close()
+
+	if _, err := io.Copy(dst, src); err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to write file")
+		return "", false
+	}
+	return "/uploads/" + subdir + "/" + filename, true
+}
+
+// removeUploadedFile best-effort deletes a file referenced by its URL path.
+func removeUploadedFile(url string) {
+	if strings.HasPrefix(url, "/uploads/") {
+		_ = os.Remove(filepath.Join(".", url))
+	}
+}
 
 // categoryExists verifies the category exists; on failure it writes the error
 // response and returns false.

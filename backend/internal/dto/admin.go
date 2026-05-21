@@ -4,20 +4,24 @@ package dto
 
 // AdminSellerRequest is the body for POST /admin/sellers.
 type AdminSellerRequest struct {
-	Name        string `json:"name" binding:"required,min=2,max=255"`
-	Description string `json:"description" binding:"max=2000"`
-	WhatsApp    string `json:"whatsapp" binding:"required,min=8,max=32"`
-	Link        string `json:"link" binding:"omitempty,max=500"`
-	Partner     bool   `json:"partner"`
+	Name         string `json:"name" binding:"required,min=2,max=255"`
+	Description  string `json:"description" binding:"max=2000"`
+	WhatsApp     string `json:"whatsapp" binding:"required,min=8,max=32"`
+	Link         string `json:"link" binding:"omitempty,max=500"`
+	Partner      bool   `json:"partner"`
+	DocumentType string `json:"document_type" binding:"required,oneof=cpf cnpj"`
+	Document     string `json:"document" binding:"required"`
 }
 
 // AdminSellerPatch is the body for PATCH /admin/sellers/:id. All fields optional.
 type AdminSellerPatch struct {
-	Name        *string `json:"name" binding:"omitempty,min=2,max=255"`
-	Description *string `json:"description" binding:"omitempty,max=2000"`
-	WhatsApp    *string `json:"whatsapp" binding:"omitempty,min=8,max=32"`
-	Link        *string `json:"link" binding:"omitempty,max=500"`
-	Partner     *bool   `json:"partner"`
+	Name         *string `json:"name" binding:"omitempty,min=2,max=255"`
+	Description  *string `json:"description" binding:"omitempty,max=2000"`
+	WhatsApp     *string `json:"whatsapp" binding:"omitempty,min=8,max=32"`
+	Link         *string `json:"link" binding:"omitempty,max=500"`
+	Partner      *bool   `json:"partner"`
+	DocumentType *string `json:"document_type" binding:"omitempty,oneof=cpf cnpj"`
+	Document     *string `json:"document"`
 }
 
 // ── Prestadores (providers) ──────────────────────────────────────────────────
@@ -39,6 +43,8 @@ type AdminProviderRequest struct {
 	Verified          bool     `json:"verified"`
 	Highlight         bool     `json:"highlight"`
 	Badge             string   `json:"badge" binding:"max=16"`
+	DocumentType      string   `json:"document_type" binding:"required,oneof=cpf cnpj"`
+	Document          string   `json:"document" binding:"required"`
 }
 
 // AdminProviderPatch is the body for PATCH /admin/providers/:id. All optional.
@@ -58,6 +64,8 @@ type AdminProviderPatch struct {
 	Verified          *bool     `json:"verified"`
 	Highlight         *bool     `json:"highlight"`
 	Badge             *string   `json:"badge" binding:"omitempty,max=16"`
+	DocumentType      *string   `json:"document_type" binding:"omitempty,oneof=cpf cnpj"`
+	Document          *string   `json:"document"`
 }
 
 // ── Produtos ─────────────────────────────────────────────────────────────────
