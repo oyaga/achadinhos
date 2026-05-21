@@ -1,6 +1,7 @@
 "use client";
 
 import type { Provider } from "@/lib/types";
+import { getImageUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
 
@@ -93,7 +94,16 @@ export function ProviderCard({
       }}
     >
       <div className={cn("provider-avatar", provider.verified && "verified")}>
-        {provider.avatar}
+        {provider.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={getImageUrl(provider.logoUrl)}
+            alt={provider.name}
+            className="provider-avatar-img"
+          />
+        ) : (
+          provider.avatar
+        )}
       </div>
       <div className="provider-info">
         <div className="provider-name">

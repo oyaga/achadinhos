@@ -8,6 +8,7 @@ export function adaptProvider(p: ApiProvider): Provider {
     cat: p.category_id,
     catLabel: p.category?.label ?? p.category_id,
     avatar: p.avatar,
+    logoUrl: p.logo_url || undefined,
     rating: p.rating,
     reviews: p.reviews_count,
     badge: p.badge as Provider["badge"],
@@ -21,6 +22,7 @@ export function adaptProvider(p: ApiProvider): Provider {
     jobsDone: p.jobs_done,
     whatsapp: p.whatsapp,
     highlight: p.highlight,
+    portfolio: (p.portfolio_photos ?? []).map((ph) => ph.url),
   };
 }
 

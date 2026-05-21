@@ -56,34 +56,38 @@ const (
 	CoverageRegiao Coverage = "regiao"
 )
 
-// Provider is a service provider.
+// Provider is a service provider (prestador de serviços).
 type Provider struct {
-	ID                 uuid.UUID   `gorm:"type:uuid;primaryKey" json:"id"`
-	Name               string      `gorm:"size:255;not null;index" json:"name"`
-	CategoryID         string      `gorm:"size:64;not null;index" json:"category_id"`
-	Avatar             string      `gorm:"size:8" json:"avatar"`
-	Rating             float64     `gorm:"type:numeric(3,2);default:0" json:"rating"`
-	ReviewsCount       int         `gorm:"default:0" json:"reviews_count"`
-	Badge              string      `gorm:"size:16" json:"badge,omitempty"`
-	Verified           bool        `gorm:"default:false;index" json:"verified"`
-	DistanceLabel      string      `gorm:"size:64" json:"distance_label"`
-	PriceLabel         string      `gorm:"size:64" json:"price_label"`
-	ResponseTimeLabel  string      `gorm:"size:64" json:"response_time_label"`
-	Description        string      `gorm:"type:text" json:"description"`
-	Services           StringSlice `gorm:"type:jsonb;default:'[]'" json:"services"`
-	YearsActive        int         `json:"years_active"`
-	JobsDone           int         `json:"jobs_done"`
-	WhatsApp           string      `gorm:"size:32" json:"whatsapp"`
-	Highlight          bool        `gorm:"default:false;index" json:"highlight"`
-	OwnerUserID        *uuid.UUID  `gorm:"type:uuid;index" json:"owner_user_id,omitempty"`
-	Coverage           Coverage    `gorm:"size:16;default:'cidade'" json:"coverage"`
-	RadiusKM           int         `gorm:"default:10" json:"radius_km"`
+	ID                uuid.UUID   `gorm:"type:uuid;primaryKey" json:"id"`
+	Name              string      `gorm:"size:255;not null;index" json:"name"`
+	CategoryID        string      `gorm:"size:64;not null;index" json:"category_id"`
+	Avatar            string      `gorm:"size:8" json:"avatar"`
+	LogoURL           string      `gorm:"size:500" json:"logo_url,omitempty"`
+	Rating            float64     `gorm:"type:numeric(3,2);default:0" json:"rating"`
+	ReviewsCount      int         `gorm:"default:0" json:"reviews_count"`
+	Badge             string      `gorm:"size:16" json:"badge,omitempty"`
+	Verified          bool        `gorm:"default:false;index" json:"verified"`
+	DistanceLabel     string      `gorm:"size:64" json:"distance_label"`
+	PriceLabel        string      `gorm:"size:64" json:"price_label"`
+	ResponseTimeLabel string      `gorm:"size:64" json:"response_time_label"`
+	Description       string      `gorm:"type:text" json:"description"`
+	Services          StringSlice `gorm:"type:jsonb;default:'[]'" json:"services"`
+	YearsActive       int         `json:"years_active"`
+	JobsDone          int         `json:"jobs_done"`
+	WhatsApp          string      `gorm:"size:32" json:"whatsapp"`
+	Highlight         bool        `gorm:"default:false;index" json:"highlight"`
+	OwnerUserID       *uuid.UUID  `gorm:"type:uuid;index" json:"owner_user_id,omitempty"`
+	Coverage          Coverage    `gorm:"size:16;default:'cidade'" json:"coverage"`
+	RadiusKM          int         `gorm:"default:10" json:"radius_km"`
+	DocumentType      string      `gorm:"size:4" json:"document_type,omitempty"`
+	Document          string      `gorm:"size:18" json:"document,omitempty"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
-	Category *Category `gorm:"foreignKey:CategoryID;references:ID" json:"category,omitempty"`
+	Category        *Category        `gorm:"foreignKey:CategoryID;references:ID" json:"category,omitempty"`
+	PortfolioPhotos []PortfolioPhoto `gorm:"polymorphic:Owner;polymorphicValue:provider" json:"portfolio_photos,omitempty"`
 }
 
 func (p *Provider) BeforeCreate(tx *gorm.DB) error {

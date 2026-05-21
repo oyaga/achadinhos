@@ -83,7 +83,10 @@ func (h *ProvidersHandler) Get(c *gin.Context) {
 		return
 	}
 	var p models.Provider
-	if err := h.db.WithContext(c.Request.Context()).Preload("Category").First(&p, "id = ?", id).Error; err != nil {
+	if err := h.db.WithContext(c.Request.Context()).
+		Preload("Category").
+		Preload("PortfolioPhotos", orderByPosition).
+		First(&p, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			JSONError(c, http.StatusNotFound, "provider not found")
 			return

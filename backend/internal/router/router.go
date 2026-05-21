@@ -91,11 +91,17 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.POST("/sellers", adminH.CreateSeller)
 		admin.PATCH("/sellers/:id", adminH.UpdateSeller)
 		admin.DELETE("/sellers/:id", adminH.DeleteSeller)
+		admin.POST("/sellers/:id/logo", adminH.UploadSellerLogo)
+		admin.POST("/sellers/:id/portfolio", adminH.UploadSellerPortfolio)
+		admin.DELETE("/sellers/:id/portfolio/:photo_id", adminH.DeleteSellerPortfolio)
 
 		admin.GET("/providers", adminH.ListProviders)
 		admin.POST("/providers", adminH.CreateProvider)
 		admin.PATCH("/providers/:id", adminH.UpdateProvider)
 		admin.DELETE("/providers/:id", adminH.DeleteProvider)
+		admin.POST("/providers/:id/logo", adminH.UploadProviderLogo)
+		admin.POST("/providers/:id/portfolio", adminH.UploadProviderPortfolio)
+		admin.DELETE("/providers/:id/portfolio/:photo_id", adminH.DeleteProviderPortfolio)
 
 		admin.GET("/products", adminH.ListProducts)
 		admin.POST("/products", adminH.CreateProduct)

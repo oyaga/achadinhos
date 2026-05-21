@@ -46,6 +46,7 @@ export interface Provider {
   cat: string;
   catLabel: string;
   avatar: string;
+  logoUrl?: string;
   rating: number;
   reviews: number;
   badge?: "Ouro" | "Verificado" | "Top";
@@ -59,6 +60,7 @@ export interface Provider {
   jobsDone: number;
   whatsapp: string;
   highlight?: boolean;
+  portfolio?: string[];
 }
 
 export interface Review {

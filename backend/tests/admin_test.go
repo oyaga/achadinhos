@@ -35,9 +35,11 @@ func TestAdminPanel(t *testing.T) {
 	var sellerID string
 	t.Run("create empresa", func(t *testing.T) {
 		rec, body := doJSON(t, env.Router, http.MethodPost, "/api/v1/admin/sellers", map[string]any{
-			"name":     "Distribuidora Teste",
-			"whatsapp": "11987654000",
-			"partner":  true,
+			"name":          "Distribuidora Teste",
+			"whatsapp":      "11987654000",
+			"partner":       true,
+			"document_type": "cnpj",
+			"document":      "11.222.333/0001-81",
 		}, adminToken)
 		if rec.Code != http.StatusCreated {
 			t.Fatalf("expected 201, got %d body=%v", rec.Code, body)
@@ -50,11 +52,13 @@ func TestAdminPanel(t *testing.T) {
 
 	t.Run("create prestador", func(t *testing.T) {
 		rec, body := doJSON(t, env.Router, http.MethodPost, "/api/v1/admin/providers", map[string]any{
-			"name":        "CleanPro Teste",
-			"category_id": "limpeza",
-			"description": "Equipe de limpeza para áreas comuns.",
-			"whatsapp":    "11987654001",
-			"verified":    true,
+			"name":          "CleanPro Teste",
+			"category_id":   "limpeza",
+			"description":   "Equipe de limpeza para áreas comuns.",
+			"whatsapp":      "11987654001",
+			"verified":      true,
+			"document_type": "cpf",
+			"document":      "529.982.247-25",
 		}, adminToken)
 		if rec.Code != http.StatusCreated {
 			t.Fatalf("expected 201, got %d body=%v", rec.Code, body)
@@ -66,13 +70,27 @@ func TestAdminPanel(t *testing.T) {
 
 	t.Run("create prestador with bad category -> 400", func(t *testing.T) {
 		rec, _ := doJSON(t, env.Router, http.MethodPost, "/api/v1/admin/providers", map[string]any{
-			"name":        "Sem Categoria",
-			"category_id": "inexistente",
-			"description": "Descrição suficientemente longa.",
-			"whatsapp":    "11987654002",
+			"name":          "Sem Categoria",
+			"category_id":   "inexistente",
+			"description":   "Descrição suficientemente longa.",
+			"whatsapp":      "11987654002",
+			"document_type": "cnpj",
+			"document":      "11.222.333/0001-81",
 		}, adminToken)
 		if rec.Code != http.StatusBadRequest {
 			t.Fatalf("expected 400, got %d", rec.Code)
+		}
+	})
+
+	t.Run("create empresa with invalid document -> 422", func(t *testing.T) {
+		rec, _ := doJSON(t, env.Router, http.MethodPost, "/api/v1/admin/sellers", map[string]any{
+			"name":          "Doc Inválido",
+			"whatsapp":      "11987654003",
+			"document_type": "cnpj",
+			"document":      "11.111.111/1111-11",
+		}, adminToken)
+		if rec.Code != http.StatusUnprocessableEntity {
+			t.Fatalf("expected 422 for invalid document, got %d", rec.Code)
 		}
 	})
 

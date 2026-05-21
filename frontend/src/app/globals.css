@@ -6471,3 +6471,99 @@ textarea.field-input {
   font-weight: 700;
   cursor: pointer;
 }
+
+/* ── Admin: logo upload + row avatar image + hint ── */
+.admin-row-avatar {
+  overflow: hidden;
+}
+
+.admin-row-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-hint {
+  font-size: 11.5px;
+  color: var(--ink-400);
+  margin-top: 6px;
+}
+
+.admin-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-logo-preview {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--bone-100);
+  border: 1px solid var(--bone-200);
+  color: var(--ink-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.admin-logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-upload-label {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* ── Business logo on cards / detail (public app) ── */
+.provider-avatar {
+  overflow: hidden;
+}
+.provider-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pd-avatar {
+  overflow: hidden;
+}
+.pd-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.highlight-pic-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* ── Provider portfolio gallery ── */
+.pd-portfolio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.pd-portfolio-item {
+  display: block;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--bone-200);
+}
+.pd-portfolio-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

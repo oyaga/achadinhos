@@ -29,7 +29,9 @@ func (h *SellersHandler) Get(c *gin.Context) {
 		return
 	}
 	var s models.Seller
-	if err := h.db.WithContext(c.Request.Context()).First(&s, "id = ?", id).Error; err != nil {
+	if err := h.db.WithContext(c.Request.Context()).
+		Preload("PortfolioPhotos", orderByPosition).
+		First(&s, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			JSONError(c, http.StatusNotFound, "seller not found")
 			return

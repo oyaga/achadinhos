@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { providersApi } from "@/lib/api";
+import { providersApi, getImageUrl } from "@/lib/api";
 import { adaptProvider } from "@/lib/adapters";
 import type { Provider } from "@/lib/types";
 import { Icon } from "../icons";
@@ -73,6 +73,14 @@ export function HighlightsScreen({
               style={{ width: "100%", textAlign: "left", display: "block" }}
             >
               <div className="highlight-pic">
+                {p.logoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={getImageUrl(p.logoUrl)}
+                    alt={p.name}
+                    className="highlight-pic-img"
+                  />
+                )}
                 <div className="highlight-pic-tag">★ Em destaque</div>
               </div>
               <div className="highlight-body">

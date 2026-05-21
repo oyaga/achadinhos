@@ -6,15 +6,13 @@ import { useAuth } from "@/contexts/auth-context";
 import { Icon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { ProdutosSection } from "./produtos-section";
-import { EmpresasSection } from "./empresas-section";
-import { PrestadoresSection } from "./prestadores-section";
+import { NegociosSection } from "./negocios-section";
 
-type AdminTab = "produtos" | "empresas" | "prestadores";
+type AdminTab = "produtos" | "negocios";
 
 const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "produtos", label: "Produtos", icon: "CatShopping" },
-  { id: "empresas", label: "Empresas", icon: "CatPartners" },
-  { id: "prestadores", label: "Prestadores", icon: "CatMaintenance" },
+  { id: "negocios", label: "Empresas e prestadores", icon: "CatPartners" },
 ];
 
 export function AdminPanel() {
@@ -93,8 +91,7 @@ export function AdminPanel() {
 
       <div className="admin-content">
         {tab === "produtos" && <ProdutosSection />}
-        {tab === "empresas" && <EmpresasSection />}
-        {tab === "prestadores" && <PrestadoresSection />}
+        {tab === "negocios" && <NegociosSection />}
       </div>
     </main>
   );
