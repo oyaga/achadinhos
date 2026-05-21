@@ -36,7 +36,7 @@ export function App() {
   const { isAuthenticated } = useAuth();
   const { toggle: toggleFavRaw, isFav } = useFavorites();
   const { toast, showToast } = useToast();
-  const { canInstall, promptInstall } = useInstallPrompt();
+  const { promptInstall } = useInstallPrompt();
   const { history: waHistory, record: recordWa, clear: clearWa } = useWhatsappHistory();
 
   const [activeCat, setActiveCat] = useState<CategoryId>("destaque");
@@ -132,9 +132,8 @@ export function App() {
         <BottomNav
           active={activeNav}
           onSelect={onNavSelect}
-          onAddClick={() => setSearchOpen(true)}
-          canInstall={canInstall}
           onInstall={() => void promptInstall()}
+          authed={isAuthenticated}
         />
 
         <SearchOverlay

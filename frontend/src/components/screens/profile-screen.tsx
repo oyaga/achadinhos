@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, type FormEvent } from "react";
+import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import { me as meApi, ApiError, type ChangePasswordPayload } from "@/lib/api";
 import { Icon } from "../icons";
@@ -251,6 +252,20 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
               <span className="prof-role-chip">{roleLabel}</span>
             </div>
           </div>
+
+          {/* Admin: atalho para o painel */}
+          {user?.role === "admin" && (
+            <Link href="/admin" className="prof-admin-link">
+              <span className="prof-admin-link-icon">
+                <Icon.Crown size={18} />
+              </span>
+              <span className="prof-admin-link-text">
+                <strong>Painel administrativo</strong>
+                <span>Gerenciar produtos, empresas e prestadores</span>
+              </span>
+              <Icon.ChevRight size={16} />
+            </Link>
+          )}
 
           {/* Save feedback */}
           {saveError && (
