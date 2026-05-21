@@ -1,0 +1,2 @@
+ALTER TABLE products DROP COLUMN IF EXISTS photo_url;
+ALTER TABLE products DROP COLUMN IF EXISTS manufacturer;

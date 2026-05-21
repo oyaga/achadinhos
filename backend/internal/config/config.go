@@ -1,0 +1,93 @@
+package config
+
+import (
+	"fmt"
+	"log/slog"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/joho/godotenv"
+)
+
+// Config holds all application configuration loaded from environment variables.
+type Config struct {
+	AppEnv      string
+	AppPort     string
+	AppLogLevel string
+
+	DBHost     string
+	DBPort     string
+	DBUser     string
+	DBPassword string
+	DBName     string
+	DBSSLMode  string
+
+	JWTSecret     string
+	JWTAccessTTL  time.Duration
+	JWTRefreshTTL time.Duration
+
+	CORSOrigins []string
+}
+
+// Load reads .env (if present) and environment variables, returning a Config.
+// Missing critical values fall back to safe development defaults but a warning is logged.
+func Load() (*Config, error) {
+	_ = godotenv.Load()
+
+	cfg := &Config{
+		AppEnv:      getEnv("APP_ENV", "development"),
+		AppPort:     getEnv("APP_PORT", "8080"),
+		AppLogLevel: getEnv("APP_LOG_LEVEL", "info"),
+
+		DBHost:     getEnv("DB_HOST", "localhost"),
+		DBPort:     getEnv("DB_PORT", "5432"),
+		DBUser:     getEnv("DB_USER", "achadinhos"),
+		DBPassword: getEnv("DB_PASSWORD", "achadinhos_dev"),
+		DBName:     getEnv("DB_NAME", "achadinhos"),
+		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+
+		JWTSecret: getEnv("JWT_SECRET", "dev-insecure-secret-change-me"),
+	}
+
+	accessTTL, err := time.ParseDuration(getEnv("JWT_ACCESS_TTL", "15m"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid JWT_ACCESS_TTL: %w", err)
+	}
+	cfg.JWTAccessTTL = accessTTL
+
+	refreshTTL, err := time.ParseDuration(getEnv("JWT_REFRESH_TTL", "720h"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid JWT_REFRESH_TTL: %w", err)
+	}
+	cfg.JWTRefreshTTL = refreshTTL
+
+	origins := getEnv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001")
+	for _, o := range strings.Split(origins, ",") {
+		o = strings.TrimSpace(o)
+		if o != "" {
+			cfg.CORSOrigins = append(cfg.CORSOrigins, o)
+		}
+	}
+
+	if cfg.JWTSecret == "dev-insecure-secret-change-me" && cfg.AppEnv == "production" {
+		slog.Warn("JWT_SECRET is using the insecure default in production")
+	}
+
+	return cfg, nil
+}
+
+// DSN returns the PostgreSQL connection DSN.
+func (c *Config) DSN() string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=UTC",
+		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSSLMode,
+	)
+}
+
+func getEnv(key, fallback string) string {
+	if v, ok := os.LookupEnv(key); ok && v != "" {
+		return v
+	}
+	return fallback
+}

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS product_photos;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS photo_url TEXT;

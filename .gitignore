@@ -1,0 +1,20 @@
+# Root-level ignores (subfolders have their own .gitignore)
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env files at root
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Docker override
+docker-compose.override.yml

@@ -1,0 +1,214 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { productsApi } from "@/lib/api";
+import { adaptProduct } from "@/lib/adapters";
+import type { Product } from "@/lib/types";
+import { discountPct, formatBRL } from "@/lib/utils";
+import { Icon } from "../icons";
+
+interface ProductDetailProps {
+  product: Product;
+  isFav: boolean;
+  onBack: () => void;
+  onToggleFav: (id: string) => void;
+  onShowToast: (msg: string) => void;
+}
+
+export function ProductDetail({
+  product,
+  isFav,
+  onBack,
+  onToggleFav,
+  onShowToast,
+}: ProductDetailProps) {
+  const [qty, setQty] = useState(1);
+  const [related, setRelated] = useState<Product[]>([]);
+  const total = formatBRL(product.price * qty);
+
+  useEffect(() => {
+    void productsApi.get(product.id).then((res) => {
+      setRelated((res.related_products ?? []).map(adaptProduct));
+    }).catch(() => {});
+  }, [product.id]);
+
+  const openWhatsapp = () => {
+    const msg = encodeURIComponent(
+      `Olá! Tenho interesse no produto: ${product.name} — ${formatBRL(
+        product.price
+      )} (qtd: ${qty}). Total: ${total}.`
+    );
+    const url = `https://wa.me/55${product.whatsapp}?text=${msg}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    onShowToast("Abrindo WhatsApp da revenda");
+  };
+  const openLink = () => {
+    window.open(product.link, "_blank", "noopener,noreferrer");
+    onShowToast("Abrindo link da revenda");
+  };
+
+  return (
+    <div className="screen product-detail-screen">
+      <div className="screen-header transparent-header">
+        <button
+          type="button"
+          className="screen-back floating"
+          onClick={onBack}
+          aria-label="Voltar"
+        >
+          <Icon.ChevLeft size={16} />
+        </button>
+        <div style={{ flex: 1 }} />
+        <button
+          type="button"
+          className="icon-btn floating"
+          onClick={() => onToggleFav(product.id)}
+          aria-label="Favoritar"
+        >
+          <Icon.Heart size={16} filled={isFav} />
+        </button>
+        <button
+          type="button"
+          className="icon-btn floating"
+          aria-label="Compartilhar"
+        >
+          <Icon.Share size={16} />
+        </button>
+      </div>
+
+      <div className="screen-body" style={{ paddingTop: 0, padding: 0 }}>
+        <div className="pd-hero" data-cat={product.cat}>
+          <div className="pd-hero-letter">{product.name.charAt(0)}</div>
+          {product.badge && (
+            <div className="pd-hero-badge">{product.badge}</div>
+          )}
+        </div>
+
+        <div
+          className="pd-section product-detail-info"
+          style={{ padding: "0 16px" }}
+        >
+          {product.tag && <div className="product-tag big">{product.tag}</div>}
+          <h2 className="pd-name">{product.name}</h2>
+          <div className="pd-seller-row">
+            <div className="pd-seller-avatar">{product.seller.charAt(0)}</div>
+            <div>
+              <div className="pd-seller-name">{product.seller}</div>
+              <div className="pd-seller-meta">
+                Revenda parceira · {product.stock}
+              </div>
+            </div>
+            <div className="pd-rating-pill">
+              <Icon.Star size={11} filled />{" "}
+              {product.rating.toFixed(1).replace(".", ",")}
+              <span className="pd-rating-count">({product.reviews})</span>
+            </div>
+          </div>
+
+          <div className="pd-price-block">
+            {product.oldPrice && (
+              <div className="pd-old-price">{formatBRL(product.oldPrice)}</div>
+            )}
+            <div className="pd-price">{formatBRL(product.price)}</div>
+            {product.oldPrice && (
+              <div className="pd-discount">
+                <Icon.Tag size={11} />{" "}
+                {discountPct(product.price, product.oldPrice)}% OFF · economia de{" "}
+                {formatBRL(product.oldPrice - product.price)}
+              </div>
+            )}
+          </div>
+
+          <div className="pd-qty-row">
+            <span className="pd-qty-label">Quantidade</span>
+            <div className="pd-qty-stepper">
+              <button
+                type="button"
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                disabled={qty <= 1}
+                aria-label="Diminuir"
+              >
+                –
+              </button>
+              <span>{qty}</span>
+              <button
+                type="button"
+                onClick={() => setQty((q) => q + 1)}
+                aria-label="Aumentar"
+              >
+                +
+              </button>
+            </div>
+            <span className="pd-total">
+              Total <strong>{total}</strong>
+            </span>
+          </div>
+        </div>
+
+        <div className="pd-section" style={{ padding: "22px 16px 0" }}>
+          <h3>Sobre o produto</h3>
+          <p
+            style={{
+              fontSize: 13,
+              lineHeight: 1.6,
+              color: "var(--ink-700)",
+            }}
+          >
+            {product.name}. Vendido e enviado por {product.seller}, parceira
+            homologada. Pagamento, frete e garantia tratados diretamente com a
+            revenda. Use os botões abaixo para ir ao link do produto ou
+            conversar no WhatsApp com o vendedor.
+          </p>
+          <div className="pd-features">
+            <div className="pd-feature">
+              <Icon.Check size={12} /> Vendedor verificado
+            </div>
+            <div className="pd-feature">
+              <Icon.Check size={12} /> Nota fiscal emitida
+            </div>
+            <div className="pd-feature">
+              <Icon.Check size={12} /> Frete sob consulta
+            </div>
+          </div>
+        </div>
+
+        {related.length > 0 && (
+          <div className="pd-section" style={{ padding: "22px 16px 0" }}>
+            <h3>Itens relacionados</h3>
+            <div className="related-row">
+              {related.map((r) => (
+                <button
+                  type="button"
+                  key={r.id}
+                  className="related-card"
+                  style={{ textAlign: "left", display: "block" }}
+                >
+                  <div className="related-thumb" data-cat={r.cat}>
+                    {r.name.charAt(0)}
+                  </div>
+                  <div className="related-name">{r.name}</div>
+                  <div className="related-price">{formatBRL(r.price)}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div style={{ height: 120 }} />
+      </div>
+
+      <div className="sticky-cta product-cta">
+        <button
+          type="button"
+          className="btn-secondary product-btn-link"
+          onClick={openLink}
+        >
+          <Icon.ExternalLink size={14} /> Ver na revenda
+        </button>
+        <button type="button" className="btn-whatsapp" onClick={openWhatsapp}>
+          <Icon.Whatsapp size={16} /> Comprar no WhatsApp
+        </button>
+      </div>
+    </div>
+  );
+}

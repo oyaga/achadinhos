@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Achadinhos do Condomínio — Home</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    html, body { height: 100%; }
+    body {
+      background: radial-gradient(ellipse at top, #11254E 0%, #060F2A 60%, #04081C 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+      font-family: 'Inter', sans-serif;
+    }
+    .stage {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .device-label {
+      font-family: 'Fraunces', serif;
+      font-style: italic;
+      font-weight: 500;
+      font-size: 14px;
+      color: #C9A961;
+      letter-spacing: 0.05em;
+    }
+    .switcher {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      gap: 6px;
+      background: rgba(255,255,255,0.08);
+      padding: 5px;
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(201,169,97,0.25);
+      z-index: 200;
+    }
+    .switcher button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.65);
+      letter-spacing: 0.02em;
+      transition: all 0.15s;
+    }
+    .switcher button.on {
+      background: linear-gradient(140deg, #D9BC78, #C9A961);
+      color: #0B1B3B;
+    }
+  </style>
+</head>
+<body>
+  <div class="switcher" id="switcher">
+    <button data-mode="both" class="on">Ambos</button>
+    <button data-mode="ios">iOS</button>
+    <button data-mode="android">Android</button>
+  </div>
+
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="screens.css" />
+  <link rel="stylesheet" href="shop.css" />
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel" src="android-frame.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="icons.jsx"></script>
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="screens.jsx"></script>
+  <script type="text/babel" src="shop.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+
+  <script type="text/babel" data-presets="react">
+    function Stage() {
+      const [mode, setMode] = React.useState('both');
+
+      React.useEffect(() => {
+        const sw = document.getElementById('switcher');
+        const handler = (e) => {
+          const btn = e.target.closest('button');
+          if (!btn) return;
+          [...sw.querySelectorAll('button')].forEach(b => b.classList.toggle('on', b === btn));
+          setMode(btn.dataset.mode);
+        };
+        sw.addEventListener('click', handler);
+        return () => sw.removeEventListener('click', handler);
+      }, []);
+
+      const showIOS = mode === 'both' || mode === 'ios';
+      const showAndroid = mode === 'both' || mode === 'android';
+
+      return (
+        <>
+          <div className="stage">
+            {showIOS && (
+              <div className="device-wrap">
+                <div className="device-label">iPhone</div>
+                <window.IOSDevice width={390} height={844}>
+                  <window.AchadinhosApp />
+                </window.IOSDevice>
+              </div>
+            )}
+            {showAndroid && (
+              <div className="device-wrap">
+                <div className="device-label">Android</div>
+                <window.AndroidDevice width={390} height={844}>
+                  <window.AchadinhosApp />
+                </window.AndroidDevice>
+              </div>
+            )}
+          </div>
+          <window.TweaksUI />
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<Stage />);
+  </script>
+</body>
+</html>

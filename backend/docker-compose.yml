@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: achadinhos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: achadinhos
+      POSTGRES_PASSWORD: achadinhos_dev
+      POSTGRES_DB: achadinhos
+    ports:
+      - "5432:5432"
+    volumes:
+      - achadinhos_pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U achadinhos -d achadinhos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: achadinhos-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_ENV: production
+      APP_PORT: "8080"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: achadinhos
+      DB_PASSWORD: achadinhos_dev
+      DB_NAME: achadinhos
+      DB_SSLMODE: disable
+      JWT_SECRET: change-me-in-production
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001
+    ports:
+      - "8080:8080"
+    profiles:
+      - full
+
+volumes:
+  achadinhos_pgdata:
