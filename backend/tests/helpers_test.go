@@ -8,6 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/achadinhos/backend/internal/auth"
+	"github.com/achadinhos/backend/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,21 +39,29 @@ func doJSON(t *testing.T, r *gin.Engine, method, path string, body any, token st
 	return rec, out
 }
 
-func registerUser(t *testing.T, r *gin.Engine, email, password, name, role string) (string, string) {
+// createUser inserts a user row directly (sign-up endpoints are limited to
+// síndicos) and logs in, returning the access + refresh tokens.
+func createUser(t *testing.T, env *testEnv, email, password, name string, role models.Role) (string, string) {
 	t.Helper()
-	rec, body := doJSON(t, r, http.MethodPost, "/api/v1/auth/register", map[string]any{
+	hash, err := auth.HashPassword(password)
+	if err != nil {
+		t.Fatalf("hash password: %v", err)
+	}
+	u := &models.User{Email: email, PasswordHash: hash, Name: name, Role: role}
+	if err := env.DB.Create(u).Error; err != nil {
+		t.Fatalf("create user: %v", err)
+	}
+	rec, body := doJSON(t, env.Router, http.MethodPost, "/api/v1/auth/login", map[string]any{
 		"email":    email,
 		"password": password,
-		"name":     name,
-		"role":     role,
 	}, "")
-	if rec.Code != http.StatusCreated {
-		t.Fatalf("register: got status %d body=%v", rec.Code, body)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("login: got status %d body=%v", rec.Code, body)
 	}
 	access, _ := body["access_token"].(string)
 	refresh, _ := body["refresh_token"].(string)
 	if access == "" || refresh == "" {
-		t.Fatalf("register: missing tokens; body=%v", body)
+		t.Fatalf("login: missing tokens; body=%v", body)
 	}
 	return access, refresh
 }

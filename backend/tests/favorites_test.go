@@ -3,13 +3,15 @@ package tests
 import (
 	"net/http"
 	"testing"
+
+	"github.com/achadinhos/backend/internal/models"
 )
 
 func TestFavoritesFlow(t *testing.T) {
 	env := SetupTestEnv(t)
 	TruncateAll(t, env.DB)
 
-	access, _ := registerUser(t, env.Router, "fav@test.com", "supersecret", "Fav User", "sindico")
+	access, _ := createUser(t, env, "fav@test.com", "supersecret", "Fav User", models.RoleSindico)
 
 	body := map[string]any{
 		"target_type": "provider",

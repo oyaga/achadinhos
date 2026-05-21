@@ -2,14 +2,6 @@ package dto
 
 import "github.com/achadinhos/backend/internal/models"
 
-// RegisterRequest is the body of POST /auth/register.
-type RegisterRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6,max=128"`
-	Name     string `json:"name" binding:"required,min=2,max=128"`
-	Role     string `json:"role" binding:"required,oneof=sindico prestador"`
-}
-
 // LoginRequest is the body of POST /auth/login.
 type LoginRequest struct {
 	Email    string `json:"email" binding:"required,email"`

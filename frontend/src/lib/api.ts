@@ -16,7 +16,8 @@ const BASE_URL =
 
 // ============== Types ==============
 
-export type UserRole = "sindico" | "prestador" | "seller" | "admin";
+// Only síndicos (public sign-up) and admins (internal) have login accounts.
+export type UserRole = "sindico" | "admin";
 
 export interface User {
   id: string;
@@ -27,7 +28,6 @@ export interface User {
   avatar_url?: string | null;
   condo_name?: string | null;
   condo_role?: string | null;
-  company_name?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -296,13 +296,6 @@ export async function request<T>(
 
 // ============== Domain helpers ==============
 
-export interface RegisterPayload {
-  email: string;
-  password: string;
-  name: string;
-  role: UserRole;
-}
-
 export interface LoginPayload {
   email: string;
   password: string;
@@ -329,54 +322,9 @@ export interface RegisterSindicoPayload {
   condo_role: "morador" | "sindico" | "conselho";
 }
 
-export interface RegisterPrestadorPayload {
-  name: string;
-  email: string;
-  password: string;
-  whatsapp: string;
-  document_type: "cpf" | "cnpj";
-  document: string;
-  company_name: string;
-  address: AddressPayload;
-}
-
-export interface RegisterSellerPayload {
-  name: string;
-  email: string;
-  password: string;
-  whatsapp: string;
-  document_type: "cpf" | "cnpj";
-  document: string;
-  company_name: string;
-  description?: string;
-  categories?: string[];
-  address: AddressPayload;
-}
-
 export const auth = {
-  async register(payload: RegisterPayload): Promise<AuthResponse> {
-    return request<AuthResponse>("/auth/register", {
-      method: "POST",
-      body: payload,
-      skipAuth: true,
-    });
-  },
   async registerSindico(payload: RegisterSindicoPayload): Promise<AuthResponse> {
     return request<AuthResponse>("/auth/register/sindico", {
-      method: "POST",
-      body: payload,
-      skipAuth: true,
-    });
-  },
-  async registerPrestador(payload: RegisterPrestadorPayload): Promise<AuthResponse> {
-    return request<AuthResponse>("/auth/register/prestador", {
-      method: "POST",
-      body: payload,
-      skipAuth: true,
-    });
-  },
-  async registerSeller(payload: RegisterSellerPayload): Promise<AuthResponse> {
-    return request<AuthResponse>("/auth/register/seller", {
       method: "POST",
       body: payload,
       skipAuth: true,
@@ -433,51 +381,6 @@ export const me = {
     });
   },
 };
-
-// Provider profile creation (called by the signup wizard after registering as
-// a "prestador"). The backend accepts a payload like the wizard collects;
-// fields are passed through and the server validates.
-export interface ProviderCreatePayload {
-  name: string;
-  cnpj?: string;
-  email?: string;
-  phone?: string;
-  whatsapp: string;
-  categories: string[];
-  coverage?: "bairro" | "cidade" | "regiao";
-  radius_km?: number;
-  years_active?: number;
-  hour_start?: string;
-  hour_end?: string;
-  description?: string;
-}
-
-export interface ProviderProfile {
-  id?: string;
-  company_name: string;
-  document_type: "cpf" | "cnpj";
-  document: string;
-  whatsapp: string;
-  description: string;
-  years_active: number;
-  response_time: string;
-  services: string[];
-  categories: string[];
-  portfolio: string[];
-  jobs_done: number;
-  rating: number;
-  reviews_count: number;
-}
-
-export interface ProviderProfilePatch {
-  company_name?: string;
-  description?: string;
-  years_active?: number;
-  response_time?: string;
-  services?: string[];
-  categories?: string[];
-  portfolio?: string[];
-}
 
 export interface ProductPhoto {
   id: string;
@@ -584,39 +487,51 @@ export interface ApiFavorite {
   created_at: string;
 }
 
-export interface SellerProfileData {
-  id?: string;
+// ============== Admin panel ==============
+
+export interface AdminSeller {
+  id: string;
   name: string;
   avatar?: string;
-  description: string;
+  description?: string;
+  whatsapp: string;
+  link?: string;
+  partner: boolean;
+  created_at?: string;
+}
+
+export interface AdminSellerPayload {
+  name: string;
+  description?: string;
   whatsapp: string;
   link?: string;
   partner?: boolean;
 }
 
-export interface SellerProduct {
-  id: string;
-  seller_id: string;
+export interface AdminProviderPayload {
   name: string;
-  category: string;
-  price: number;
-  old_price?: number | null;
-  rating?: number;
-  reviews_count?: number;
-  tag?: string;
+  category_id: string;
+  description: string;
+  services?: string[];
+  whatsapp: string;
+  years_active?: number;
+  jobs_done?: number;
+  price_label?: string;
+  response_time_label?: string;
+  distance_label?: string;
+  coverage?: "bairro" | "cidade" | "regiao";
+  radius_km?: number;
+  verified?: boolean;
+  highlight?: boolean;
   badge?: string;
-  stock: string;
-  link?: string;
-  photos?: ProductPhoto[];
-  manufacturer?: string;
-  created_at?: string;
 }
 
-export interface SellerProductPayload {
+export interface AdminProductPayload {
   name: string;
   category: string;
   price: number;
   old_price?: number | null;
+  seller_id: string;
   tag?: string;
   badge?: string;
   stock?: string;
@@ -624,59 +539,70 @@ export interface SellerProductPayload {
   manufacturer?: string;
 }
 
-export const sellerApi = {
-  async getMe(): Promise<{ seller: SellerProfileData; products: SellerProduct[] }> {
-    return request("/sellers/me");
+export const adminApi = {
+  // ── Empresas (sellers) ──
+  async listSellers(): Promise<AdminSeller[]> {
+    const res = await request<{ data: AdminSeller[] }>("/admin/sellers");
+    return res.data ?? [];
   },
-  async updateMe(patch: Partial<SellerProfileData>): Promise<SellerProfileData> {
-    return request("/sellers/me", { method: "PATCH", body: patch });
+  async createSeller(payload: AdminSellerPayload): Promise<AdminSeller> {
+    return request<AdminSeller>("/admin/sellers", { method: "POST", body: payload });
   },
-  async createProduct(payload: SellerProductPayload): Promise<SellerProduct> {
-    return request("/sellers/me/products", { method: "POST", body: payload });
+  async updateSeller(id: string, payload: Partial<AdminSellerPayload>): Promise<AdminSeller> {
+    return request<AdminSeller>(`/admin/sellers/${id}`, { method: "PATCH", body: payload });
   },
-  async updateProduct(id: string, payload: Partial<SellerProductPayload>): Promise<SellerProduct> {
-    return request(`/sellers/me/products/${id}`, { method: "PATCH", body: payload });
+  async deleteSeller(id: string): Promise<void> {
+    return request<void>(`/admin/sellers/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+
+  // ── Prestadores (providers) ──
+  async listProviders(): Promise<ApiProvider[]> {
+    const res = await request<{ data: ApiProvider[] }>("/admin/providers");
+    return res.data ?? [];
+  },
+  async createProvider(payload: AdminProviderPayload): Promise<ApiProvider> {
+    return request<ApiProvider>("/admin/providers", { method: "POST", body: payload });
+  },
+  async updateProvider(id: string, payload: Partial<AdminProviderPayload>): Promise<ApiProvider> {
+    return request<ApiProvider>(`/admin/providers/${id}`, { method: "PATCH", body: payload });
+  },
+  async deleteProvider(id: string): Promise<void> {
+    return request<void>(`/admin/providers/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+
+  // ── Produtos ──
+  async listProducts(): Promise<ApiProduct[]> {
+    const res = await request<{ data: ApiProduct[] }>("/admin/products");
+    return res.data ?? [];
+  },
+  async createProduct(payload: AdminProductPayload): Promise<ApiProduct> {
+    return request<ApiProduct>("/admin/products", { method: "POST", body: payload });
+  },
+  async updateProduct(id: string, payload: Partial<AdminProductPayload>): Promise<ApiProduct> {
+    return request<ApiProduct>(`/admin/products/${id}`, { method: "PATCH", body: payload });
   },
   async deleteProduct(id: string): Promise<void> {
-    return request(`/sellers/me/products/${id}`, { method: "DELETE", parseAs: "none" });
+    return request<void>(`/admin/products/${id}`, { method: "DELETE", parseAs: "none" });
   },
-  async uploadPhoto(productId: string, file: File): Promise<ProductPhoto> {
+  async uploadProductPhoto(productId: string, file: File): Promise<ProductPhoto> {
     const token = getAccessToken();
     const formData = new FormData();
     formData.append("file", file);
-    const url = `${BASE_URL}/sellers/me/products/${productId}/photos`;
+    const url = `${BASE_URL}/admin/products/${productId}/photos`;
     const headers: Record<string, string> = { Accept: "application/json" };
     if (token) headers["Authorization"] = `Bearer ${token}`;
     const res = await fetch(url, { method: "POST", headers, body: formData });
     if (!res.ok) {
       let msg = `Erro ${res.status}`;
-      try { const j = await res.json() as { message?: string }; if (j.message) msg = j.message; } catch {}
+      try { const j = (await res.json()) as { message?: string }; if (j.message) msg = j.message; } catch {}
       throw new ApiError({ status: res.status, message: msg });
     }
     return res.json() as Promise<ProductPhoto>;
   },
-  async deletePhoto(productId: string, photoId: string): Promise<void> {
-    return request(`/sellers/me/products/${productId}/photos/${photoId}`, {
+  async deleteProductPhoto(productId: string, photoId: string): Promise<void> {
+    return request<void>(`/admin/products/${productId}/photos/${photoId}`, {
       method: "DELETE",
       parseAs: "none",
-    });
-  },
-};
-
-export const providers = {
-  async create(payload: ProviderCreatePayload): Promise<{ id: string }> {
-    return request<{ id: string }>("/providers", {
-      method: "POST",
-      body: payload,
-    });
-  },
-  async getMyProfile(): Promise<ProviderProfile> {
-    return request<ProviderProfile>("/providers/me");
-  },
-  async updateMyProfile(patch: ProviderProfilePatch): Promise<ProviderProfile> {
-    return request<ProviderProfile>("/providers/me", {
-      method: "PATCH",
-      body: patch,
     });
   },
 };

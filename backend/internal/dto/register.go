@@ -25,29 +25,3 @@ type RegisterSindicoRequest struct {
 	CondoName string     `json:"condo_name" binding:"required,min=2,max=120"`
 	CondoRole string     `json:"condo_role" binding:"required,oneof=morador sindico conselho"`
 }
-
-// RegisterPrestadorRequest is the body for POST /api/v1/auth/register/prestador.
-type RegisterPrestadorRequest struct {
-	Name         string     `json:"name" binding:"required,min=2,max=128"`
-	Email        string     `json:"email" binding:"required,email"`
-	Password     string     `json:"password" binding:"required,min=8,max=128"`
-	Whatsapp     string     `json:"whatsapp" binding:"required"`
-	DocumentType string     `json:"document_type" binding:"required,oneof=cpf cnpj"`
-	Document     string     `json:"document" binding:"required"`
-	CompanyName  string     `json:"company_name" binding:"required,min=2,max=160"`
-	Address      AddressDTO `json:"address" binding:"required"`
-}
-
-// RegisterSellerRequest is the body for POST /api/v1/auth/register/seller.
-type RegisterSellerRequest struct {
-	Name         string     `json:"name" binding:"required,min=2,max=128"`
-	Email        string     `json:"email" binding:"required,email"`
-	Password     string     `json:"password" binding:"required,min=8,max=128"`
-	Whatsapp     string     `json:"whatsapp" binding:"required"`
-	DocumentType string     `json:"document_type" binding:"required,oneof=cpf cnpj"`
-	Document     string     `json:"document" binding:"required"`
-	CompanyName  string     `json:"company_name" binding:"required,min=2,max=160"`
-	Description  string     `json:"description"`
-	Categories   []string   `json:"categories"`
-	Address      AddressDTO `json:"address" binding:"required"`
-}

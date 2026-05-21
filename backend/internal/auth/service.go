@@ -41,39 +41,6 @@ type TokenPair struct {
 	ExpiresIn    int64  `json:"expires_in"`
 }
 
-// Register creates a new user account and returns the user + initial token pair.
-func (s *Service) Register(ctx context.Context, email, password, name string, role models.Role) (*models.User, *TokenPair, error) {
-	email = strings.ToLower(strings.TrimSpace(email))
-
-	var existing models.User
-	if err := s.db.WithContext(ctx).Where("email = ?", email).First(&existing).Error; err == nil {
-		return nil, nil, ErrEmailTaken
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil, err
-	}
-
-	hash, err := HashPassword(password)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	u := &models.User{
-		Email:        email,
-		PasswordHash: hash,
-		Name:         strings.TrimSpace(name),
-		Role:         role,
-	}
-	if err := s.db.WithContext(ctx).Create(u).Error; err != nil {
-		return nil, nil, err
-	}
-
-	pair, err := s.issueTokens(ctx, u)
-	if err != nil {
-		return nil, nil, err
-	}
-	return u, pair, nil
-}
-
 // Login authenticates a user and issues a new token pair.
 func (s *Service) Login(ctx context.Context, email, password string) (*models.User, *TokenPair, error) {
 	email = strings.ToLower(strings.TrimSpace(email))

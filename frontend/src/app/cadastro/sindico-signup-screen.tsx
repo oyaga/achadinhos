@@ -193,11 +193,7 @@ export function SindicoSignupScreen() {
     <main className="auth-shell">
       <div className="auth-shell-inner">
         <div className="auth-topbar">
-          <Link
-            href="/cadastro"
-            className="auth-back"
-            aria-label="Voltar para escolha de tipo"
-          >
+          <Link href="/" className="auth-back" aria-label="Voltar para o início">
             <Icon.ChevLeft size={16} />
           </Link>
           <div className="auth-topbar-right">

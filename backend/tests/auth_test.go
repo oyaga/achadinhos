@@ -3,38 +3,15 @@ package tests
 import (
 	"net/http"
 	"testing"
+
+	"github.com/achadinhos/backend/internal/models"
 )
 
 func TestAuthFlow(t *testing.T) {
 	env := SetupTestEnv(t)
 	TruncateAll(t, env.DB)
 
-	t.Run("register success", func(t *testing.T) {
-		rec, body := doJSON(t, env.Router, http.MethodPost, "/api/v1/auth/register", map[string]any{
-			"email":    "alice@test.com",
-			"password": "supersecret",
-			"name":     "Alice",
-			"role":     "sindico",
-		}, "")
-		if rec.Code != http.StatusCreated {
-			t.Fatalf("expected 201, got %d body=%v", rec.Code, body)
-		}
-		if body["access_token"] == "" || body["refresh_token"] == "" {
-			t.Fatalf("missing tokens: %v", body)
-		}
-	})
-
-	t.Run("register duplicate email -> 409", func(t *testing.T) {
-		rec, _ := doJSON(t, env.Router, http.MethodPost, "/api/v1/auth/register", map[string]any{
-			"email":    "alice@test.com",
-			"password": "supersecret",
-			"name":     "Alice2",
-			"role":     "sindico",
-		}, "")
-		if rec.Code != http.StatusConflict {
-			t.Fatalf("expected 409, got %d", rec.Code)
-		}
-	})
+	createUser(t, env, "alice@test.com", "supersecret", "Alice", models.RoleSindico)
 
 	t.Run("login success", func(t *testing.T) {
 		rec, body := doJSON(t, env.Router, http.MethodPost, "/api/v1/auth/login", map[string]any{
