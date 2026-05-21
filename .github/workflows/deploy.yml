@@ -1,0 +1,59 @@
+name: Build & Deploy
+
+# A cada push na master: builda a imagem, publica no GitHub Container
+# Registry (ghcr.io) e dispara o redeploy da stack no Portainer.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+env:
+  IMAGE: ghcr.io/oyaga/achadinhos
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # necessário para publicar no ghcr.io
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login no GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build e push da imagem
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Disparar redeploy no Portainer
+        env:
+          WEBHOOK: ${{ secrets.PORTAINER_WEBHOOK }}
+        run: |
+          set -euo pipefail
+          if [ -z "${WEBHOOK:-}" ]; then
+            echo "::warning::Secret PORTAINER_WEBHOOK ainda não configurado — redeploy pulado."
+            exit 0
+          fi
+          status="$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$WEBHOOK")"
+          echo "Webhook do Portainer: HTTP $status"
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "::error::Webhook falhou (HTTP $status)."
+            exit 1
+          fi

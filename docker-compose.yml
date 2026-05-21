@@ -18,7 +18,7 @@ services:
       - achadinhos
 
   app:
-    image: oyaga/achadinhos:latest
+    image: ghcr.io/oyaga/achadinhos:latest
     pull_policy: always
     container_name: achadinhos-app
     restart: unless-stopped
@@ -37,12 +37,21 @@ services:
       DB_SSLMODE: disable
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
-    ports:
-      - "${APP_PORT:-8080}:8080"
     volumes:
       - achadinhos_uploads:/app/uploads
     networks:
       - achadinhos
+      - traefik-public
+    # Roteamento e TLS automático via Traefik (sem publicar porta no host).
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      - "traefik.http.routers.achadinhos.rule=Host(`achadinhoscondominio.com.br`)"
+      - "traefik.http.routers.achadinhos.entrypoints=websecure"
+      - "traefik.http.routers.achadinhos.tls=true"
+      - "traefik.http.routers.achadinhos.tls.certresolver=cloudflare"
+      - "traefik.http.routers.achadinhos.middlewares=security-headers@file"
+      - "traefik.http.services.achadinhos.loadbalancer.server.port=8080"
 
 volumes:
   achadinhos_pgdata:
@@ -51,3 +60,6 @@ volumes:
 networks:
   achadinhos:
     driver: bridge
+  # Rede compartilhada com o Traefik, criada pela stack de infraestrutura.
+  traefik-public:
+    external: true
