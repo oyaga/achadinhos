@@ -5952,18 +5952,20 @@ textarea.field-input {
 /* ── Tabs ── */
 .admin-tabs {
   display: flex;
-  gap: 4px;
-  padding: 12px 20px 0;
+  gap: 6px;
+  padding: 12px 12px 0;
   max-width: 880px;
   margin: 0 auto;
   flex-wrap: wrap;
 }
 
 .admin-tab {
+  flex: 1 1 0;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 10px 16px;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
   border: 1px solid transparent;
   border-bottom: none;
   border-radius: 12px 12px 0 0;
@@ -5971,6 +5973,7 @@ textarea.field-input {
   color: var(--ink-500);
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
   transition: all 0.15s;
 }
