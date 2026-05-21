@@ -50,7 +50,7 @@ services:
       - "traefik.http.routers.achadinhos.entrypoints=websecure"
       - "traefik.http.routers.achadinhos.tls=true"
       - "traefik.http.routers.achadinhos.tls.certresolver=cloudflare"
-      - "traefik.http.routers.achadinhos.middlewares=security-headers@file"
+      - "traefik.http.routers.achadinhos.middlewares=cloudflare-only@file,security-headers@file"
       - "traefik.http.services.achadinhos.loadbalancer.server.port=8080"
 
 volumes:
