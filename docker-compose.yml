@@ -49,7 +49,7 @@ services:
       - "traefik.http.routers.achadinhos.rule=Host(`achadinhoscondominio.com.br`)"
       - "traefik.http.routers.achadinhos.entrypoints=websecure"
       - "traefik.http.routers.achadinhos.tls=true"
-      - "traefik.http.routers.achadinhos.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.achadinhos.tls.certresolver=cloudflare"
       - "traefik.http.routers.achadinhos.middlewares=security-headers@file"
       - "traefik.http.services.achadinhos.loadbalancer.server.port=8080"
 
