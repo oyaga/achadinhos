@@ -11,6 +11,7 @@ import (
 type Seller struct {
 	ID           uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
 	Name         string    `gorm:"size:255;not null;uniqueIndex" json:"name"`
+	CategoryID   string    `gorm:"size:64;index" json:"category_id,omitempty"`
 	Avatar       string    `gorm:"size:8" json:"avatar"`
 	LogoURL      string    `gorm:"size:500" json:"logo_url,omitempty"`
 	Description  string    `gorm:"type:text" json:"description,omitempty"`
@@ -24,6 +25,7 @@ type Seller struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
+	Category        *Category        `gorm:"foreignKey:CategoryID;references:ID" json:"category,omitempty"`
 	PortfolioPhotos []PortfolioPhoto `gorm:"polymorphic:Owner;polymorphicValue:seller" json:"portfolio_photos,omitempty"`
 }
 

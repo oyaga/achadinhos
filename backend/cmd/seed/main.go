@@ -248,11 +248,12 @@ func Run(ctx context.Context, gdb *gorm.DB) error {
 	sellerIDs := make(map[string]uuid.UUID, len(sellerNames))
 	for name := range sellerNames {
 		s := &models.Seller{
-			ID:       uuid.New(),
-			Name:     name,
-			Avatar:   string([]rune(name)[0]),
-			WhatsApp: "11900000000",
-			Partner:  false,
+			ID:         uuid.New(),
+			Name:       name,
+			CategoryID: "shopping",
+			Avatar:     string([]rune(name)[0]),
+			WhatsApp:   "11900000000",
+			Partner:    false,
 		}
 		if err := gdb.WithContext(ctx).Create(s).Error; err != nil {
 			return err

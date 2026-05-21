@@ -502,6 +502,8 @@ export interface ApiFavorite {
 export interface AdminSeller {
   id: string;
   name: string;
+  category_id?: string;
+  category?: ApiCategory;
   avatar?: string;
   logo_url?: string;
   description?: string;
@@ -516,6 +518,7 @@ export interface AdminSeller {
 
 export interface AdminSellerPayload {
   name: string;
+  category_id: string;
   description?: string;
   whatsapp: string;
   link?: string;

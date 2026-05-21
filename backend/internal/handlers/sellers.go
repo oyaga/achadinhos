@@ -30,6 +30,7 @@ func (h *SellersHandler) Get(c *gin.Context) {
 	}
 	var s models.Seller
 	if err := h.db.WithContext(c.Request.Context()).
+		Preload("Category").
 		Preload("PortfolioPhotos", orderByPosition).
 		First(&s, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
