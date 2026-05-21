@@ -36,6 +36,7 @@ func TestAdminPanel(t *testing.T) {
 	t.Run("create empresa", func(t *testing.T) {
 		rec, body := doJSON(t, env.Router, http.MethodPost, "/api/v1/admin/sellers", map[string]any{
 			"name":          "Distribuidora Teste",
+			"category_id":   "limpeza",
 			"whatsapp":      "11987654000",
 			"partner":       true,
 			"document_type": "cnpj",
@@ -85,6 +86,7 @@ func TestAdminPanel(t *testing.T) {
 	t.Run("create empresa with invalid document -> 422", func(t *testing.T) {
 		rec, _ := doJSON(t, env.Router, http.MethodPost, "/api/v1/admin/sellers", map[string]any{
 			"name":          "Doc Inválido",
+			"category_id":   "limpeza",
 			"whatsapp":      "11987654003",
 			"document_type": "cnpj",
 			"document":      "11.111.111/1111-11",

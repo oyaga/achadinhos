@@ -144,6 +144,7 @@ export function NegociosSection() {
         ...EMPTY_FORM,
         kind: "empresa",
         name: s.name,
+        categoryId: s.category_id ?? "",
         docType: (s.document_type as DocumentType) || "cnpj",
         document: s.document ? formatDocument(s.document, (s.document_type as DocumentType) || "cnpj") : "",
         whatsapp: formatPhone(s.whatsapp ?? ""),
@@ -249,15 +250,13 @@ export function NegociosSection() {
       setFormError("Informe um WhatsApp válido.");
       return;
     }
-    if (form.kind === "prestador") {
-      if (!form.categoryId) {
-        setFormError("Selecione uma categoria.");
-        return;
-      }
-      if (form.description.trim().length < 10) {
-        setFormError("A descrição precisa de pelo menos 10 caracteres.");
-        return;
-      }
+    if (!form.categoryId) {
+      setFormError("Selecione uma categoria.");
+      return;
+    }
+    if (form.kind === "prestador" && form.description.trim().length < 10) {
+      setFormError("A descrição precisa de pelo menos 10 caracteres.");
+      return;
     }
 
     setSubmitting(true);
@@ -269,6 +268,7 @@ export function NegociosSection() {
         kind = "empresa";
         const payload: AdminSellerPayload = {
           name: form.name.trim(),
+          category_id: form.categoryId,
           description: form.description.trim(),
           whatsapp: whatsappDigits,
           link: form.link.trim(),
@@ -340,6 +340,7 @@ export function NegociosSection() {
   }
 
   function categoryLabel(id: string): string {
+    if (!id) return "Sem categoria";
     return categories.find((c) => c.id === id)?.label ?? id;
   }
 
@@ -449,6 +450,20 @@ export function NegociosSection() {
           </div>
 
           <div className="prof-field">
+            <label className="prof-label">Categoria</label>
+            <select
+              className="prof-input"
+              value={form.categoryId}
+              onChange={(e) => update("categoryId", e.target.value)}
+            >
+              <option value="">Selecione…</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="prof-field">
             <label className="prof-label">Descrição</label>
             <textarea
               className="prof-textarea"
@@ -517,34 +532,19 @@ export function NegociosSection() {
           {/* Prestador-only */}
           {isPrestador && (
             <>
-              <div className="prof-row-fields">
-                <div className="prof-field">
-                  <label className="prof-label">Categoria</label>
-                  <select
-                    className="prof-input"
-                    value={form.categoryId}
-                    onChange={(e) => update("categoryId", e.target.value)}
-                  >
-                    <option value="">Selecione…</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>{c.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="prof-field">
-                  <label className="prof-label">Abrangência</label>
-                  <div className="auth-seg-group">
-                    {COVERAGE_OPTIONS.map((o) => (
-                      <button
-                        key={o.id}
-                        type="button"
-                        className={cn("auth-seg-btn", form.coverage === o.id && "active")}
-                        onClick={() => update("coverage", o.id)}
-                      >
-                        {o.label}
-                      </button>
-                    ))}
-                  </div>
+              <div className="prof-field">
+                <label className="prof-label">Abrangência</label>
+                <div className="auth-seg-group">
+                  {COVERAGE_OPTIONS.map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      className={cn("auth-seg-btn", form.coverage === o.id && "active")}
+                      onClick={() => update("coverage", o.id)}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -738,7 +738,7 @@ export function NegociosSection() {
             const name = businessName(b);
             const meta =
               b.kind === "empresa"
-                ? `Empresa · ${b.seller.whatsapp ? formatPhone(b.seller.whatsapp) : "sem WhatsApp"}`
+                ? `${categoryLabel(b.seller.category_id ?? "")} · ${b.seller.whatsapp ? formatPhone(b.seller.whatsapp) : "sem WhatsApp"}`
                 : `${categoryLabel(b.provider.category_id)} · ${b.provider.whatsapp ? formatPhone(b.provider.whatsapp) : "sem WhatsApp"}`;
             return (
               <div key={`${b.kind}-${id}`} className="admin-row">

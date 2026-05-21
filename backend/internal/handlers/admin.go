@@ -35,6 +35,7 @@ const maxPortfolioPhotos = 5
 func (h *AdminHandler) ListSellers(c *gin.Context) {
 	var sellers []models.Seller
 	if err := h.db.WithContext(c.Request.Context()).
+		Preload("Category").
 		Preload("PortfolioPhotos", orderByPosition).
 		Order("name ASC").
 		Find(&sellers).Error; err != nil {
@@ -50,6 +51,9 @@ func (h *AdminHandler) CreateSeller(c *gin.Context) {
 	if !BindJSON(c, &req) {
 		return
 	}
+	if !h.categoryExists(c, req.CategoryID) {
+		return
+	}
 	doc, ok := validateDocument(c, req.DocumentType, req.Document)
 	if !ok {
 		return
@@ -57,6 +61,7 @@ func (h *AdminHandler) CreateSeller(c *gin.Context) {
 	name := strings.TrimSpace(req.Name)
 	s := &models.Seller{
 		Name:         name,
+		CategoryID:   req.CategoryID,
 		Avatar:       firstRune(name),
 		Description:  strings.TrimSpace(req.Description),
 		WhatsApp:     strings.TrimSpace(req.WhatsApp),
@@ -97,6 +102,12 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 		name := strings.TrimSpace(*req.Name)
 		updates["name"] = name
 		updates["avatar"] = firstRune(name)
+	}
+	if req.CategoryID != nil {
+		if !h.categoryExists(c, *req.CategoryID) {
+			return
+		}
+		updates["category_id"] = *req.CategoryID
 	}
 	if req.Description != nil {
 		updates["description"] = strings.TrimSpace(*req.Description)

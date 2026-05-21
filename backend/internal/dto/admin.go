@@ -5,6 +5,7 @@ package dto
 // AdminSellerRequest is the body for POST /admin/sellers.
 type AdminSellerRequest struct {
 	Name         string `json:"name" binding:"required,min=2,max=255"`
+	CategoryID   string `json:"category_id" binding:"required"`
 	Description  string `json:"description" binding:"max=2000"`
 	WhatsApp     string `json:"whatsapp" binding:"required,min=8,max=32"`
 	Link         string `json:"link" binding:"omitempty,max=500"`
@@ -16,6 +17,7 @@ type AdminSellerRequest struct {
 // AdminSellerPatch is the body for PATCH /admin/sellers/:id. All fields optional.
 type AdminSellerPatch struct {
 	Name         *string `json:"name" binding:"omitempty,min=2,max=255"`
+	CategoryID   *string `json:"category_id"`
 	Description  *string `json:"description" binding:"omitempty,max=2000"`
 	WhatsApp     *string `json:"whatsapp" binding:"omitempty,min=8,max=32"`
 	Link         *string `json:"link" binding:"omitempty,max=500"`
