@@ -241,7 +241,15 @@ export function NegociosSection() {
       setFormError("Informe o nome.");
       return;
     }
-    if (!isValidDocument(form.document, form.docType)) {
+    // Documento (CPF/CNPJ): obrigatório apenas em cadastros novos. Negócios
+    // antigos — criados antes do campo existir — podem ser salvos sem ele;
+    // se um documento for informado, precisa ser válido.
+    const documentDigits = stripDocument(form.document);
+    if (!editing && documentDigits === "") {
+      setFormError("Informe o CPF ou CNPJ.");
+      return;
+    }
+    if (documentDigits !== "" && !isValidDocument(form.document, form.docType)) {
       setFormError(`${form.docType.toUpperCase()} inválido.`);
       return;
     }
