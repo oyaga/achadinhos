@@ -215,10 +215,15 @@ export function NegociosSection() {
   }
 
   function addPortfolioFiles(files: FileList | null) {
-    if (!files) return;
-    const room = 5 - existingPortfolio.length - portfolioFiles.length;
-    if (room <= 0) return;
-    setPortfolioFiles((prev) => [...prev, ...Array.from(files).slice(0, room)]);
+    if (!files || files.length === 0) return;
+    // Capture the File objects now — the <input> is cleared (value = "")
+    // right after this returns, which empties the FileList. Deferring
+    // Array.from into the state updater would then read an empty list.
+    const picked = Array.from(files);
+    setPortfolioFiles((prev) => {
+      const room = 5 - existingPortfolio.length - prev.length;
+      return room <= 0 ? prev : [...prev, ...picked.slice(0, room)];
+    });
   }
 
   async function removeExistingPortfolio(photoId: string) {
@@ -745,6 +750,7 @@ export function NegociosSection() {
                   <input
                     type="file"
                     accept="image/*,application/pdf"
+                    multiple
                     className="file-overlay"
                     onChange={(e) => { addPortfolioFiles(e.target.files); e.target.value = ""; }}
                   />
