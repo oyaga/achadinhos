@@ -516,10 +516,20 @@ export interface AdminSeller {
   link?: string;
   partner: boolean;
   highlight?: boolean;
+  rating?: number;
+  reviews_count?: number;
   document_type?: string;
   document?: string;
   portfolio_photos?: PortfolioPhoto[];
   created_at?: string;
+}
+
+export interface SellerReview {
+  id: string;
+  rating: number;
+  text: string;
+  created_at: string;
+  user?: { id: string; name: string };
 }
 
 export interface AdminSellerPayload {
@@ -691,6 +701,21 @@ export const sellersApi = {
   // Full seller profile + its products.
   async get(id: string): Promise<{ seller: AdminSeller; products: ApiProduct[] }> {
     return request<{ seller: AdminSeller; products: ApiProduct[] }>(`/sellers/${id}`);
+  },
+  // Public list of reviews for a seller.
+  async listReviews(id: string): Promise<SellerReview[]> {
+    const res = await request<{ data: SellerReview[] }>(`/sellers/${id}/reviews`);
+    return res.data ?? [];
+  },
+  // Create or update the current user's review for a seller (requires auth).
+  async createReview(
+    id: string,
+    payload: { rating: number; text: string },
+  ): Promise<SellerReview> {
+    return request<SellerReview>(`/sellers/${id}/reviews`, {
+      method: "POST",
+      body: payload,
+    });
   },
 };
 

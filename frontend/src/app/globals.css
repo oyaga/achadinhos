@@ -6669,6 +6669,64 @@ textarea.field-input {
   margin-top: 14px;
 }
 
+/* ── Seller reviews (avaliações da empresa) ── */
+.sr-avg {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gold-500);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.sr-avg strong {
+  color: var(--navy-900);
+  font-size: 15px;
+}
+.sr-avg span {
+  color: var(--ink-500);
+}
+.sr-form {
+  background: var(--bone-50);
+  border: 1px solid var(--bone-200);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.sr-stars {
+  display: flex;
+  gap: 6px;
+  color: var(--gold-400);
+  margin-bottom: 10px;
+}
+.sr-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: var(--navy-900);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sr-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sr-msg {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ink-500);
+}
+.sr-login,
+.sr-empty {
+  font-size: 13px;
+  color: var(--ink-500);
+  padding: 6px 0 10px;
+}
+
 /* Item de portfólio que é um PDF (apresentação) em vez de imagem. */
 .upload-doc {
   display: flex;

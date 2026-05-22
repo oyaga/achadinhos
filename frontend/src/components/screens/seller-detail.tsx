@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { sellersApi, getImageUrl, isPdf, type AdminSeller } from "@/lib/api";
+import {
+  sellersApi,
+  getImageUrl,
+  isPdf,
+  type AdminSeller,
+  type SellerReview,
+} from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
 import { Icon } from "../icons";
 import { PortfolioViewer } from "./portfolio-viewer";
 
@@ -18,6 +25,12 @@ export function SellerDetail({ seller, onBack }: SellerDetailProps) {
     (seller.portfolio_photos ?? []).map((p) => p.url),
   );
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<SellerReview[]>([]);
+  const [myRating, setMyRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [reviewMsg, setReviewMsg] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
 
   // The list/slide payloads omit category and portfolio — fetch the full record.
   useEffect(() => {
@@ -29,6 +42,34 @@ export function SellerDetail({ seller, onBack }: SellerDetailProps) {
       })
       .catch(() => {});
   }, [seller.id]);
+
+  useEffect(() => {
+    void sellersApi.listReviews(seller.id).then(setReviews).catch(() => {});
+  }, [seller.id]);
+
+  const avgRating = reviews.length
+    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+    : 0;
+
+  async function submitReview() {
+    if (myRating < 1 || sending) return;
+    setSending(true);
+    setReviewMsg(null);
+    try {
+      await sellersApi.createReview(seller.id, {
+        rating: myRating,
+        text: reviewText.trim(),
+      });
+      setReviewText("");
+      setMyRating(0);
+      setReviewMsg("Avaliação enviada. Obrigado!");
+      setReviews(await sellersApi.listReviews(seller.id));
+    } catch {
+      setReviewMsg("Não foi possível enviar a avaliação. Tente novamente.");
+    } finally {
+      setSending(false);
+    }
+  }
 
   const categoryLabel = full.category?.label ?? "Empresa";
 
@@ -144,6 +185,90 @@ export function SellerDetail({ seller, onBack }: SellerDetailProps) {
             </div>
           </div>
         )}
+
+        {/* Avaliações */}
+        <div className="pd-section">
+          <h3>
+            Avaliações{" "}
+            <span
+              style={{ color: "var(--ink-400)", fontWeight: 400, fontSize: 13 }}
+            >
+              ({reviews.length})
+            </span>
+          </h3>
+
+          {reviews.length > 0 && (
+            <div className="sr-avg">
+              <Icon.Star size={15} />
+              <strong>{avgRating.toFixed(1).replace(".", ",")}</strong>
+              <span>· {reviews.length} avaliação(ões)</span>
+            </div>
+          )}
+
+          {isAuthenticated ? (
+            <div className="sr-form">
+              <div className="sr-stars">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setMyRating(n)}
+                    aria-label={`${n} estrela(s)`}
+                  >
+                    <Icon.Star size={26} filled={n <= myRating} />
+                  </button>
+                ))}
+              </div>
+              <textarea
+                className="prof-textarea"
+                rows={3}
+                placeholder="Comentário (opcional)"
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
+              />
+              <button
+                type="button"
+                className="sr-submit"
+                onClick={submitReview}
+                disabled={myRating < 1 || sending}
+              >
+                {sending ? "Enviando…" : "Enviar avaliação"}
+              </button>
+              {reviewMsg && <div className="sr-msg">{reviewMsg}</div>}
+            </div>
+          ) : (
+            <div className="sr-login">
+              Entre como síndico para avaliar esta empresa.
+            </div>
+          )}
+
+          {reviews.map((r) => (
+            <div key={r.id} className="review">
+              <div className="review-head">
+                <div className="review-avatar">
+                  {(r.user?.name ?? "?").charAt(0).toUpperCase()}
+                </div>
+                <div className="review-user-info">
+                  <div className="review-user">{r.user?.name ?? "Usuário"}</div>
+                  <div className="review-meta">
+                    {new Date(r.created_at).toLocaleDateString("pt-BR")}
+                  </div>
+                </div>
+                <div className="review-stars">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Icon.Star key={i} size={11} filled={i <= r.rating} />
+                  ))}
+                </div>
+              </div>
+              {r.text && <div className="review-text">{r.text}</div>}
+            </div>
+          ))}
+          {reviews.length === 0 && (
+            <div className="sr-empty">
+              Seja o primeiro a avaliar esta empresa.
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="sticky-cta">

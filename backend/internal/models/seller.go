@@ -19,6 +19,8 @@ type Seller struct {
 	Link         string    `gorm:"size:500" json:"link,omitempty"`
 	Partner      bool      `gorm:"default:false" json:"partner"`
 	Highlight    bool      `gorm:"default:false;index" json:"highlight"`
+	Rating       float64   `gorm:"type:numeric(3,2);default:0" json:"rating"`
+	ReviewsCount int       `gorm:"default:0" json:"reviews_count"`
 	DocumentType string    `gorm:"size:4" json:"document_type,omitempty"`
 	Document     string    `gorm:"size:18" json:"document,omitempty"`
 
