@@ -6,6 +6,7 @@ import {
   getImageUrl,
   isPdf,
   type AdminSeller,
+  type ApiProduct,
   type SellerReview,
 } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
@@ -31,6 +32,7 @@ export function SellerDetail({
   onRecordContact,
 }: SellerDetailProps) {
   const [full, setFull] = useState<AdminSeller>(seller);
+  const [products, setProducts] = useState<ApiProduct[]>([]);
   const [portfolio, setPortfolio] = useState<string[]>(
     (seller.portfolio_photos ?? []).map((p) => p.url),
   );
@@ -48,6 +50,7 @@ export function SellerDetail({
       .get(seller.id)
       .then((res) => {
         setFull(res.seller);
+        setProducts(res.products ?? []);
         setPortfolio((res.seller.portfolio_photos ?? []).map((p) => p.url));
       })
       .catch(() => {});
@@ -60,6 +63,14 @@ export function SellerDetail({
   const avgRating = reviews.length
     ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
     : 0;
+
+  const ratingDist = [5, 4, 3, 2, 1].map((stars) => {
+    const count = reviews.filter((r) => r.rating === stars).length;
+    return {
+      stars,
+      pct: reviews.length ? Math.round((count / reviews.length) * 100) : 0,
+    };
+  });
 
   async function submitReview() {
     if (myRating < 1 || sending) return;
@@ -172,6 +183,27 @@ export function SellerDetail({
                 {categoryLabel}
                 {full.partner && " · Parceira homologada"}
               </div>
+              <div className="pd-rating-row">
+                <Icon.Star size={12} />
+                <strong>{avgRating.toFixed(1).replace(".", ",")}</strong>
+                <span>· {reviews.length} avaliações</span>
+              </div>
+            </div>
+          </div>
+          <div className="pd-stats">
+            <div className="pd-stat">
+              <div className="pd-stat-num">
+                {avgRating > 0 ? avgRating.toFixed(1).replace(".", ",") : "—"}
+              </div>
+              <div className="pd-stat-label">Avaliação</div>
+            </div>
+            <div className="pd-stat">
+              <div className="pd-stat-num">{reviews.length}</div>
+              <div className="pd-stat-label">Avaliações</div>
+            </div>
+            <div className="pd-stat">
+              <div className="pd-stat-num">{products.length}</div>
+              <div className="pd-stat-label">Produtos</div>
             </div>
           </div>
         </div>
@@ -227,10 +259,40 @@ export function SellerDetail({
           </h3>
 
           {reviews.length > 0 && (
-            <div className="sr-avg">
-              <Icon.Star size={15} />
-              <strong>{avgRating.toFixed(1).replace(".", ",")}</strong>
-              <span>· {reviews.length} avaliação(ões)</span>
+            <div className="rating-summary" style={{ marginBottom: 14 }}>
+              <div className="rating-big">
+                <div className="rating-big-num">
+                  {avgRating.toFixed(1).replace(".", ",")}
+                </div>
+                <div className="rating-big-stars">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Icon.Star
+                      key={i}
+                      size={11}
+                      filled={i <= Math.round(avgRating)}
+                    />
+                  ))}
+                </div>
+                <div className="rating-big-count">
+                  {reviews.length} avaliações
+                </div>
+              </div>
+              <div className="rating-bars">
+                {ratingDist.map((d) => (
+                  <div key={d.stars} className="rating-bar-row">
+                    <span>{d.stars}</span>
+                    <div className="rating-bar">
+                      <div
+                        className="rating-bar-fill"
+                        style={{ width: `${d.pct}%` }}
+                      />
+                    </div>
+                    <span style={{ width: 22, textAlign: "right" }}>
+                      {d.pct}%
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
