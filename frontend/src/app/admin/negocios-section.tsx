@@ -745,7 +745,6 @@ export function NegociosSection() {
                   <input
                     type="file"
                     accept="image/*,application/pdf"
-                    multiple
                     className="file-overlay"
                     onChange={(e) => { addPortfolioFiles(e.target.files); e.target.value = ""; }}
                   />
