@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { providersApi, getImageUrl } from "@/lib/api";
+import { providersApi, getImageUrl, isPdf } from "@/lib/api";
 import { adaptReview } from "@/lib/adapters";
 import type { Provider, Review } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -156,8 +156,14 @@ export function ProviderDetail({
                   rel="noopener noreferrer"
                   className="pd-portfolio-item"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={getImageUrl(url)} alt="Portfólio" />
+                  {isPdf(url) ? (
+                    <span className="upload-doc">
+                      <strong>PDF</strong>
+                    </span>
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={getImageUrl(url)} alt="Portfólio" />
+                  )}
                 </a>
               ))}
             </div>

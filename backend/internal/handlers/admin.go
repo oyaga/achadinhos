@@ -565,7 +565,7 @@ func (h *AdminHandler) UploadProductPhoto(c *gin.Context) {
 		JSONError(c, http.StatusBadRequest, "máximo de 5 fotos por produto")
 		return
 	}
-	url, ok := saveUploadedImage(c, "products")
+	url, ok := saveUploadedFile(c, "products", false)
 	if !ok {
 		return
 	}
@@ -616,7 +616,7 @@ func (h *AdminHandler) uploadLogo(c *gin.Context, model any) {
 		JSONError(c, http.StatusNotFound, "registro não encontrado")
 		return
 	}
-	url, ok := saveUploadedImage(c, "logos")
+	url, ok := saveUploadedFile(c, "logos", false)
 	if !ok {
 		return
 	}
@@ -649,10 +649,10 @@ func (h *AdminHandler) uploadPortfolio(c *gin.Context, ownerType string, model a
 		return
 	}
 	if photoCount >= maxPortfolioPhotos {
-		JSONError(c, http.StatusBadRequest, "máximo de 5 fotos no portfólio")
+		JSONError(c, http.StatusBadRequest, "máximo de 5 itens no portfólio")
 		return
 	}
-	url, ok := saveUploadedImage(c, "portfolio")
+	url, ok := saveUploadedFile(c, "portfolio", true)
 	if !ok {
 		return
 	}
@@ -722,10 +722,12 @@ func validateDocument(c *gin.Context, docType, raw string) (string, bool) {
 	return doc, true
 }
 
-// saveUploadedImage reads the "file" multipart field, validates it as an image
-// (jpg/png/webp/gif, max 5 MB) and stores it under ./uploads/<subdir>/.
+// saveUploadedFile reads the "file" multipart field, validates it and stores it
+// under ./uploads/<subdir>/. Images (jpg/png/webp/gif) are always accepted, up
+// to 5 MB. When allowPDF is true, PDF files are accepted too, up to 20 MB —
+// used by the portfolio so businesses can upload presentation decks.
 // Returns the public URL path. On failure it writes the error and returns false.
-func saveUploadedImage(c *gin.Context, subdir string) (string, bool) {
+func saveUploadedFile(c *gin.Context, subdir string, allowPDF bool) (string, bool) {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		JSONError(c, http.StatusBadRequest, "campo 'file' ausente ou inválido")
@@ -737,14 +739,27 @@ func saveUploadedImage(c *gin.Context, subdir string) (string, bool) {
 		"image/webp": ".webp",
 		"image/gif":  ".gif",
 	}
-	ext, ok := allowed[fileHeader.Header.Get("Content-Type")]
+	if allowPDF {
+		allowed["application/pdf"] = ".pdf"
+	}
+	contentType := fileHeader.Header.Get("Content-Type")
+	ext, ok := allowed[contentType]
 	if !ok {
-		JSONError(c, http.StatusBadRequest, "tipo de arquivo não permitido (use jpg, png, webp)")
+		msg := "tipo de arquivo não permitido (use jpg, png, webp)"
+		if allowPDF {
+			msg = "tipo de arquivo não permitido (use jpg, png, webp ou pdf)"
+		}
+		JSONError(c, http.StatusBadRequest, msg)
 		return "", false
 	}
-	const maxSize = 5 << 20
+	maxSize := int64(5 << 20) // 5 MB para imagens
+	sizeMsg := "arquivo muito grande (máx 5 MB)"
+	if contentType == "application/pdf" {
+		maxSize = 20 << 20 // 20 MB para PDFs (apresentações)
+		sizeMsg = "arquivo muito grande (máx 20 MB)"
+	}
 	if fileHeader.Size > maxSize {
-		JSONError(c, http.StatusBadRequest, "arquivo muito grande (máx 5 MB)")
+		JSONError(c, http.StatusBadRequest, sizeMsg)
 		return "", false
 	}
 	if origExt := filepath.Ext(fileHeader.Filename); origExt != "" {
