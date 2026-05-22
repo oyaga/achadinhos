@@ -227,9 +227,9 @@ select {
   align-items: center;
 }
 .brand-logo {
-  height: 72px;
+  height: 88px;
   width: auto;
-  max-width: 340px;
+  max-width: 380px;
   object-fit: contain;
 }
 
