@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import {
   adminApi,
   ApiError,
@@ -72,6 +72,14 @@ export function ProdutosSection() {
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Bring the form into view when it opens.
+  useEffect(() => {
+    if (formOpen) {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [formOpen]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -256,7 +264,7 @@ export function ProdutosSection() {
       )}
 
       {formOpen && (
-        <form className="admin-form" onSubmit={handleSubmit}>
+        <form className="admin-form" onSubmit={handleSubmit} ref={formRef}>
           <div className="admin-form-title">
             {editingId ? "Editar produto" : "Novo produto"}
           </div>

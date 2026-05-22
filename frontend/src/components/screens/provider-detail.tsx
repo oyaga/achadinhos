@@ -6,6 +6,7 @@ import { adaptReview } from "@/lib/adapters";
 import type { Provider, Review } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
+import { PortfolioViewer } from "./portfolio-viewer";
 
 interface ProviderDetailProps {
   provider: Provider;
@@ -34,6 +35,7 @@ export function ProviderDetail({
 }: ProviderDetailProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [portfolio, setPortfolio] = useState<string[]>(provider.portfolio ?? []);
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
 
   useEffect(() => {
     void providersApi.listReviews(provider.id).then((res) => {
@@ -149,11 +151,10 @@ export function ProviderDetail({
             <h3>Portfólio</h3>
             <div className="pd-portfolio">
               {portfolio.map((url) => (
-                <a
+                <button
                   key={url}
-                  href={getImageUrl(url)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  type="button"
+                  onClick={() => setViewerUrl(url)}
                   className="pd-portfolio-item"
                 >
                   {isPdf(url) ? (
@@ -164,7 +165,7 @@ export function ProviderDetail({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={getImageUrl(url)} alt="Portfólio" />
                   )}
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -292,6 +293,8 @@ export function ProviderDetail({
           <Icon.Whatsapp size={16} /> Falar no WhatsApp
         </button>
       </div>
+
+      <PortfolioViewer url={viewerUrl} onClose={() => setViewerUrl(null)} />
     </div>
   );
 }

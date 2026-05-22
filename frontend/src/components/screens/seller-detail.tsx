@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { sellersApi, getImageUrl, isPdf, type AdminSeller } from "@/lib/api";
 import { Icon } from "../icons";
+import { PortfolioViewer } from "./portfolio-viewer";
 
 interface SellerDetailProps {
   seller: AdminSeller;
@@ -16,6 +17,7 @@ export function SellerDetail({ seller, onBack }: SellerDetailProps) {
   const [portfolio, setPortfolio] = useState<string[]>(
     (seller.portfolio_photos ?? []).map((p) => p.url),
   );
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
 
   // The list/slide payloads omit category and portfolio — fetch the full record.
   useEffect(() => {
@@ -123,11 +125,10 @@ export function SellerDetail({ seller, onBack }: SellerDetailProps) {
             <h3>Portfólio</h3>
             <div className="pd-portfolio">
               {portfolio.map((url) => (
-                <a
+                <button
                   key={url}
-                  href={getImageUrl(url)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  type="button"
+                  onClick={() => setViewerUrl(url)}
                   className="pd-portfolio-item"
                 >
                   {isPdf(url) ? (
@@ -138,7 +139,7 @@ export function SellerDetail({ seller, onBack }: SellerDetailProps) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={getImageUrl(url)} alt="Portfólio" />
                   )}
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -155,6 +156,8 @@ export function SellerDetail({ seller, onBack }: SellerDetailProps) {
           <Icon.Whatsapp size={16} /> Falar no WhatsApp
         </button>
       </div>
+
+      <PortfolioViewer url={viewerUrl} onClose={() => setViewerUrl(null)} />
     </div>
   );
 }
