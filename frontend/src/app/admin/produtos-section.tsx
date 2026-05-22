@@ -422,7 +422,7 @@ export function ProdutosSection() {
                     type="file"
                     accept="image/*"
                     multiple
-                    hidden
+                    className="file-overlay"
                     onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
                   />
                 </label>
