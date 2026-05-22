@@ -1,18 +1,20 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { providersApi, categoriesApi } from "@/lib/api";
+import { providersApi, categoriesApi, sellersApi, type AdminSeller } from "@/lib/api";
 import { adaptProvider } from "@/lib/adapters";
 import type { CategoryId, Provider } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
 import { ProviderCard } from "../home/providers-section";
+import { CompanyCard } from "../home/featured-companies";
 
 interface CategoryScreenProps {
   categoryId: CategoryId;
   isFav: (id: number | string) => boolean;
   onBack: () => void;
   onProvider: (p: Provider) => void;
+  onSeller: (s: AdminSeller) => void;
   onToggleFav: (id: string) => void;
 }
 
@@ -37,11 +39,13 @@ export function CategoryScreen({
   isFav,
   onBack,
   onProvider,
+  onSeller,
   onToggleFav,
 }: CategoryScreenProps) {
   const [filter, setFilter] = useState<FilterId>("all");
   const [sort, setSort] = useState<SortId>("relevance");
   const [providers, setProviders] = useState<Provider[]>([]);
+  const [sellers, setSellers] = useState<AdminSeller[]>([]);
   const [catLabel, setCatLabel] = useState<string>(categoryId);
   const [catDesc, setCatDesc] = useState<string | undefined>(undefined);
   const [catIcon, setCatIcon] = useState<string>("CatHighlight");
@@ -52,6 +56,10 @@ export function CategoryScreen({
     void providersApi.list({ category: categoryId }).then((res) => {
       setProviders(res.data.map(adaptProvider));
     }).catch(() => {}).finally(() => setLoading(false));
+  }, [categoryId]);
+
+  useEffect(() => {
+    void sellersApi.list({ category: categoryId }).then(setSellers).catch(() => {});
   }, [categoryId]);
 
   useEffect(() => {
@@ -152,7 +160,7 @@ export function CategoryScreen({
         >
           <div style={{ fontSize: 12, color: "var(--ink-500)" }}>
             <strong style={{ color: "var(--navy-900)" }}>
-              {filtered.length}
+              {filtered.length + sellers.length}
             </strong>{" "}
             resultados
           </div>
@@ -180,6 +188,13 @@ export function CategoryScreen({
           </div>
         ) : (
           <div className="providers">
+            {sellers.map((s) => (
+              <CompanyCard
+                key={s.id}
+                company={s}
+                onClick={() => onSeller(s)}
+              />
+            ))}
             {filtered.map((p, i) => (
               <ProviderCard
                 key={p.id}
@@ -191,11 +206,11 @@ export function CategoryScreen({
                 trailing={p.price}
               />
             ))}
-            {filtered.length === 0 && (
+            {filtered.length === 0 && sellers.length === 0 && (
               <div className="empty-state">
                 <Icon.Search size={42} />
-                <div className="empty-state-title">Nenhum prestador</div>
-                <div className="empty-state-sub">Tente outro filtro</div>
+                <div className="empty-state-title">Nada nesta categoria</div>
+                <div className="empty-state-sub">Tente outra categoria</div>
               </div>
             )}
           </div>

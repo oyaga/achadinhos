@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { providersApi } from "@/lib/api";
+import { providersApi, type AdminSeller } from "@/lib/api";
 import { adaptProvider } from "@/lib/adapters";
 import type { CategoryId, Provider, Product, Route } from "@/lib/types";
 import { useFavorites } from "@/hooks/use-favorites";
@@ -21,6 +21,7 @@ import { BottomNav, type NavId } from "./home/bottom-nav";
 import { SearchOverlay } from "./home/search-overlay";
 import { InstallSheet } from "./home/install-sheet";
 import { ProviderDetail } from "./screens/provider-detail";
+import { SellerDetail } from "./screens/seller-detail";
 import { CategoryScreen } from "./screens/category-screen";
 import { AllCategoriesScreen } from "./screens/all-categories-screen";
 import { HighlightsScreen } from "./screens/highlights-screen";
@@ -79,6 +80,8 @@ export function App() {
   };
   const goProvider = (provider: Provider) =>
     navigate({ name: "provider", provider });
+  const goSeller = (seller: AdminSeller) =>
+    navigate({ name: "seller", seller });
   const goRate = (provider: Provider) => navigate({ name: "rate", provider });
 
   const openWhatsapp = (provider: Provider) => {
@@ -127,7 +130,11 @@ export function App() {
           <Header onSearchClick={() => setSearchOpen(true)} />
           <div className="web-container">
             <LocationBar />
-            <HeroSlider onProvider={goProvider} onProduct={onProductOpen} />
+            <HeroSlider
+              onProvider={goProvider}
+              onProduct={onProductOpen}
+              onSeller={goSeller}
+            />
             <CategoriesSection
               active={activeCat}
               onSelect={goCategory}
@@ -139,7 +146,7 @@ export function App() {
               onToggleFav={toggleProviderFav}
               onProvider={goProvider}
             />
-            <FeaturedCompanies />
+            <FeaturedCompanies onSeller={goSeller} />
             <div className="bottom-spacer" />
           </div>
         </div>
@@ -179,12 +186,16 @@ export function App() {
             onWhatsapp={() => openWhatsapp(route.provider)}
           />
         )}
+        {route.name === "seller" && (
+          <SellerDetail seller={route.seller} onBack={back} />
+        )}
         {route.name === "category" && (
           <CategoryScreen
             categoryId={route.categoryId}
             isFav={isFav}
             onBack={back}
             onProvider={goProvider}
+            onSeller={goSeller}
             onToggleFav={toggleProviderFav}
           />
         )}

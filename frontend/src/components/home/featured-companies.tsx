@@ -4,10 +4,14 @@ import { useEffect, useState } from "react";
 import { sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
 import { Icon } from "../icons";
 
+interface FeaturedCompaniesProps {
+  onSeller: (s: AdminSeller) => void;
+}
+
 // FeaturedCompanies renders the home "Empresas em destaque" strip — the
 // empresas (sellers) flagged with highlight=true in the admin panel. Renders
 // nothing when there are none.
-export function FeaturedCompanies() {
+export function FeaturedCompanies({ onSeller }: FeaturedCompaniesProps) {
   const [companies, setCompanies] = useState<AdminSeller[]>([]);
 
   useEffect(() => {
@@ -26,33 +30,31 @@ export function FeaturedCompanies() {
       </div>
       <div className="providers">
         {companies.map((c) => (
-          <CompanyCard key={c.id} company={c} />
+          <CompanyCard key={c.id} company={c} onClick={() => onSeller(c)} />
         ))}
       </div>
     </div>
   );
 }
 
-function CompanyCard({ company: c }: { company: AdminSeller }) {
-  function open() {
-    const wa = (c.whatsapp ?? "").replace(/\D+/g, "");
-    if (wa) {
-      window.open(`https://wa.me/55${wa}`, "_blank", "noopener,noreferrer");
-    } else if (c.link) {
-      window.open(c.link, "_blank", "noopener,noreferrer");
-    }
-  }
+interface CompanyCardProps {
+  company: AdminSeller;
+  onClick: () => void;
+}
 
+// CompanyCard is the list-row card for an empresa, reused on the home destaque
+// strip and in the category screen.
+export function CompanyCard({ company: c, onClick }: CompanyCardProps) {
   return (
     <div
       className="provider"
       role="button"
       tabIndex={0}
-      onClick={open}
+      onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          open();
+          onClick();
         }
       }}
     >
@@ -75,7 +77,11 @@ function CompanyCard({ company: c }: { company: AdminSeller }) {
         </div>
         <div
           className="provider-cat"
-          style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
         >
           {c.description?.trim() || "Empresa"}
         </div>
@@ -85,11 +91,11 @@ function CompanyCard({ company: c }: { company: AdminSeller }) {
         className="provider-fav"
         onClick={(e) => {
           e.stopPropagation();
-          open();
+          onClick();
         }}
-        aria-label={`Falar com ${c.name}`}
+        aria-label={`Ver ${c.name}`}
       >
-        <Icon.Whatsapp size={18} />
+        <Icon.ChevRight size={18} />
       </button>
     </div>
   );

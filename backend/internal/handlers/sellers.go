@@ -28,6 +28,9 @@ func (h *SellersHandler) List(c *gin.Context) {
 	if c.Query("highlight") == "true" {
 		q = q.Where("highlight = ?", true)
 	}
+	if cat := c.Query("category"); cat != "" {
+		q = q.Where("category_id = ?", cat)
+	}
 	var sellers []models.Seller
 	if err := q.Order("name ASC").Find(&sellers).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to list sellers")

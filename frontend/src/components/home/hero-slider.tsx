@@ -1,21 +1,23 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { providersApi, productsApi, getImageUrl } from "@/lib/api";
+import { providersApi, productsApi, sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
 import { adaptProvider, adaptProduct } from "@/lib/adapters";
 import type { Provider, Product } from "@/lib/types";
 import { Icon } from "../icons";
 
 type SlideProvider = { kind: "provider"; data: Provider };
+type SlideSeller   = { kind: "seller";   data: AdminSeller };
 type SlideProduct  = { kind: "product";  data: Product  };
-type Slide = SlideProvider | SlideProduct;
+type Slide = SlideProvider | SlideSeller | SlideProduct;
 
 interface HeroSliderProps {
   onProvider: (p: Provider) => void;
   onProduct:  (p: Product)  => void;
+  onSeller:   (s: AdminSeller) => void;
 }
 
-export function HeroSlider({ onProvider, onProduct }: HeroSliderProps) {
+export function HeroSlider({ onProvider, onProduct, onSeller }: HeroSliderProps) {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [active, setActive] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -25,17 +27,22 @@ export function HeroSlider({ onProvider, onProduct }: HeroSliderProps) {
   useEffect(() => {
     void Promise.allSettled([
       providersApi.list({ highlight: true, sort: "rating", limit: 3 }),
+      sellersApi.list({ highlight: true }),
       productsApi.list({ sort: "rating", limit: 2 }),
-    ]).then(([provRes, prodRes]) => {
+    ]).then(([provRes, sellRes, prodRes]) => {
       const provSlides: SlideProvider[] =
         provRes.status === "fulfilled"
           ? provRes.value.data.map((p) => ({ kind: "provider", data: adaptProvider(p) }))
+          : [];
+      const sellSlides: SlideSeller[] =
+        sellRes.status === "fulfilled"
+          ? sellRes.value.map((s) => ({ kind: "seller", data: s }))
           : [];
       const prodSlides: SlideProduct[] =
         prodRes.status === "fulfilled"
           ? prodRes.value.data.map((p) => ({ kind: "product", data: adaptProduct(p) }))
           : [];
-      setSlides([...provSlides, ...prodSlides]);
+      setSlides([...sellSlides, ...provSlides, ...prodSlides]);
     });
   }, []);
 
@@ -101,6 +108,13 @@ export function HeroSlider({ onProvider, onProduct }: HeroSliderProps) {
                 index={i}
                 onClick={() => onProvider(slide.data)}
               />
+            ) : slide.kind === "seller" ? (
+              <SellerSlide
+                key={slide.data.id}
+                seller={slide.data}
+                index={i}
+                onClick={() => onSeller(slide.data)}
+              />
             ) : (
               <ProductSlide
                 key={slide.data.id}
@@ -156,6 +170,36 @@ function ProviderSlide({ provider: p, onClick }: { provider: Provider; index: nu
           <span className="hero-avatar-letter">{p.avatar}</span>
         </div>
         <div className="hero-slide-cat">{p.catLabel}</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Seller slide ──────────────────────────────────────────────────────────────
+
+function SellerSlide({ seller: s, onClick }: { seller: AdminSeller; index: number; onClick: () => void }) {
+  return (
+    <div className="hero hero-slide" onClick={onClick} role="button" tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}>
+      <div className="hero-slide-content">
+        <div className="hero-tag">
+          <Icon.Crown size={11} /> Empresa em destaque
+        </div>
+        <div className="hero-title">{s.name}</div>
+        <div className="hero-meta">
+          <span>{s.description?.trim() || "Empresa parceira"}</span>
+        </div>
+        {s.partner && <div className="hero-badge">Parceira</div>}
+      </div>
+      <div className="hero-slide-media">
+        {s.logo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={getImageUrl(s.logo_url)} alt={s.name} className="hero-product-img" />
+        ) : (
+          <div className="hero-avatar-ring">
+            <span className="hero-avatar-letter">{s.name.charAt(0).toUpperCase()}</span>
+          </div>
+        )}
       </div>
     </div>
   );

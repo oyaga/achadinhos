@@ -115,6 +115,7 @@ export interface Product {
 export type Route =
   | { name: "home" }
   | { name: "provider"; provider: Provider }
+  | { name: "seller"; seller: import("./api").AdminSeller }
   | { name: "category"; categoryId: CategoryId }
   | { name: "allcats" }
   | { name: "highlights" }
