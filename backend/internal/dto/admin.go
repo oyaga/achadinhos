@@ -10,6 +10,7 @@ type AdminSellerRequest struct {
 	WhatsApp     string `json:"whatsapp" binding:"required,min=8,max=32"`
 	Link         string `json:"link" binding:"omitempty,max=500"`
 	Partner      bool   `json:"partner"`
+	Highlight    bool   `json:"highlight"`
 	DocumentType string `json:"document_type" binding:"required,oneof=cpf cnpj"`
 	Document     string `json:"document" binding:"required"`
 }
@@ -22,6 +23,7 @@ type AdminSellerPatch struct {
 	WhatsApp     *string `json:"whatsapp" binding:"omitempty,min=8,max=32"`
 	Link         *string `json:"link" binding:"omitempty,max=500"`
 	Partner      *bool   `json:"partner"`
+	Highlight    *bool   `json:"highlight"`
 	DocumentType *string `json:"document_type" binding:"omitempty,oneof=cpf cnpj"`
 	Document     *string `json:"document"`
 }

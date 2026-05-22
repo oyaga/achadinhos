@@ -67,6 +67,7 @@ func (h *AdminHandler) CreateSeller(c *gin.Context) {
 		WhatsApp:     strings.TrimSpace(req.WhatsApp),
 		Link:         strings.TrimSpace(req.Link),
 		Partner:      req.Partner,
+		Highlight:    req.Highlight,
 		DocumentType: req.DocumentType,
 		Document:     doc,
 	}
@@ -120,6 +121,9 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 	}
 	if req.Partner != nil {
 		updates["partner"] = *req.Partner
+	}
+	if req.Highlight != nil {
+		updates["highlight"] = *req.Highlight
 	}
 	if req.Document != nil || req.DocumentType != nil {
 		docType := s.DocumentType

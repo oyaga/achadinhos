@@ -1,0 +1,96 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
+import { Icon } from "../icons";
+
+// FeaturedCompanies renders the home "Empresas em destaque" strip — the
+// empresas (sellers) flagged with highlight=true in the admin panel. Renders
+// nothing when there are none.
+export function FeaturedCompanies() {
+  const [companies, setCompanies] = useState<AdminSeller[]>([]);
+
+  useEffect(() => {
+    void sellersApi
+      .list({ highlight: true })
+      .then(setCompanies)
+      .catch(() => {});
+  }, []);
+
+  if (companies.length === 0) return null;
+
+  return (
+    <div className="section">
+      <div className="section-title">
+        <h2>Empresas em destaque</h2>
+      </div>
+      <div className="providers">
+        {companies.map((c) => (
+          <CompanyCard key={c.id} company={c} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CompanyCard({ company: c }: { company: AdminSeller }) {
+  function open() {
+    const wa = (c.whatsapp ?? "").replace(/\D+/g, "");
+    if (wa) {
+      window.open(`https://wa.me/55${wa}`, "_blank", "noopener,noreferrer");
+    } else if (c.link) {
+      window.open(c.link, "_blank", "noopener,noreferrer");
+    }
+  }
+
+  return (
+    <div
+      className="provider"
+      role="button"
+      tabIndex={0}
+      onClick={open}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          open();
+        }
+      }}
+    >
+      <div className="provider-avatar">
+        {c.logo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={getImageUrl(c.logo_url)}
+            alt={c.name}
+            className="provider-avatar-img"
+          />
+        ) : (
+          c.name.charAt(0).toUpperCase()
+        )}
+      </div>
+      <div className="provider-info">
+        <div className="provider-name">
+          {c.name}
+          {c.partner && <span className="provider-badge">Parceira</span>}
+        </div>
+        <div
+          className="provider-cat"
+          style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+        >
+          {c.description?.trim() || "Empresa"}
+        </div>
+      </div>
+      <button
+        type="button"
+        className="provider-fav"
+        onClick={(e) => {
+          e.stopPropagation();
+          open();
+        }}
+        aria-label={`Falar com ${c.name}`}
+      >
+        <Icon.Whatsapp size={18} />
+      </button>
+    </div>
+  );
+}
