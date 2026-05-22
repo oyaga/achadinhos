@@ -9,17 +9,27 @@ import {
   type SellerReview,
 } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
+import type { ContactInput } from "@/hooks/use-whatsapp-history";
 import { Icon } from "../icons";
 import { PortfolioViewer } from "./portfolio-viewer";
 
 interface SellerDetailProps {
   seller: AdminSeller;
   onBack: () => void;
+  isFav: boolean;
+  onToggleFav: (id: string) => void;
+  onRecordContact: (input: ContactInput) => void;
 }
 
 // SellerDetail is the public profile screen for an empresa (seller). It mirrors
 // the prestador detail, minus the prestador-only bits (rating, serviços).
-export function SellerDetail({ seller, onBack }: SellerDetailProps) {
+export function SellerDetail({
+  seller,
+  onBack,
+  isFav,
+  onToggleFav,
+  onRecordContact,
+}: SellerDetailProps) {
   const [full, setFull] = useState<AdminSeller>(seller);
   const [portfolio, setPortfolio] = useState<string[]>(
     (seller.portfolio_photos ?? []).map((p) => p.url),
@@ -84,6 +94,15 @@ export function SellerDetail({ seller, onBack }: SellerDetailProps) {
       "_blank",
       "noopener,noreferrer",
     );
+    onRecordContact({
+      kind: "seller",
+      targetId: full.id,
+      name: full.name,
+      avatar: full.name.charAt(0).toUpperCase(),
+      logoUrl: full.logo_url,
+      subtitle: full.category?.label ?? "Empresa",
+      whatsapp: wa,
+    });
   }
 
   function openSite() {
@@ -104,6 +123,16 @@ export function SellerDetail({ seller, onBack }: SellerDetailProps) {
           <Icon.ChevLeft size={16} />
         </button>
         <div className="screen-title">Empresa</div>
+        <div className="screen-actions">
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => onToggleFav(seller.id)}
+            aria-label="Favoritar"
+          >
+            <Icon.Heart size={18} filled={isFav} />
+          </button>
+        </div>
       </div>
 
       <div className="screen-body" style={{ paddingBottom: 100 }}>

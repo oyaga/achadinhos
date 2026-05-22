@@ -16,6 +16,6 @@ type CreateSellerReviewRequest struct {
 
 // FavoriteRequest is the POST/DELETE /favorites body.
 type FavoriteRequest struct {
-	TargetType string `json:"target_type" binding:"required,oneof=provider product"`
+	TargetType string `json:"target_type" binding:"required,oneof=provider product seller"`
 	TargetID   string `json:"target_id" binding:"required,min=1,max=64"`
 }

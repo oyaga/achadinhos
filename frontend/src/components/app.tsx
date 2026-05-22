@@ -64,12 +64,16 @@ export function App() {
   const back = () => setRoute({ name: "home" });
 
   const toggleProviderFav = (id: string) => {
-    const wasAdded = toggleFavRaw(id);
+    const wasAdded = toggleFavRaw(id, "provider");
     showToast(wasAdded ? "Salvo nos favoritos ✦" : "Removido dos favoritos");
   };
   const toggleProductFav = (id: string) => {
-    const wasAdded = toggleFavRaw(id);
+    const wasAdded = toggleFavRaw(id, "product");
     showToast(wasAdded ? "Produto salvo ✦" : "Removido dos favoritos");
+  };
+  const toggleSellerFav = (id: string) => {
+    const wasAdded = toggleFavRaw(id, "seller");
+    showToast(wasAdded ? "Empresa salva ✦" : "Removido dos favoritos");
   };
 
   const goCategory = (catId: CategoryId) => {
@@ -90,7 +94,15 @@ export function App() {
     );
     const url = `https://wa.me/55${provider.whatsapp}?text=${msg}`;
     window.open(url, "_blank", "noopener,noreferrer");
-    recordWa(provider);
+    recordWa({
+      kind: "provider",
+      targetId: provider.id,
+      name: provider.name,
+      avatar: provider.avatar,
+      logoUrl: provider.logoUrl,
+      subtitle: provider.catLabel,
+      whatsapp: provider.whatsapp,
+    });
     showToast("Abrindo WhatsApp do prestador");
   };
 
@@ -146,7 +158,11 @@ export function App() {
               onToggleFav={toggleProviderFav}
               onProvider={goProvider}
             />
-            <FeaturedCompanies onSeller={goSeller} />
+            <FeaturedCompanies
+              onSeller={goSeller}
+              isFav={isFav}
+              onToggleFav={toggleSellerFav}
+            />
             <div className="bottom-spacer" />
           </div>
         </div>
@@ -187,7 +203,13 @@ export function App() {
           />
         )}
         {route.name === "seller" && (
-          <SellerDetail seller={route.seller} onBack={back} />
+          <SellerDetail
+            seller={route.seller}
+            onBack={back}
+            isFav={isFav(route.seller.id)}
+            onToggleFav={toggleSellerFav}
+            onRecordContact={recordWa}
+          />
         )}
         {route.name === "category" && (
           <CategoryScreen
@@ -197,6 +219,7 @@ export function App() {
             onProvider={goProvider}
             onSeller={goSeller}
             onToggleFav={toggleProviderFav}
+            onToggleSellerFav={toggleSellerFav}
           />
         )}
         {route.name === "allcats" && (
@@ -225,7 +248,9 @@ export function App() {
               back();
             }}
             onProvider={goProvider}
+            onSeller={goSeller}
             onToggleFav={toggleProviderFav}
+            onToggleSellerFav={toggleSellerFav}
           />
         )}
         {route.name === "orders" && (
@@ -253,6 +278,7 @@ export function App() {
             onBack={() => navigate({ name: "shopping" })}
             onToggleFav={toggleProductFav}
             onShowToast={showToast}
+            onRecordContact={recordWa}
           />
         )}
         {route.name === "profile" && (
