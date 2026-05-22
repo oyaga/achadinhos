@@ -421,7 +421,6 @@ export function ProdutosSection() {
                   <input
                     type="file"
                     accept="image/*"
-                    multiple
                     className="file-overlay"
                     onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
                   />
