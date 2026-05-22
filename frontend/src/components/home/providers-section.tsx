@@ -1,15 +1,19 @@
 "use client";
 
 import type { Provider } from "@/lib/types";
-import { getImageUrl } from "@/lib/api";
+import { getImageUrl, type AdminSeller } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
+import { CompanyCard } from "./featured-companies";
 
 interface ProvidersSectionProps {
   providers: Provider[];
   isFav: (id: number | string) => boolean;
   onToggleFav: (id: string) => void;
   onProvider: (p: Provider) => void;
+  sellers?: AdminSeller[];
+  onSeller?: (s: AdminSeller) => void;
+  onToggleSellerFav?: (id: string) => void;
   title?: string;
   showSeeAll?: boolean;
 }
@@ -19,9 +23,13 @@ export function ProvidersSection({
   isFav,
   onToggleFav,
   onProvider,
+  sellers = [],
+  onSeller,
+  onToggleSellerFav,
   title = "Recomendados pra você",
   showSeeAll = true,
 }: ProvidersSectionProps) {
+  const empty = providers.length === 0 && sellers.length === 0;
   return (
     <div className="section">
       <div className="section-title">
@@ -43,7 +51,16 @@ export function ProvidersSection({
             onToggleFav={() => onToggleFav(p.id)}
           />
         ))}
-        {providers.length === 0 && (
+        {sellers.map((s) => (
+          <CompanyCard
+            key={s.id}
+            company={s}
+            onClick={() => onSeller?.(s)}
+            isFav={isFav(s.id)}
+            onToggleFav={() => onToggleSellerFav?.(s.id)}
+          />
+        ))}
+        {empty && (
           <div
             style={{
               textAlign: "center",
@@ -52,7 +69,7 @@ export function ProvidersSection({
               fontSize: 13,
             }}
           >
-            Nenhum prestador encontrado.
+            Nada por aqui ainda.
           </div>
         )}
       </div>

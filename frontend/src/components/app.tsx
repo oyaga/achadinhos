@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { providersApi, type AdminSeller } from "@/lib/api";
+import { providersApi, sellersApi, type AdminSeller } from "@/lib/api";
 import { adaptProvider } from "@/lib/adapters";
 import type { CategoryId, Provider, Product, Route } from "@/lib/types";
 import { useFavorites } from "@/hooks/use-favorites";
@@ -119,10 +119,14 @@ export function App() {
   };
 
   const [homeProviders, setHomeProviders] = useState<Provider[]>([]);
+  const [homeSellers, setHomeSellers] = useState<AdminSeller[]>([]);
 
   useEffect(() => {
     void providersApi.list({ limit: 6, sort: "rating" }).then((res) => {
       setHomeProviders(res.data.map(adaptProvider));
+    }).catch(() => { /* silent — empty list */ });
+    void sellersApi.list().then((s) => {
+      setHomeSellers(s.slice(0, 6));
     }).catch(() => { /* silent — empty list */ });
   }, []);
 
@@ -157,6 +161,9 @@ export function App() {
               isFav={isFav}
               onToggleFav={toggleProviderFav}
               onProvider={goProvider}
+              sellers={homeSellers}
+              onSeller={goSeller}
+              onToggleSellerFav={toggleSellerFav}
             />
             <FeaturedCompanies
               onSeller={goSeller}
