@@ -6280,6 +6280,7 @@ textarea.field-input {
 }
 
 .admin-photo-add {
+  position: relative;
   width: 72px;
   height: 72px;
   border-radius: 10px;
@@ -6296,6 +6297,17 @@ textarea.field-input {
 .admin-photo-add:hover {
   border-color: var(--gold-400);
   color: var(--gold-500);
+}
+
+/* File inputs sit as a transparent overlay over their button/box so the tap
+   lands on the real <input> — reliable on iOS Safari, unlike display:none. */
+.file-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
 /* Atalho para o painel admin na tela de perfil */
@@ -6516,6 +6528,7 @@ textarea.field-input {
 }
 
 .admin-upload-label {
+  position: relative;
   display: inline-flex;
   align-items: center;
   cursor: pointer;

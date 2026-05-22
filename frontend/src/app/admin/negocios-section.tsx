@@ -505,7 +505,7 @@ export function NegociosSection() {
                 <input
                   type="file"
                   accept="image/*"
-                  hidden
+                  className="file-overlay"
                   onChange={(e) => { setLogoFile(e.target.files?.[0] ?? null); e.target.value = ""; }}
                 />
               </label>
@@ -746,7 +746,7 @@ export function NegociosSection() {
                     type="file"
                     accept="image/*,application/pdf"
                     multiple
-                    hidden
+                    className="file-overlay"
                     onChange={(e) => { addPortfolioFiles(e.target.files); e.target.value = ""; }}
                   />
                 </label>
