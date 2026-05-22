@@ -130,12 +130,19 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 		if req.Document != nil {
 			raw = *req.Document
 		}
-		doc, ok := validateDocument(c, docType, raw)
-		if !ok {
-			return
+		// Negócios cadastrados antes do campo documento existir não têm
+		// CPF/CNPJ — permite salvá-los (e enviar fotos) sem um documento.
+		if auth.StripDocument(raw) == "" {
+			updates["document_type"] = ""
+			updates["document"] = ""
+		} else {
+			doc, ok := validateDocument(c, docType, raw)
+			if !ok {
+				return
+			}
+			updates["document_type"] = docType
+			updates["document"] = doc
 		}
-		updates["document_type"] = docType
-		updates["document"] = doc
 	}
 	if len(updates) > 0 {
 		if err := h.db.WithContext(c.Request.Context()).Model(&s).Updates(updates).Error; err != nil {
@@ -334,12 +341,19 @@ func (h *AdminHandler) UpdateProvider(c *gin.Context) {
 		if req.Document != nil {
 			raw = *req.Document
 		}
-		doc, ok := validateDocument(c, docType, raw)
-		if !ok {
-			return
+		// Negócios cadastrados antes do campo documento existir não têm
+		// CPF/CNPJ — permite salvá-los (e enviar fotos) sem um documento.
+		if auth.StripDocument(raw) == "" {
+			updates["document_type"] = ""
+			updates["document"] = ""
+		} else {
+			doc, ok := validateDocument(c, docType, raw)
+			if !ok {
+				return
+			}
+			updates["document_type"] = docType
+			updates["document"] = doc
 		}
-		updates["document_type"] = docType
-		updates["document"] = doc
 	}
 	if len(updates) > 0 {
 		if err := h.db.WithContext(c.Request.Context()).Model(&p).Updates(updates).Error; err != nil {
