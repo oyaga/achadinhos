@@ -22,6 +22,7 @@ import {
 } from "@/lib/document";
 import { formatPhone, stripPhone } from "@/lib/phone";
 import { Icon } from "@/components/icons";
+import { LogoCropper } from "@/components/admin/logo-cropper";
 import { cn } from "@/lib/utils";
 
 type Kind = "empresa" | "prestador";
@@ -93,6 +94,7 @@ export function NegociosSection() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [serviceInput, setServiceInput] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [existingLogo, setExistingLogo] = useState<string>("");
   const [portfolioFiles, setPortfolioFiles] = useState<File[]>([]);
   const [existingPortfolio, setExistingPortfolio] = useState<PortfolioPhoto[]>([]);
@@ -202,6 +204,7 @@ export function NegociosSection() {
     setEditing(null);
     setForm(EMPTY_FORM);
     setLogoFile(null);
+    setCropFile(null);
     setExistingLogo("");
     setPortfolioFiles([]);
     setExistingPortfolio([]);
@@ -520,7 +523,7 @@ export function NegociosSection() {
                   type="file"
                   accept="image/*"
                   className="file-overlay"
-                  onChange={(e) => { setLogoFile(e.target.files?.[0] ?? null); e.target.value = ""; }}
+                  onChange={(e) => { const f = e.target.files?.[0]; if (f) setCropFile(f); e.target.value = ""; }}
                 />
               </label>
             </div>
@@ -836,6 +839,14 @@ export function NegociosSection() {
             );
           })}
         </div>
+      )}
+
+      {cropFile && (
+        <LogoCropper
+          file={cropFile}
+          onCancel={() => setCropFile(null)}
+          onConfirm={(cropped) => { setLogoFile(cropped); setCropFile(null); }}
+        />
       )}
     </section>
   );

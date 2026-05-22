@@ -6633,6 +6633,76 @@ textarea.field-input {
   background: #fff;
 }
 
+/* ── Logo cropper ── */
+.lc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: rgba(11, 27, 59, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.lc-panel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  width: 100%;
+  max-width: 320px;
+}
+.lc-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--navy-900);
+  text-align: center;
+  margin-bottom: 12px;
+}
+.lc-window {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  margin: 0 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bone-50);
+  touch-action: none;
+  cursor: grab;
+}
+.lc-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.lc-hint {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--ink-400);
+  text-align: center;
+}
+.lc-zoom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 4px 0;
+  color: var(--ink-500);
+  font-size: 16px;
+}
+.lc-zoom input {
+  flex: 1;
+}
+.lc-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
 /* Item de portfólio que é um PDF (apresentação) em vez de imagem. */
 .upload-doc {
   display: flex;
