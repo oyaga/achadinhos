@@ -64,6 +64,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	v1.GET("/products", prodH.List)
 	v1.GET("/products/:id", prodH.Get)
 
+	v1.GET("/sellers", sellH.List)
 	v1.GET("/sellers/:id", sellH.Get)
 
 	// Authenticated (any logged-in user: síndico or admin).

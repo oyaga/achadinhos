@@ -515,6 +515,7 @@ export interface AdminSeller {
   whatsapp: string;
   link?: string;
   partner: boolean;
+  highlight?: boolean;
   document_type?: string;
   document?: string;
   portfolio_photos?: PortfolioPhoto[];
@@ -528,6 +529,7 @@ export interface AdminSellerPayload {
   whatsapp: string;
   link?: string;
   partner?: boolean;
+  highlight?: boolean;
   document_type: "cpf" | "cnpj";
   document: string;
 }
@@ -671,6 +673,15 @@ export const adminApi = {
 export const categoriesApi = {
   async list(): Promise<ApiCategory[]> {
     return request<ApiCategory[]>("/categories");
+  },
+};
+
+export const sellersApi = {
+  // Public seller listing. Pass { highlight: true } for the home destaque section.
+  async list(params?: { highlight?: boolean }): Promise<AdminSeller[]> {
+    const qs = params?.highlight ? "?highlight=true" : "";
+    const res = await request<{ data: AdminSeller[] }>(`/sellers${qs}`);
+    return res.data ?? [];
   },
 };
 

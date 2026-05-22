@@ -18,6 +18,7 @@ type Seller struct {
 	WhatsApp     string    `gorm:"size:32" json:"whatsapp"`
 	Link         string    `gorm:"size:500" json:"link,omitempty"`
 	Partner      bool      `gorm:"default:false" json:"partner"`
+	Highlight    bool      `gorm:"default:false;index" json:"highlight"`
 	DocumentType string    `gorm:"size:4" json:"document_type,omitempty"`
 	Document     string    `gorm:"size:18" json:"document,omitempty"`
 

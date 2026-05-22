@@ -21,6 +21,21 @@ func NewSellersHandler(db *gorm.DB) *SellersHandler {
 	return &SellersHandler{db: db}
 }
 
+// List handles GET /sellers — public seller listing. Supports ?highlight=true
+// to fetch only the empresas flagged for the home "destaque" section.
+func (h *SellersHandler) List(c *gin.Context) {
+	q := h.db.WithContext(c.Request.Context()).Model(&models.Seller{})
+	if c.Query("highlight") == "true" {
+		q = q.Where("highlight = ?", true)
+	}
+	var sellers []models.Seller
+	if err := q.Order("name ASC").Find(&sellers).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to list sellers")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": sellers})
+}
+
 // Get handles GET /sellers/:id — public seller profile + products.
 func (h *SellersHandler) Get(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))

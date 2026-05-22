@@ -16,6 +16,7 @@ import { LocationBar } from "./home/location-bar";
 import { HeroSlider } from "./home/hero-slider";
 import { CategoriesSection } from "./home/categories-section";
 import { ProvidersSection } from "./home/providers-section";
+import { FeaturedCompanies } from "./home/featured-companies";
 import { BottomNav, type NavId } from "./home/bottom-nav";
 import { SearchOverlay } from "./home/search-overlay";
 import { InstallSheet } from "./home/install-sheet";
@@ -138,6 +139,7 @@ export function App() {
               onToggleFav={toggleProviderFav}
               onProvider={goProvider}
             />
+            <FeaturedCompanies />
             <div className="bottom-spacer" />
           </div>
         </div>

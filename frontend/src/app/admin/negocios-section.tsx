@@ -152,6 +152,7 @@ export function NegociosSection() {
         description: s.description ?? "",
         link: s.link ?? "",
         partner: s.partner,
+        highlight: s.highlight ?? false,
       });
       setExistingLogo(s.logo_url ?? "");
       setExistingPortfolio(s.portfolio_photos ?? []);
@@ -282,6 +283,7 @@ export function NegociosSection() {
           whatsapp: whatsappDigits,
           link: form.link.trim(),
           partner: form.partner,
+          highlight: form.highlight,
           document_type: form.docType,
           document: stripDocument(form.document),
         };
@@ -524,17 +526,30 @@ export function NegociosSection() {
                   placeholder="https://..."
                 />
               </div>
-              <label className="auth-checkbox" style={{ marginTop: 2 }}>
-                <input
-                  type="checkbox"
-                  checked={form.partner}
-                  onChange={(e) => update("partner", e.target.checked)}
-                />
-                <span className="auth-checkbox-box">
-                  {form.partner && <Icon.Check size={12} />}
-                </span>
-                <span className="auth-checkbox-text">Empresa parceira homologada</span>
-              </label>
+              <div className="admin-check-row">
+                <label className="auth-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={form.partner}
+                    onChange={(e) => update("partner", e.target.checked)}
+                  />
+                  <span className="auth-checkbox-box">
+                    {form.partner && <Icon.Check size={12} />}
+                  </span>
+                  <span className="auth-checkbox-text">Empresa parceira homologada</span>
+                </label>
+                <label className="auth-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={form.highlight}
+                    onChange={(e) => update("highlight", e.target.checked)}
+                  />
+                  <span className="auth-checkbox-box">
+                    {form.highlight && <Icon.Check size={12} />}
+                  </span>
+                  <span className="auth-checkbox-text">Destaque na home</span>
+                </label>
+              </div>
             </>
           )}
 
