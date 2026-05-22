@@ -63,6 +63,10 @@ export function AdminPanel() {
         </div>
         <div className="admin-header-user">
           <span className="admin-header-email">{user?.email}</span>
+          <button type="button" className="admin-logout" onClick={() => router.push("/")}>
+            <Icon.Home size={15} />
+            Ver site
+          </button>
           <button type="button" className="admin-logout" onClick={logout}>
             <Icon.LogOut size={15} />
             Sair
