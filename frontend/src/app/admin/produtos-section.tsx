@@ -137,10 +137,13 @@ export function ProdutosSection() {
   }
 
   function addFiles(files: FileList | null) {
-    if (!files) return;
-    const room = 5 - existingPhotos.length - pendingFiles.length;
-    if (room <= 0) return;
-    setPendingFiles((prev) => [...prev, ...Array.from(files).slice(0, room)]);
+    if (!files || files.length === 0) return;
+    // Capture File objects synchronously — the <input> is cleared right after.
+    const picked = Array.from(files);
+    setPendingFiles((prev) => {
+      const room = 5 - existingPhotos.length - prev.length;
+      return room <= 0 ? prev : [...prev, ...picked.slice(0, room)];
+    });
   }
 
   async function removeExistingPhoto(photoId: string) {
@@ -421,6 +424,7 @@ export function ProdutosSection() {
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     className="file-overlay"
                     onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
                   />
