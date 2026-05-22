@@ -64,6 +64,7 @@ func AutoMigrate(gdb *gorm.DB) error {
 		&models.ReviewHelpful{},
 		&models.Favorite{},
 		&models.Seller{},
+		&models.SellerReview{},
 		&models.Product{},
 		&models.ProductPhoto{},
 		&models.PortfolioPhoto{},

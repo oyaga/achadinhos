@@ -7,6 +7,13 @@ type CreateReviewRequest struct {
 	Tags   []string `json:"tags" binding:"omitempty,dive,min=1,max=64"`
 }
 
+// CreateSellerReviewRequest is POST /sellers/:id/reviews body. The comment is
+// optional — só a nota (rating) é obrigatória.
+type CreateSellerReviewRequest struct {
+	Rating int    `json:"rating" binding:"required,min=1,max=5"`
+	Text   string `json:"text" binding:"omitempty,max=2000"`
+}
+
 // FavoriteRequest is the POST/DELETE /favorites body.
 type FavoriteRequest struct {
 	TargetType string `json:"target_type" binding:"required,oneof=provider product"`

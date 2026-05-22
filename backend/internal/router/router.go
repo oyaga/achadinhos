@@ -66,6 +66,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 
 	v1.GET("/sellers", sellH.List)
 	v1.GET("/sellers/:id", sellH.Get)
+	v1.GET("/sellers/:id/reviews", sellH.ListReviews)
 
 	// Authenticated (any logged-in user: síndico or admin).
 	authed := v1.Group("")
@@ -75,6 +76,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		authed.PATCH("/me", meH.Patch)
 
 		authed.POST("/providers/:id/reviews", revH.Create)
+		authed.POST("/sellers/:id/reviews", sellH.CreateReview)
 		authed.DELETE("/reviews/:id", revH.Delete)
 		authed.POST("/reviews/:id/helpful", revH.MarkHelpful)
 
