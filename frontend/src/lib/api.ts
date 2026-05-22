@@ -677,11 +677,20 @@ export const categoriesApi = {
 };
 
 export const sellersApi = {
-  // Public seller listing. Pass { highlight: true } for the home destaque section.
-  async list(params?: { highlight?: boolean }): Promise<AdminSeller[]> {
-    const qs = params?.highlight ? "?highlight=true" : "";
-    const res = await request<{ data: AdminSeller[] }>(`/sellers${qs}`);
+  // Public seller listing. Filter with { highlight } and/or { category }.
+  async list(params?: { highlight?: boolean; category?: string }): Promise<AdminSeller[]> {
+    const qs = new URLSearchParams();
+    if (params?.highlight) qs.set("highlight", "true");
+    if (params?.category) qs.set("category", params.category);
+    const query = qs.toString();
+    const res = await request<{ data: AdminSeller[] }>(
+      `/sellers${query ? `?${query}` : ""}`,
+    );
     return res.data ?? [];
+  },
+  // Full seller profile + its products.
+  async get(id: string): Promise<{ seller: AdminSeller; products: ApiProduct[] }> {
+    return request<{ seller: AdminSeller; products: ApiProduct[] }>(`/sellers/${id}`);
   },
 };
 
