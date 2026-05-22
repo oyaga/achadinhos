@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { productsApi } from "@/lib/api";
 import { adaptProduct } from "@/lib/adapters";
 import type { Product } from "@/lib/types";
+import type { ContactInput } from "@/hooks/use-whatsapp-history";
 import { discountPct, formatBRL } from "@/lib/utils";
 import { Icon } from "../icons";
 
@@ -13,6 +14,7 @@ interface ProductDetailProps {
   onBack: () => void;
   onToggleFav: (id: string) => void;
   onShowToast: (msg: string) => void;
+  onRecordContact: (input: ContactInput) => void;
 }
 
 export function ProductDetail({
@@ -21,6 +23,7 @@ export function ProductDetail({
   onBack,
   onToggleFav,
   onShowToast,
+  onRecordContact,
 }: ProductDetailProps) {
   const [qty, setQty] = useState(1);
   const [related, setRelated] = useState<Product[]>([]);
@@ -40,6 +43,14 @@ export function ProductDetail({
     );
     const url = `https://wa.me/55${product.whatsapp}?text=${msg}`;
     window.open(url, "_blank", "noopener,noreferrer");
+    onRecordContact({
+      kind: "product",
+      targetId: product.id,
+      name: product.name,
+      avatar: product.name.charAt(0).toUpperCase(),
+      subtitle: product.seller || "Produto",
+      whatsapp: product.whatsapp,
+    });
     onShowToast("Abrindo WhatsApp da revenda");
   };
   const openLink = () => {

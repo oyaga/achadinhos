@@ -13,9 +13,10 @@ type FavoriteTargetType string
 const (
 	FavoriteTargetProvider FavoriteTargetType = "provider"
 	FavoriteTargetProduct  FavoriteTargetType = "product"
+	FavoriteTargetSeller   FavoriteTargetType = "seller"
 )
 
-// Favorite is a user's favorite provider or product.
+// Favorite is a user's favorite provider, product or seller (empresa).
 // TargetID is stored as text since providers use UUIDs but products use slug ids.
 type Favorite struct {
 	ID         uuid.UUID          `gorm:"type:uuid;primaryKey" json:"id"`

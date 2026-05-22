@@ -54,4 +54,19 @@ func TestFavoritesFlow(t *testing.T) {
 			t.Fatalf("expected 404, got %d", rec.Code)
 		}
 	})
+
+	t.Run("favoritar empresa (seller)", func(t *testing.T) {
+		sellerBody := map[string]any{
+			"target_type": "seller",
+			"target_id":   "22222222-2222-2222-2222-222222222222",
+		}
+		rec, _ := doJSON(t, env.Router, http.MethodPost, "/api/v1/favorites", sellerBody, access)
+		if rec.Code != http.StatusCreated {
+			t.Fatalf("expected 201 favoriting seller, got %d", rec.Code)
+		}
+		recList, _ := doJSON(t, env.Router, http.MethodGet, "/api/v1/favorites?type=seller", nil, access)
+		if recList.Code != http.StatusOK {
+			t.Fatalf("expected 200 listing seller favorites, got %d", recList.Code)
+		}
+	})
 }

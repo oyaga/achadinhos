@@ -16,6 +16,7 @@ interface CategoryScreenProps {
   onProvider: (p: Provider) => void;
   onSeller: (s: AdminSeller) => void;
   onToggleFav: (id: string) => void;
+  onToggleSellerFav: (id: string) => void;
 }
 
 type FilterId = "all" | "verified" | "gold" | "near" | "cheap";
@@ -41,6 +42,7 @@ export function CategoryScreen({
   onProvider,
   onSeller,
   onToggleFav,
+  onToggleSellerFav,
 }: CategoryScreenProps) {
   const [filter, setFilter] = useState<FilterId>("all");
   const [sort, setSort] = useState<SortId>("relevance");
@@ -193,6 +195,8 @@ export function CategoryScreen({
                 key={s.id}
                 company={s}
                 onClick={() => onSeller(s)}
+                isFav={isFav(s.id)}
+                onToggleFav={() => onToggleSellerFav(s.id)}
               />
             ))}
             {filtered.map((p, i) => (

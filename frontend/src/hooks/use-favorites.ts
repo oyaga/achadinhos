@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { favoritesApi } from "@/lib/api";
+import { favoritesApi, type FavoriteTargetType } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
 
 const STORAGE_KEY = "achadinhos.favorites.v1";
@@ -43,7 +43,7 @@ export function useFavorites() {
   }, [favorites, hydrated]);
 
   const toggle = useCallback(
-    (id: number | string, type: "provider" | "product" = "provider"): boolean => {
+    (id: number | string, type: FavoriteTargetType = "provider"): boolean => {
       const key = String(id);
       const isCurrentlyFav = favorites.has(key);
       const willAdd = !isCurrentlyFav;

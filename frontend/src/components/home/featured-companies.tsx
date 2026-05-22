@@ -2,16 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
 
 interface FeaturedCompaniesProps {
   onSeller: (s: AdminSeller) => void;
+  isFav: (id: number | string) => boolean;
+  onToggleFav: (id: string) => void;
 }
 
 // FeaturedCompanies renders the home "Empresas em destaque" strip — the
 // empresas (sellers) flagged with highlight=true in the admin panel. Renders
 // nothing when there are none.
-export function FeaturedCompanies({ onSeller }: FeaturedCompaniesProps) {
+export function FeaturedCompanies({ onSeller, isFav, onToggleFav }: FeaturedCompaniesProps) {
   const [companies, setCompanies] = useState<AdminSeller[]>([]);
 
   useEffect(() => {
@@ -30,7 +33,13 @@ export function FeaturedCompanies({ onSeller }: FeaturedCompaniesProps) {
       </div>
       <div className="providers">
         {companies.map((c) => (
-          <CompanyCard key={c.id} company={c} onClick={() => onSeller(c)} />
+          <CompanyCard
+            key={c.id}
+            company={c}
+            onClick={() => onSeller(c)}
+            isFav={isFav(c.id)}
+            onToggleFav={() => onToggleFav(c.id)}
+          />
         ))}
       </div>
     </div>
@@ -40,11 +49,13 @@ export function FeaturedCompanies({ onSeller }: FeaturedCompaniesProps) {
 interface CompanyCardProps {
   company: AdminSeller;
   onClick: () => void;
+  isFav: boolean;
+  onToggleFav: () => void;
 }
 
 // CompanyCard is the list-row card for an empresa, reused on the home destaque
-// strip and in the category screen.
-export function CompanyCard({ company: c, onClick }: CompanyCardProps) {
+// strip, the category screen and the favorites screen.
+export function CompanyCard({ company: c, onClick, isFav, onToggleFav }: CompanyCardProps) {
   return (
     <div
       className="provider"
@@ -88,14 +99,14 @@ export function CompanyCard({ company: c, onClick }: CompanyCardProps) {
       </div>
       <button
         type="button"
-        className="provider-fav"
+        className={cn("provider-fav", isFav && "active")}
         onClick={(e) => {
           e.stopPropagation();
-          onClick();
+          onToggleFav();
         }}
-        aria-label={`Ver ${c.name}`}
+        aria-label="Favoritar"
       >
-        <Icon.ChevRight size={18} />
+        <Icon.Heart size={18} filled={isFav} />
       </button>
     </div>
   );

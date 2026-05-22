@@ -31,7 +31,7 @@ func (h *FavoritesHandler) List(c *gin.Context) {
 	}
 	q := h.db.WithContext(c.Request.Context()).Where("user_id = ?", uid)
 	if t := c.Query("type"); t != "" {
-		if t != "provider" && t != "product" {
+		if t != "provider" && t != "product" && t != "seller" {
 			JSONError(c, http.StatusBadRequest, "invalid type")
 			return
 		}

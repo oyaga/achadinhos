@@ -6743,3 +6743,13 @@ textarea.field-input {
   letter-spacing: 0.06em;
   color: #c0392b;
 }
+
+/* Pedidos: logo da empresa no avatar do histórico de WhatsApp */
+.order-avatar {
+  overflow: hidden;
+}
+.order-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

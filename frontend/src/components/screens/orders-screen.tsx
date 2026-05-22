@@ -1,6 +1,7 @@
 "use client";
 
-import type { WhatsappEntry } from "@/hooks/use-whatsapp-history";
+import { getImageUrl } from "@/lib/api";
+import type { ContactKind, WhatsappEntry } from "@/hooks/use-whatsapp-history";
 import { Icon } from "../icons";
 
 interface OrdersScreenProps {
@@ -8,6 +9,12 @@ interface OrdersScreenProps {
   onBack: () => void;
   onClear: () => void;
 }
+
+const KIND_LABEL: Record<ContactKind, string> = {
+  provider: "Prestador",
+  product: "Produto",
+  seller: "Empresa",
+};
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -24,11 +31,15 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
 }
 
-function openWhatsapp(whatsapp: string, name: string) {
+function openWhatsapp(whatsapp: string) {
   const msg = encodeURIComponent(
-    `Olá! Encontrei vocês no Achadinhos do Condomínio. Posso pedir um orçamento?`
+    "Olá! Encontrei vocês no Achadinhos do Condomínio."
   );
-  window.open(`https://wa.me/55${whatsapp}?text=${msg}`, "_blank", "noopener,noreferrer");
+  window.open(
+    `https://wa.me/55${whatsapp}?text=${msg}`,
+    "_blank",
+    "noopener,noreferrer"
+  );
 }
 
 export function OrdersScreen({ history, onBack, onClear }: OrdersScreenProps) {
@@ -60,18 +71,29 @@ export function OrdersScreen({ history, onBack, onClear }: OrdersScreenProps) {
             <Icon.Box size={42} />
             <div className="empty-state-title">Nenhum contato ainda</div>
             <div className="empty-state-sub">
-              Quando você chamar um prestador no WhatsApp, ele aparece aqui.
+              Quando você falar no WhatsApp com um prestador, uma empresa ou
+              sobre um produto, o contato aparece aqui.
             </div>
           </div>
         ) : (
           <div className="orders-list">
             {history.map((entry) => (
               <div key={entry.id} className="order-card">
-                <div className="order-avatar">{entry.providerAvatar}</div>
+                <div className="order-avatar">
+                  {entry.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={getImageUrl(entry.logoUrl)} alt={entry.name} />
+                  ) : (
+                    entry.avatar
+                  )}
+                </div>
                 <div className="order-info">
-                  <div className="order-name">{entry.providerName}</div>
+                  <div className="order-name">{entry.name}</div>
                   <div className="order-meta">
-                    <span className="order-cat">{entry.providerCatLabel}</span>
+                    <span className="order-cat">
+                      {KIND_LABEL[entry.kind]}
+                      {entry.subtitle ? ` · ${entry.subtitle}` : ""}
+                    </span>
                     <span className="order-dot" />
                     <span className="order-date">{formatDate(entry.date)}</span>
                   </div>
@@ -79,8 +101,8 @@ export function OrdersScreen({ history, onBack, onClear }: OrdersScreenProps) {
                 <button
                   type="button"
                   className="order-whatsapp-btn"
-                  onClick={() => openWhatsapp(entry.whatsapp, entry.providerName)}
-                  aria-label={`Chamar ${entry.providerName} no WhatsApp`}
+                  onClick={() => openWhatsapp(entry.whatsapp)}
+                  aria-label={`Chamar ${entry.name} no WhatsApp`}
                 >
                   <Icon.Whatsapp size={18} />
                 </button>

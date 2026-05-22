@@ -494,10 +494,12 @@ export interface ApiProduct {
   created_at?: string;
 }
 
+export type FavoriteTargetType = "provider" | "product" | "seller";
+
 export interface ApiFavorite {
   id: string;
   user_id: string;
-  target_type: "provider" | "product";
+  target_type: FavoriteTargetType;
   target_id: string;
   created_at: string;
 }
@@ -772,17 +774,17 @@ export const productsApi = {
 };
 
 export const favoritesApi = {
-  async list(type?: "provider" | "product"): Promise<ApiFavorite[]> {
+  async list(type?: FavoriteTargetType): Promise<ApiFavorite[]> {
     const path = type ? `/favorites?type=${type}` : "/favorites";
     return request<ApiFavorite[]>(path);
   },
-  async add(targetType: "provider" | "product", targetId: string): Promise<ApiFavorite> {
+  async add(targetType: FavoriteTargetType, targetId: string): Promise<ApiFavorite> {
     return request<ApiFavorite>("/favorites", {
       method: "POST",
       body: { target_type: targetType, target_id: targetId },
     });
   },
-  async remove(targetType: "provider" | "product", targetId: string): Promise<void> {
+  async remove(targetType: FavoriteTargetType, targetId: string): Promise<void> {
     return request<void>("/favorites", {
       method: "DELETE",
       body: { target_type: targetType, target_id: targetId },
