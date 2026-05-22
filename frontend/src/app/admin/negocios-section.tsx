@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import {
   adminApi,
   categoriesApi,
@@ -98,6 +98,15 @@ export function NegociosSection() {
   const [existingPortfolio, setExistingPortfolio] = useState<PortfolioPhoto[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Bring the form into view when it opens — the edit button can be far down
+  // the list, otherwise the user has to scroll up to find the form.
+  useEffect(() => {
+    if (formOpen) {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [formOpen]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -379,7 +388,7 @@ export function NegociosSection() {
       </div>
 
       {formOpen && (
-        <form className="admin-form" onSubmit={handleSubmit}>
+        <form className="admin-form" onSubmit={handleSubmit} ref={formRef}>
           <div className="admin-form-title">
             {editing ? "Editar cadastro" : "Novo cadastro"}
           </div>
