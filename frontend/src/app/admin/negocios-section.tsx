@@ -5,6 +5,7 @@ import {
   adminApi,
   categoriesApi,
   getImageUrl,
+  isPdf,
   ApiError,
   type AdminSeller,
   type ApiProvider,
@@ -680,8 +681,19 @@ export function NegociosSection() {
             <div className="admin-photos">
               {existingPortfolio.map((ph) => (
                 <div key={ph.id} className="admin-photo">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={getImageUrl(ph.url)} alt="Portfólio" />
+                  {isPdf(ph.url) ? (
+                    <a
+                      href={getImageUrl(ph.url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="upload-doc"
+                    >
+                      <strong>PDF</strong>
+                    </a>
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={getImageUrl(ph.url)} alt="Portfólio" />
+                  )}
                   <button
                     type="button"
                     className="admin-photo-remove"
@@ -694,8 +706,14 @@ export function NegociosSection() {
               ))}
               {portfolioFiles.map((file, i) => (
                 <div key={`${file.name}-${i}`} className="admin-photo">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={URL.createObjectURL(file)} alt="Pré-visualização" />
+                  {file.type === "application/pdf" ? (
+                    <div className="upload-doc">
+                      <strong>PDF</strong>
+                    </div>
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={URL.createObjectURL(file)} alt="Pré-visualização" />
+                  )}
                   <button
                     type="button"
                     className="admin-photo-remove"
@@ -711,7 +729,7 @@ export function NegociosSection() {
                   <Icon.Plus size={20} />
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,application/pdf"
                     multiple
                     hidden
                     onChange={(e) => { addPortfolioFiles(e.target.files); e.target.value = ""; }}

@@ -6567,3 +6567,20 @@ textarea.field-input {
   height: 100%;
   object-fit: cover;
 }
+
+/* Item de portfólio que é um PDF (apresentação) em vez de imagem. */
+.upload-doc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--bone-50);
+}
+.upload-doc strong {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #c0392b;
+}

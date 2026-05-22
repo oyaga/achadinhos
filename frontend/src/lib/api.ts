@@ -404,6 +404,11 @@ export function getImageUrl(path: string): string {
   return `${host}${path}`;
 }
 
+/** True when the given path or URL points to a PDF file. */
+export function isPdf(path: string): boolean {
+  return /\.pdf(\?|$)/i.test(path ?? "");
+}
+
 export interface PagedResponse<T> {
   data: T[];
   total: number;
