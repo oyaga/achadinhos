@@ -53,22 +53,6 @@ type productSeed struct {
 
 func ptr[T any](v T) *T { return &v }
 
-var categories = []models.Category{
-	{ID: "destaque", Label: "Destaque do dia", Short: "Destaque\ndo dia", Icon: "CatHighlight", Badge: "TOP", Description: "Os melhores prestadores em destaque hoje", SortOrder: 1},
-	{ID: "shopping", Label: "Shopping condomínio", Short: "Shopping\ncondomínio", Icon: "CatShopping", Badge: "NOVO", Description: "Produtos para o condomínio com link direto da revenda", SortOrder: 2},
-	{ID: "parceiros", Label: "Parceiros homologados", Short: "Parceiros\nhomologados", Icon: "CatPartners", Description: "Empresas auditadas e aprovadas pela administração", SortOrder: 3},
-	{ID: "seguranca", Label: "Segurança eletrônica", Short: "Segurança\neletrônica", Icon: "CatSecurity", Description: "CFTV, alarmes, controle de acesso e monitoramento", SortOrder: 4},
-	{ID: "terceirizacao", Label: "Terceirização", Short: "Tercei-\nrização", Icon: "CatOutsource", Description: "Equipes terceirizadas: portaria, limpeza, manutenção", SortOrder: 5},
-	{ID: "portaria", Label: "Portaria virtual", Short: "Portaria\nvirtual", Icon: "CatPortaria", Description: "Portaria remota 24h com economia de até 60%", SortOrder: 6},
-	{ID: "facilities", Label: "Facilities", Short: "Facilities", Icon: "CatFacilities", Description: "Gestão integrada de serviços prediais", SortOrder: 7},
-	{ID: "manutencao", Label: "Manutenção geral", Short: "Manutenção\ngeral", Icon: "CatMaintenance", Description: "Hidráulica, elétrica, pintura, marcenaria e mais", SortOrder: 8},
-	{ID: "dedetizacao", Label: "Dedetizadora", Short: "Dedeti-\nzadora", Icon: "CatPest", Description: "Controle de pragas com certificado sanitário", SortOrder: 9},
-	{ID: "armarios", Label: "Armário inteligente", Short: "Armário\ninteligente", Icon: "CatLocker", Description: "Lockers para entregas e correspondências", SortOrder: 10},
-	{ID: "limpeza", Label: "Limpeza", Short: "Limpeza", Icon: "CatCleaning", Description: "Diaristas, faxina geral, pós-obra", SortOrder: 11},
-	{ID: "hidraulica", Label: "Hidráulica", Short: "Hidráulica", Icon: "CatPlumbing", SortOrder: 12},
-	{ID: "eletrica", Label: "Elétrica", Short: "Elétrica", Icon: "CatElectric", SortOrder: 13},
-}
-
 var providers = []providerSeed{
 	{Slug: "prov-1", Name: "TurboElev Manutenção", Cat: "manutencao", Avatar: "T", Rating: 4.9, Reviews: 128, Badge: "Ouro", Verified: true, Distance: "1,2km", Price: "R$ 180/visita", ResponseTime: "15min", Desc: "Especialistas em elevadores residenciais e comerciais. Atendimento 24h, peças originais e contrato de manutenção preventiva.", Services: []string{"Manutenção preventiva", "Emergência 24h", "Modernização", "Laudo técnico"}, YearsActive: 12, JobsDone: 340, WhatsApp: "11987654321", Highlight: true},
 	{Slug: "prov-2", Name: "Alpha Elétrica 24h", Cat: "eletrica", Avatar: "A", Rating: 4.8, Reviews: 96, Badge: "Verificado", Verified: true, Distance: "0,8km", Price: "R$ 120/h", ResponseTime: "20min", Desc: "Eletricistas certificados pelo CREA. Atendimento emergencial e instalações completas.", Services: []string{"Instalação elétrica", "Quadros e disjuntores", "Para-raios", "Geradores"}, YearsActive: 8, JobsDone: 215, WhatsApp: "11987654322"},
@@ -156,9 +140,10 @@ func Run(ctx context.Context, gdb *gorm.DB) error {
 		}
 	}
 
-	// Categories.
-	for i := range categories {
-		if err := gdb.WithContext(ctx).Clauses(clause.OnConflict{UpdateAll: true}).Create(&categories[i]).Error; err != nil {
+	// Categories — canonical list lives in internal/db (so api startup
+	// and the seed share the same source of truth).
+	for i := range db.CanonicalCategories {
+		if err := gdb.WithContext(ctx).Clauses(clause.OnConflict{UpdateAll: true}).Create(&db.CanonicalCategories[i]).Error; err != nil {
 			return err
 		}
 	}

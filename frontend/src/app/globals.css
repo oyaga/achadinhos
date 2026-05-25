@@ -6753,3 +6753,112 @@ textarea.field-input {
   height: 100%;
   object-fit: cover;
 }
+
+/* ── Tela "Todas as categorias": blocos editoriais + mural de logos ── */
+.cats-intro {
+  background: linear-gradient(140deg, var(--navy-900), var(--navy-700));
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  margin-bottom: 20px;
+}
+.cats-intro-eyebrow {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--gold-400);
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+.cats-intro-text {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.86);
+  margin: 0;
+}
+
+.cats-mid-msg {
+  background: var(--gold-100);
+  border: 1px solid var(--gold-300);
+  border-radius: var(--radius);
+  padding: 18px 18px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-700);
+  margin: 20px 0;
+  text-align: center;
+}
+.cats-mid-msg strong {
+  display: inline-block;
+  color: var(--navy-900);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.cats-logos-section {
+  margin-bottom: 22px;
+}
+.cats-logos-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--navy-900);
+  margin: 0 0 12px;
+}
+.cats-logos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.cats-logo {
+  aspect-ratio: 1 / 1;
+  background: #fff;
+  border: 1px solid var(--bone-200);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.cats-logo:hover {
+  border-color: var(--gold-400);
+  transform: translateY(-1px);
+}
+.cats-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.cats-closing {
+  background: var(--bone-50);
+  border: 1px solid var(--bone-200);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  margin-top: 8px;
+  margin-bottom: 22px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-700);
+}
+.cats-closing p {
+  margin: 0 0 14px;
+}
+.cats-closing p:last-child {
+  margin-bottom: 0;
+}
+.cats-closing-eyebrow {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--navy-900);
+  margin: 4px 0 10px;
+  letter-spacing: 0.02em;
+}

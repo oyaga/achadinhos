@@ -230,7 +230,11 @@ export function App() {
           />
         )}
         {route.name === "allcats" && (
-          <AllCategoriesScreen onBack={back} onSelect={goCategory} />
+          <AllCategoriesScreen
+            onBack={back}
+            onSelect={goCategory}
+            onSeller={goSeller}
+          />
         )}
         {route.name === "highlights" && (
           <HighlightsScreen onBack={back} onProvider={goProvider} />
