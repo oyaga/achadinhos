@@ -23,7 +23,7 @@ export function Header({ onSearchClick }: HeaderProps) {
     <header className="header home-mobile-header">
       <div className="header-top">
         <img
-          src="/mobile-logo-achadinhos-do-condominio.png"
+          src="/mobile-logo-achadinhos-do-condominio.png?v=2"
           alt="Achadinhos do Condomínio"
           className="brand-logo"
         />
