@@ -90,6 +90,8 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	admin.Use(middleware.RequireAuth(cfg.JWTSecret))
 	admin.Use(middleware.RequireRole(string(models.RoleAdmin)))
 	{
+		admin.GET("/sindicos", adminH.ListSindicos)
+
 		admin.GET("/sellers", adminH.ListSellers)
 		admin.POST("/sellers", adminH.CreateSeller)
 		admin.PATCH("/sellers/:id", adminH.UpdateSeller)
