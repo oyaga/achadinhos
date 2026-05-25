@@ -35,6 +35,13 @@ func main() {
 		slog.Warn("auto-migrate non-fatal error", "err", err)
 	}
 
+	// Insert any missing canonical categories. Idempotent — existing rows
+	// are left untouched, so new categories rolled out via deploy show up
+	// without manual migrations.
+	if err := db.EnsureCategories(context.Background(), gdb); err != nil {
+		slog.Warn("ensure-categories non-fatal error", "err", err)
+	}
+
 	r := router.New(cfg, gdb)
 
 	srv := &http.Server{

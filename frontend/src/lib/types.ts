@@ -1,19 +1,9 @@
 // ============== Domain types ==============
 
-export type CategoryId =
-  | "destaque"
-  | "shopping"
-  | "parceiros"
-  | "seguranca"
-  | "terceirizacao"
-  | "portaria"
-  | "facilities"
-  | "manutencao"
-  | "dedetizacao"
-  | "armarios"
-  | "limpeza"
-  | "hidraulica"
-  | "eletrica";
+// Category id (string slug). Open set — the canonical list lives on the
+// backend (db.CanonicalCategories) and is fetched via /categories at runtime,
+// so new categories rolled out via deploy show up without touching the type.
+export type CategoryId = string;
 
 export type IconName =
   | "CatHighlight"
