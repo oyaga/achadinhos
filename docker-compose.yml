@@ -37,6 +37,9 @@ services:
       DB_SSLMODE: disable
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
+      # E-mail transacional (Resend). Vazios desligam o envio de boas-vindas.
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      MAIL_FROM: ${MAIL_FROM:-}
     volumes:
       - achadinhos_uploads:/app/uploads
     networks:

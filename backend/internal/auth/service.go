@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/achadinhos/backend/internal/config"
+	"github.com/achadinhos/backend/internal/email"
 	"github.com/achadinhos/backend/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -24,13 +25,20 @@ var (
 
 // Service handles register, login, refresh, and user lookups.
 type Service struct {
-	db  *gorm.DB
-	cfg *config.Config
+	db     *gorm.DB
+	cfg    *config.Config
+	mailer *email.Client
 }
 
-// New creates an auth Service.
+// New creates an auth Service. The mailer is constructed from the config —
+// when RESEND_API_KEY / MAIL_FROM are empty the mailer is disabled and the
+// service silently skips outbound email.
 func New(db *gorm.DB, cfg *config.Config) *Service {
-	return &Service{db: db, cfg: cfg}
+	return &Service{
+		db:     db,
+		cfg:    cfg,
+		mailer: email.NewClient(cfg.ResendAPIKey, cfg.MailFrom),
+	}
 }
 
 // TokenPair carries the access + refresh tokens returned to clients.
