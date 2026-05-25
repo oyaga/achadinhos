@@ -7,12 +7,14 @@ import { Icon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { ProdutosSection } from "./produtos-section";
 import { NegociosSection } from "./negocios-section";
+import { SindicosSection } from "./sindicos-section";
 
-type AdminTab = "produtos" | "negocios";
+type AdminTab = "produtos" | "negocios" | "sindicos";
 
 const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "produtos", label: "Produtos", icon: "CatShopping" },
   { id: "negocios", label: "Empresas e prestadores", icon: "CatPartners" },
+  { id: "sindicos", label: "Síndicos", icon: "User" },
 ];
 
 export function AdminPanel() {
@@ -96,6 +98,7 @@ export function AdminPanel() {
       <div className="admin-content">
         {tab === "produtos" && <ProdutosSection />}
         {tab === "negocios" && <NegociosSection />}
+        {tab === "sindicos" && <SindicosSection />}
       </div>
     </main>
   );

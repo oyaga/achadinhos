@@ -29,6 +29,23 @@ func NewAdminHandler(db *gorm.DB) *AdminHandler {
 
 const maxPortfolioPhotos = 5
 
+// ── Síndicos (users) ─────────────────────────────────────────────────────────
+
+// ListSindicos handles GET /admin/sindicos. Returns every user with
+// role=sindico — name, email, phone, endereço e condomínio — for the admin
+// control panel. Read-only.
+func (h *AdminHandler) ListSindicos(c *gin.Context) {
+	var users []models.User
+	if err := h.db.WithContext(c.Request.Context()).
+		Where("role = ?", models.RoleSindico).
+		Order("created_at DESC").
+		Find(&users).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to list sindicos")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": users})
+}
+
 // ── Empresas (sellers) ───────────────────────────────────────────────────────
 
 // ListSellers handles GET /admin/sellers.

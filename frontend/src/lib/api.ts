@@ -602,7 +602,30 @@ async function uploadImage<T>(path: string, file: File): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface AdminSindico {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  condo_name?: string;
+  condo_role?: string;
+  cep?: string;
+  street?: string;
+  number?: string;
+  complement?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  created_at?: string;
+}
+
 export const adminApi = {
+  // ── Síndicos (read-only) ──
+  async listSindicos(): Promise<AdminSindico[]> {
+    const res = await request<{ data: AdminSindico[] }>("/admin/sindicos");
+    return res.data ?? [];
+  },
+
   // ── Empresas (sellers) ──
   async listSellers(): Promise<AdminSeller[]> {
     const res = await request<{ data: AdminSeller[] }>("/admin/sellers");
