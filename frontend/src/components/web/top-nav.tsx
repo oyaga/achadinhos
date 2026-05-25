@@ -57,7 +57,7 @@ export function TopNav({ onSearchClick, onProfile }: TopNavProps) {
             className="top-nav-install"
             onClick={() => void promptInstall()}
           >
-            <img src="/icons/icon.svg" alt="" width={18} height={18} style={{ borderRadius: 5 }} />
+            <img src="/icons/icon.png" alt="" width={18} height={18} style={{ borderRadius: 5 }} />
             Instalar app
           </button>
 

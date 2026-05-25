@@ -35,7 +35,7 @@ export function InstallSheet({ open, onClose, isIOS, isStandalone }: InstallShee
 
         <div className="install-sheet-icon">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/icon.svg" alt="Achadinhos" width={52} height={52} />
+          <img src="/icons/icon.png" alt="Achadinhos" width={52} height={52} />
         </div>
 
         {isStandalone ? (

@@ -37,7 +37,7 @@ export function InstallBanner() {
   return (
     <div className={`install-banner${visible ? " visible" : ""}`} role="banner">
       <div className="install-banner-icon">
-        <img src="/icons/icon.svg" alt="Achadinhos" width={44} height={44} />
+        <img src="/icons/icon.png" alt="Achadinhos" width={44} height={44} />
       </div>
       <div className="install-banner-body">
         <div className="install-banner-title">Instale o Achadinhos</div>
