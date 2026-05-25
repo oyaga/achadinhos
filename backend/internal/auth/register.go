@@ -3,7 +3,9 @@ package auth
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"strings"
+	"time"
 
 	"github.com/achadinhos/backend/internal/models"
 	"gorm.io/gorm"
@@ -104,6 +106,18 @@ func (s *Service) RegisterSindico(ctx context.Context, p SindicoProfile) (*model
 	}
 	if err := s.db.WithContext(ctx).Create(u).Error; err != nil {
 		return nil, nil, err
+	}
+
+	// Fire-and-forget welcome email. The mailer is a no-op when RESEND_API_KEY
+	// / MAIL_FROM aren't configured, so this is safe in dev/test too.
+	if s.mailer.Enabled() {
+		go func(addr, name string) {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			if err := s.mailer.SendWelcome(ctx, addr, name); err != nil {
+				slog.Warn("welcome email failed", "err", err, "to", addr)
+			}
+		}(u.Email, u.Name)
 	}
 
 	pair, err := s.issueTokens(ctx, u)

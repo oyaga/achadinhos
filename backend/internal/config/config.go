@@ -28,6 +28,11 @@ type Config struct {
 	JWTRefreshTTL time.Duration
 
 	CORSOrigins []string
+
+	// Optional transactional email (Resend). When both are empty the welcome
+	// email is silently skipped — the app still works.
+	ResendAPIKey string
+	MailFrom     string
 }
 
 // Load reads .env (if present) and environment variables, returning a Config.
@@ -48,6 +53,9 @@ func Load() (*Config, error) {
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
 
 		JWTSecret: getEnv("JWT_SECRET", "dev-insecure-secret-change-me"),
+
+		ResendAPIKey: getEnv("RESEND_API_KEY", ""),
+		MailFrom:     getEnv("MAIL_FROM", ""),
 	}
 
 	accessTTL, err := time.ParseDuration(getEnv("JWT_ACCESS_TTL", "15m"))
