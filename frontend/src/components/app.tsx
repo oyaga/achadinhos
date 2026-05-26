@@ -34,7 +34,11 @@ import { ProfileScreen } from "./screens/profile-screen";
 import { TopNav } from "./web/top-nav";
 import { cn } from "@/lib/utils";
 
-export function App() {
+interface AppProps {
+  initialRoute?: Route;
+}
+
+export function App({ initialRoute }: AppProps = {}) {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { toggle: toggleFavRaw, isFav } = useFavorites();
@@ -47,7 +51,7 @@ export function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const [installHelpOpen, setInstallHelpOpen] = useState(false);
-  const [route, setRoute] = useState<Route>({ name: "home" });
+  const [route, setRoute] = useState<Route>(initialRoute ?? { name: "home" });
 
   // The "+" button installs the PWA. Browsers with a native install prompt
   // (Android/Chrome) trigger it directly; iOS Safari has none, so we show the
@@ -61,7 +65,16 @@ export function App() {
   };
 
   const navigate = (r: Route) => setRoute(r);
-  const back = () => setRoute({ name: "home" });
+  // When the App was mounted on a deep-link page (e.g. /empresa/[id]) the
+  // overlay's Back button should send the user back to the home URL instead
+  // of just closing the overlay and leaving them on the entity URL.
+  const back = () => {
+    if (initialRoute && initialRoute.name !== "home") {
+      router.push("/");
+      return;
+    }
+    setRoute({ name: "home" });
+  };
 
   const toggleProviderFav = (id: string) => {
     const wasAdded = toggleFavRaw(id, "provider");

@@ -6,8 +6,10 @@
 FROM oven/bun:1.2-alpine AS frontend
 WORKDIR /app
 
-# Bake the API base URL into the static bundle. Default keeps API same-origin.
-ARG NEXT_PUBLIC_API_URL=/api/v1
+# Bake the API base URL into the static bundle. We point at production by
+# default so generateStaticParams/generateMetadata can fetch the catalog at
+# build time. Same-origin client calls keep working because the host matches.
+ARG NEXT_PUBLIC_API_URL=https://achadinhoscondominio.com.br/api/v1
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NODE_ENV=production
 
