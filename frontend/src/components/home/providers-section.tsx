@@ -117,6 +117,8 @@ export function ProviderCard({
             src={getImageUrl(provider.logoUrl)}
             alt={provider.name}
             className="provider-avatar-img"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           provider.avatar

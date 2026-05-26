@@ -172,6 +172,8 @@ export function SellerDetail({
                   src={getImageUrl(full.logo_url)}
                   alt={full.name}
                   className="pd-avatar-img"
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 full.name.charAt(0).toUpperCase()
@@ -239,7 +241,7 @@ export function SellerDetail({
                     </span>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={getImageUrl(url)} alt="Portfólio" />
+                    <img src={getImageUrl(url)} alt="Portfólio" loading="lazy" decoding="async" />
                   )}
                 </button>
               ))}

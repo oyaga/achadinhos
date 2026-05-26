@@ -79,6 +79,8 @@ export function HighlightsScreen({
                     src={getImageUrl(p.logoUrl)}
                     alt={p.name}
                     className="highlight-pic-img"
+                    loading="lazy"
+                    decoding="async"
                   />
                 )}
                 <div className="highlight-pic-tag">★ Em destaque</div>
