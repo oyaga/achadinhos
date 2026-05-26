@@ -2,6 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { RegisterPWA } from "@/components/register-pwa";
 import { AuthProvider } from "@/contexts/auth-context";
+import {
+  JsonLd,
+  organizationSchema,
+  websiteSchema,
+} from "@/components/seo/json-ld";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -27,6 +32,7 @@ const jetMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://achadinhoscondominio.com.br"),
   title: {
     default: "Achadinhos do Condomínio",
     template: "%s · Achadinhos do Condomínio",
@@ -35,6 +41,9 @@ export const metadata: Metadata = {
     "Marketplace que conecta síndicos a prestadores de serviço de condomínio. Orçamento em 1 toque, prestadores verificados, shopping com produtos para o condomínio.",
   applicationName: "Achadinhos do Condomínio",
   manifest: "/manifest.webmanifest",
+  alternates: {
+    canonical: "/",
+  },
   appleWebApp: {
     capable: true,
     title: "Achadinhos",
@@ -58,9 +67,29 @@ export const metadata: Metadata = {
     title: "Achadinhos do Condomínio",
     description:
       "Marketplace que conecta síndicos a prestadores de serviço. Orçamento em 1 toque.",
+    url: "/",
     siteName: "Achadinhos do Condomínio",
     locale: "pt_BR",
     type: "website",
+    images: [
+      {
+        url: "/icon-logo-achadinhos-do-condominio.png",
+        width: 512,
+        height: 512,
+        alt: "Achadinhos do Condomínio",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Achadinhos do Condomínio",
+    description:
+      "Marketplace que conecta síndicos a prestadores de serviço e fornecedores para condomínios.",
+    images: ["/icon-logo-achadinhos-do-condominio.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
@@ -83,6 +112,7 @@ export default function RootLayout({
       className={`${fraunces.variable} ${inter.variable} ${jetMono.variable}`}
     >
       <body>
+        <JsonLd data={[organizationSchema, websiteSchema]} />
         <AuthProvider>
           <RegisterPWA />
           {children}
