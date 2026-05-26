@@ -97,6 +97,8 @@ export function ProviderDetail({
                   src={getImageUrl(provider.logoUrl)}
                   alt={provider.name}
                   className="pd-avatar-img"
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 provider.avatar
@@ -163,7 +165,7 @@ export function ProviderDetail({
                     </span>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={getImageUrl(url)} alt="Portfólio" />
+                    <img src={getImageUrl(url)} alt="Portfólio" loading="lazy" decoding="async" />
                   )}
                 </button>
               ))}

@@ -76,6 +76,8 @@ export function CompanyCard({ company: c, onClick, isFav, onToggleFav }: Company
             src={getImageUrl(c.logo_url)}
             alt={c.name}
             className="provider-avatar-img"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           c.name.charAt(0).toUpperCase()

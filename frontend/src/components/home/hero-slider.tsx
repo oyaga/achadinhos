@@ -194,7 +194,7 @@ function SellerSlide({ seller: s, onClick }: { seller: AdminSeller; index: numbe
       <div className="hero-slide-media">
         {s.logo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={getImageUrl(s.logo_url)} alt={s.name} className="hero-product-img" />
+          <img src={getImageUrl(s.logo_url)} alt={s.name} className="hero-product-img" loading="lazy" decoding="async" />
         ) : (
           <div className="hero-avatar-ring">
             <span className="hero-avatar-letter">{s.name.charAt(0).toUpperCase()}</span>
@@ -240,6 +240,8 @@ function ProductSlide({ product: p, onClick }: { product: Product; index: number
             src={getImageUrl(photo.url)}
             alt={p.name}
             className="hero-product-img"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="hero-product-placeholder">

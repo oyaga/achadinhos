@@ -25,9 +25,13 @@ export function TopNav({ onSearchClick, onProfile }: TopNavProps) {
       <div className="top-nav-inner">
         <div className="top-nav-brand">
           <img
-            src="/logo-achadinhos-do-condominio.png?v=2"
+            src="/logo-achadinhos-do-condominio.png?v=3"
             alt="Achadinhos do Condomínio"
             className="top-nav-brand-logo"
+            width={600}
+            height={120}
+            fetchPriority="high"
+            decoding="async"
           />
         </div>
 

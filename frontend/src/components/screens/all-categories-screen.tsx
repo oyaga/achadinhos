@@ -120,7 +120,7 @@ export function AllCategoriesScreen({
                   aria-label={s.name}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={getImageUrl(s.logo_url!)} alt={s.name} />
+                  <img src={getImageUrl(s.logo_url!)} alt={s.name} loading="lazy" decoding="async" />
                 </button>
               ))}
             </div>

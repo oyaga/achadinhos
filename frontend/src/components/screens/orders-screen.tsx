@@ -82,7 +82,7 @@ export function OrdersScreen({ history, onBack, onClear }: OrdersScreenProps) {
                 <div className="order-avatar">
                   {entry.logoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={getImageUrl(entry.logoUrl)} alt={entry.name} />
+                    <img src={getImageUrl(entry.logoUrl)} alt={entry.name} loading="lazy" decoding="async" />
                   ) : (
                     entry.avatar
                   )}
