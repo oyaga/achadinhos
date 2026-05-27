@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { productsApi } from "@/lib/api";
+import { productsApi, getImageUrl } from "@/lib/api";
 import { adaptProduct, ACHADINHOS_SELLER_NAME } from "@/lib/adapters";
 import type { Product } from "@/lib/types";
 import type { ContactInput } from "@/hooks/use-whatsapp-history";
@@ -93,7 +93,18 @@ export function ProductDetail({
 
       <div className="screen-body" style={{ paddingTop: 0, padding: 0 }}>
         <div className="pd-hero" data-cat={product.cat}>
-          <div className="pd-hero-letter">{product.name.charAt(0)}</div>
+          {product.photos && product.photos.length > 0 ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={getImageUrl(product.photos[0].url)}
+              alt={product.name}
+              className="pd-hero-img"
+              loading="eager"
+              decoding="async"
+            />
+          ) : (
+            <div className="pd-hero-letter">{product.name.charAt(0)}</div>
+          )}
           {product.badge && (
             <div className="pd-hero-badge">{product.badge}</div>
           )}

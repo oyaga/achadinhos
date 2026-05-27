@@ -120,7 +120,7 @@ export function ProdutosSection() {
     setForm({
       name: p.name,
       category: p.category,
-      price: String(p.price),
+      price: p.price > 0 ? String(p.price) : "",
       oldPrice: p.old_price != null ? String(p.old_price) : "",
       sellerId: p.seller_id ?? "",
       manufacturer: p.manufacturer ?? "",
@@ -180,8 +180,10 @@ export function ProdutosSection() {
       setFormError("Selecione uma categoria.");
       return;
     }
-    const price = Number(form.price.replace(",", "."));
-    if (!price || price <= 0) {
+    // Price is optional — empty means "sob consulta" (0 in the DB).
+    const priceStr = form.price.trim().replace(",", ".");
+    const price = priceStr ? Number(priceStr) : 0;
+    if (priceStr && (!Number.isFinite(price) || price < 0)) {
       setFormError("Informe um preço válido.");
       return;
     }
@@ -219,6 +221,15 @@ export function ProdutosSection() {
       setFormError(err instanceof ApiError ? err.message : "Não foi possível salvar.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function toggleHighlight(p: ApiProduct) {
+    try {
+      await adminApi.updateProduct(p.id, { highlight: !p.highlight });
+      await refresh();
+    } catch (err) {
+      window.alert(err instanceof ApiError ? err.message : "Não foi possível atualizar o destaque.");
     }
   }
 
@@ -303,14 +314,14 @@ export function ProdutosSection() {
 
           <div className="prof-row-fields">
             <div className="prof-field">
-              <label className="prof-label">Preço (R$)</label>
+              <label className="prof-label">Preço (opcional)</label>
               <input
                 className="prof-input"
                 type="text"
                 inputMode="decimal"
                 value={form.price}
                 onChange={(e) => update("price", e.target.value)}
-                placeholder="89.90"
+                placeholder="Sob consulta"
               />
             </div>
             <div className="prof-field">
@@ -488,6 +499,17 @@ export function ProdutosSection() {
                 </div>
               </div>
               <div className="admin-row-actions">
+                <button
+                  type="button"
+                  className={cn("admin-icon-btn", p.highlight && "active")}
+                  onClick={() => toggleHighlight(p)}
+                  aria-label={
+                    p.highlight ? `Remover destaque de ${p.name}` : `Destacar ${p.name}`
+                  }
+                  title={p.highlight ? "Remover do carrossel" : "Adicionar ao carrossel"}
+                >
+                  <Icon.Star size={15} filled={p.highlight} />
+                </button>
                 <button
                   type="button"
                   className="admin-icon-btn"

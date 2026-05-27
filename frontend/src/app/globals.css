@@ -1418,6 +1418,14 @@ textarea.field-input {
   position: relative;
   color: white;
 }
+.pd-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
 .pd-hero::before {
   content: "";
   position: absolute;
@@ -2496,6 +2504,12 @@ textarea.field-input {
   aspect-ratio: 1.1/1;
   overflow: hidden;
 }
+.offer-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .offer-thumb-bg {
   width: 100%;
   height: 100%;
@@ -2685,6 +2699,13 @@ textarea.field-input {
 }
 .product-thumb-letter {
   line-height: 1;
+}
+.product-thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .product-badge {
   position: absolute;
@@ -6185,6 +6206,12 @@ textarea.field-input {
   background: rgba(194, 69, 58, 0.1);
   border-color: rgba(194, 69, 58, 0.4);
   color: var(--danger);
+}
+
+.admin-icon-btn.active {
+  background: var(--gold-100, rgba(212, 175, 55, 0.18));
+  border-color: var(--gold-400);
+  color: var(--gold-700, #8a6a16);
 }
 
 .admin-chip {
