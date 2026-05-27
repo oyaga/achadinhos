@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { productsApi } from "@/lib/api";
+import { productsApi, getImageUrl } from "@/lib/api";
 import { adaptProduct } from "@/lib/adapters";
 import type { Product, ShopCategory, ShopCategoryId } from "@/lib/types";
 import { cn, discountPct, formatBRL } from "@/lib/utils";
@@ -143,9 +143,20 @@ export function ShoppingScreen({
                         {discountPct(p.price, p.oldPrice)}% OFF
                       </div>
                     )}
-                    <div className="offer-thumb-bg" data-cat={p.cat}>
-                      {p.name.charAt(0)}
-                    </div>
+                    {p.photos && p.photos.length > 0 ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={getImageUrl(p.photos[0].url)}
+                        alt={p.name}
+                        className="offer-thumb-img"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div className="offer-thumb-bg" data-cat={p.cat}>
+                        {p.name.charAt(0)}
+                      </div>
+                    )}
                   </div>
                   <div className="offer-name">{p.name}</div>
                   <div className="offer-prices">
@@ -214,9 +225,20 @@ export function ShoppingScreen({
                       >
                         <Icon.Heart size={14} filled={fav} />
                       </button>
-                      <div className="product-thumb-letter">
-                        {p.name.charAt(0)}
-                      </div>
+                      {p.photos && p.photos.length > 0 ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={getImageUrl(p.photos[0].url)}
+                          alt={p.name}
+                          className="product-thumb-img"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div className="product-thumb-letter">
+                          {p.name.charAt(0)}
+                        </div>
+                      )}
                     </div>
                     <div className="product-info">
                       {p.tag && <div className="product-tag">{p.tag}</div>}

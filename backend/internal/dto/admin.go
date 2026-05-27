@@ -78,7 +78,7 @@ type AdminProviderPatch struct {
 type AdminProductRequest struct {
 	Name         string   `json:"name" binding:"required,min=2,max=255"`
 	Category     string   `json:"category" binding:"required"`
-	Price        float64  `json:"price" binding:"required,gt=0"`
+	Price        float64  `json:"price" binding:"omitempty,gte=0"`
 	OldPrice     *float64 `json:"old_price"`
 	SellerID     string   `json:"seller_id" binding:"omitempty,uuid"`
 	Tag          string   `json:"tag" binding:"max=64"`
@@ -93,7 +93,7 @@ type AdminProductRequest struct {
 type AdminProductPatch struct {
 	Name         *string  `json:"name" binding:"omitempty,min=2,max=255"`
 	Category     *string  `json:"category"`
-	Price        *float64 `json:"price" binding:"omitempty,gt=0"`
+	Price        *float64 `json:"price" binding:"omitempty,gte=0"`
 	OldPrice     *float64 `json:"old_price"`
 	SellerID     *string  `json:"seller_id"`
 	Tag          *string  `json:"tag" binding:"omitempty,max=64"`
