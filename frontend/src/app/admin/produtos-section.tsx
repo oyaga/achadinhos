@@ -10,6 +10,7 @@ import {
   type AdminProductPayload,
   type ProductPhoto,
 } from "@/lib/api";
+import { ACHADINHOS_SELLER_NAME } from "@/lib/adapters";
 import { Icon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ const PRODUCT_CATEGORIES: Array<{ id: string; label: string }> = [
   { id: "piscina", label: "Piscina" },
   { id: "eletrica", label: "Elétrica" },
   { id: "escritorio", label: "Escritório" },
+  { id: "outros", label: "Outros" },
 ];
 
 const BADGE_OPTIONS = ["", "OFERTA"];
@@ -44,6 +46,7 @@ interface FormState {
   badge: string;
   stock: string;
   link: string;
+  highlight: boolean;
 }
 
 const EMPTY_FORM: FormState = {
@@ -57,6 +60,7 @@ const EMPTY_FORM: FormState = {
   badge: "",
   stock: "",
   link: "",
+  highlight: false,
 };
 
 export function ProdutosSection() {
@@ -118,12 +122,13 @@ export function ProdutosSection() {
       category: p.category,
       price: String(p.price),
       oldPrice: p.old_price != null ? String(p.old_price) : "",
-      sellerId: p.seller_id,
+      sellerId: p.seller_id ?? "",
       manufacturer: p.manufacturer ?? "",
       tag: p.tag ?? "",
       badge: p.badge ?? "",
       stock: p.stock ?? "",
       link: p.link_override ?? "",
+      highlight: p.highlight ?? false,
     });
     setExistingPhotos(p.photos ?? []);
     setPendingFiles([]);
@@ -175,10 +180,6 @@ export function ProdutosSection() {
       setFormError("Selecione uma categoria.");
       return;
     }
-    if (!form.sellerId) {
-      setFormError("Selecione a empresa vendedora.");
-      return;
-    }
     const price = Number(form.price.replace(",", "."));
     if (!price || price <= 0) {
       setFormError("Informe um preço válido.");
@@ -196,6 +197,7 @@ export function ProdutosSection() {
       badge: form.badge,
       stock: form.stock.trim(),
       link: form.link.trim(),
+      highlight: form.highlight,
     };
     setSubmitting(true);
     try {
@@ -230,7 +232,8 @@ export function ProdutosSection() {
     }
   }
 
-  function sellerName(id: string): string {
+  function sellerName(id: string | undefined): string {
+    if (!id) return ACHADINHOS_SELLER_NAME;
     return sellers.find((s) => s.id === id)?.name ?? "—";
   }
 
@@ -244,24 +247,12 @@ export function ProdutosSection() {
           <p className="admin-section-sub">{items.length} produto(s) cadastrado(s)</p>
         </div>
         {!formOpen && (
-          <button
-            type="button"
-            className="admin-new-btn"
-            onClick={openCreate}
-            disabled={sellers.length === 0}
-            title={sellers.length === 0 ? "Cadastre uma empresa primeiro" : undefined}
-          >
+          <button type="button" className="admin-new-btn" onClick={openCreate}>
             <Icon.Plus size={16} />
             Novo produto
           </button>
         )}
       </div>
-
-      {sellers.length === 0 && !loading && (
-        <div className="admin-empty">
-          Cadastre uma empresa na aba <strong>Empresas</strong> antes de adicionar produtos.
-        </div>
-      )}
 
       {formOpen && (
         <form className="admin-form" onSubmit={handleSubmit} ref={formRef}>
@@ -289,7 +280,7 @@ export function ProdutosSection() {
                 value={form.sellerId}
                 onChange={(e) => update("sellerId", e.target.value)}
               >
-                <option value="">Selecione…</option>
+                <option value="">{ACHADINHOS_SELLER_NAME}</option>
                 {sellers.map((s) => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
@@ -395,6 +386,22 @@ export function ProdutosSection() {
             />
           </div>
 
+          <div className="admin-check-row">
+            <label className="auth-checkbox">
+              <input
+                type="checkbox"
+                checked={form.highlight}
+                onChange={(e) => update("highlight", e.target.checked)}
+              />
+              <span className="auth-checkbox-box">
+                {form.highlight && <Icon.Check size={12} />}
+              </span>
+              <span className="auth-checkbox-text">
+                Em destaque (aparece no carrossel da home)
+              </span>
+            </label>
+          </div>
+
           <div className="prof-field">
             <label className="prof-label">Fotos ({existingPhotos.length + pendingFiles.length}/5)</label>
             <div className="admin-photos">
@@ -474,6 +481,7 @@ export function ProdutosSection() {
                 <div className="admin-row-name">
                   {p.name}
                   {p.badge && <span className="admin-chip gold">{p.badge}</span>}
+                  {p.highlight && <span className="admin-chip gold">DESTAQUE</span>}
                 </div>
                 <div className="admin-row-meta">
                   {formatPrice(p.price)} · {categoryLabel(p.category)} · {sellerName(p.seller_id)}

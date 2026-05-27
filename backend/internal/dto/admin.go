@@ -80,12 +80,13 @@ type AdminProductRequest struct {
 	Category     string   `json:"category" binding:"required"`
 	Price        float64  `json:"price" binding:"required,gt=0"`
 	OldPrice     *float64 `json:"old_price"`
-	SellerID     string   `json:"seller_id" binding:"required,uuid"`
+	SellerID     string   `json:"seller_id" binding:"omitempty,uuid"`
 	Tag          string   `json:"tag" binding:"max=64"`
 	Badge        string   `json:"badge" binding:"max=16"`
 	Stock        string   `json:"stock" binding:"max=64"`
 	Link         string   `json:"link" binding:"omitempty,max=500"`
 	Manufacturer string   `json:"manufacturer" binding:"max=255"`
+	Highlight    bool     `json:"highlight"`
 }
 
 // AdminProductPatch is the body for PATCH /admin/products/:id. All optional.
@@ -94,10 +95,11 @@ type AdminProductPatch struct {
 	Category     *string  `json:"category"`
 	Price        *float64 `json:"price" binding:"omitempty,gt=0"`
 	OldPrice     *float64 `json:"old_price"`
-	SellerID     *string  `json:"seller_id" binding:"omitempty,uuid"`
+	SellerID     *string  `json:"seller_id"`
 	Tag          *string  `json:"tag" binding:"omitempty,max=64"`
 	Badge        *string  `json:"badge" binding:"omitempty,max=16"`
 	Stock        *string  `json:"stock" binding:"omitempty,max=64"`
 	Link         *string  `json:"link" binding:"omitempty,max=500"`
 	Manufacturer *string  `json:"manufacturer" binding:"omitempty,max=255"`
+	Highlight    *bool    `json:"highlight"`
 }

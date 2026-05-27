@@ -441,37 +441,42 @@ func (h *AdminHandler) CreateProduct(c *gin.Context) {
 	if !BindJSON(c, &req) {
 		return
 	}
-	sellerID, err := uuid.Parse(req.SellerID)
-	if err != nil {
-		JSONError(c, http.StatusBadRequest, "invalid seller_id")
-		return
-	}
-	var seller models.Seller
-	if err := h.db.WithContext(c.Request.Context()).First(&seller, "id = ?", sellerID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			JSONError(c, http.StatusBadRequest, "unknown seller_id")
-			return
-		}
-		JSONError(c, http.StatusInternalServerError, "failed to validate seller")
-		return
-	}
 	stock := strings.TrimSpace(req.Stock)
 	if stock == "" {
 		stock = "Em estoque"
 	}
 	p := &models.Product{
-		ID:               uuid.New().String(),
-		SellerID:         sellerID,
-		Name:             strings.TrimSpace(req.Name),
-		Category:         strings.ToLower(strings.TrimSpace(req.Category)),
-		Price:            req.Price,
-		OldPrice:         req.OldPrice,
-		Tag:              strings.TrimSpace(req.Tag),
-		Badge:            strings.TrimSpace(req.Badge),
-		Stock:            stock,
-		WhatsAppOverride: seller.WhatsApp,
-		LinkOverride:     strings.TrimSpace(req.Link),
-		Manufacturer:     strings.TrimSpace(req.Manufacturer),
+		ID:           uuid.New().String(),
+		Name:         strings.TrimSpace(req.Name),
+		Category:     strings.ToLower(strings.TrimSpace(req.Category)),
+		Price:        req.Price,
+		OldPrice:     req.OldPrice,
+		Tag:          strings.TrimSpace(req.Tag),
+		Badge:        strings.TrimSpace(req.Badge),
+		Stock:        stock,
+		LinkOverride: strings.TrimSpace(req.Link),
+		Manufacturer: strings.TrimSpace(req.Manufacturer),
+		Highlight:    req.Highlight,
+	}
+	// Seller is optional. When provided, validate it exists and copy the
+	// WhatsApp as the default contact for the product.
+	if req.SellerID != "" {
+		sellerID, err := uuid.Parse(req.SellerID)
+		if err != nil {
+			JSONError(c, http.StatusBadRequest, "invalid seller_id")
+			return
+		}
+		var seller models.Seller
+		if err := h.db.WithContext(c.Request.Context()).First(&seller, "id = ?", sellerID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				JSONError(c, http.StatusBadRequest, "unknown seller_id")
+				return
+			}
+			JSONError(c, http.StatusInternalServerError, "failed to validate seller")
+			return
+		}
+		p.SellerID = &sellerID
+		p.WhatsAppOverride = seller.WhatsApp
 	}
 	if err := h.db.WithContext(c.Request.Context()).Create(p).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to create product")
@@ -510,18 +515,25 @@ func (h *AdminHandler) UpdateProduct(c *gin.Context) {
 		updates["old_price"] = req.OldPrice
 	}
 	if req.SellerID != nil {
-		sellerID, err := uuid.Parse(*req.SellerID)
-		if err != nil {
-			JSONError(c, http.StatusBadRequest, "invalid seller_id")
-			return
+		trimmed := strings.TrimSpace(*req.SellerID)
+		if trimmed == "" {
+			// Clearing the seller link — published as "Achadinhos do Condomínio".
+			updates["seller_id"] = nil
+			updates["whats_app_override"] = ""
+		} else {
+			sellerID, err := uuid.Parse(trimmed)
+			if err != nil {
+				JSONError(c, http.StatusBadRequest, "invalid seller_id")
+				return
+			}
+			var seller models.Seller
+			if err := h.db.WithContext(c.Request.Context()).First(&seller, "id = ?", sellerID).Error; err != nil {
+				JSONError(c, http.StatusBadRequest, "unknown seller_id")
+				return
+			}
+			updates["seller_id"] = sellerID
+			updates["whats_app_override"] = seller.WhatsApp
 		}
-		var seller models.Seller
-		if err := h.db.WithContext(c.Request.Context()).First(&seller, "id = ?", sellerID).Error; err != nil {
-			JSONError(c, http.StatusBadRequest, "unknown seller_id")
-			return
-		}
-		updates["seller_id"] = sellerID
-		updates["whats_app_override"] = seller.WhatsApp
 	}
 	if req.Tag != nil {
 		updates["tag"] = strings.TrimSpace(*req.Tag)
@@ -537,6 +549,9 @@ func (h *AdminHandler) UpdateProduct(c *gin.Context) {
 	}
 	if req.Manufacturer != nil {
 		updates["manufacturer"] = strings.TrimSpace(*req.Manufacturer)
+	}
+	if req.Highlight != nil {
+		updates["highlight"] = *req.Highlight
 	}
 	if len(updates) > 0 {
 		if err := h.db.WithContext(c.Request.Context()).Model(&p).Updates(updates).Error; err != nil {

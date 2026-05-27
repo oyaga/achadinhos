@@ -468,7 +468,8 @@ export interface ApiReview {
 
 export interface ApiProduct {
   id: string;
-  seller_id: string;
+  // Omitted by the backend when the product is sold by Achadinhos itself.
+  seller_id?: string;
   name: string;
   category: string;
   price: number;
@@ -481,6 +482,7 @@ export interface ApiProduct {
   whatsapp_override?: string;
   link_override?: string;
   manufacturer?: string;
+  highlight?: boolean;
   photos?: ProductPhoto[];
   seller?: {
     id: string;
@@ -571,12 +573,14 @@ export interface AdminProductPayload {
   category: string;
   price: number;
   old_price?: number | null;
-  seller_id: string;
+  // Empty string means "sold by Achadinhos" — no seller link.
+  seller_id?: string;
   tag?: string;
   badge?: string;
   stock?: string;
   link?: string;
   manufacturer?: string;
+  highlight?: boolean;
 }
 
 // Multipart upload of a single image file under the "file" field.
@@ -777,6 +781,7 @@ export const providersApi = {
 export const productsApi = {
   async list(params?: {
     category?: string;
+    highlight?: boolean;
     q?: string;
     sort?: string;
     limit?: number;
@@ -784,6 +789,7 @@ export const productsApi = {
   }): Promise<PagedResponse<ApiProduct>> {
     const qs = new URLSearchParams();
     if (params?.category && params.category !== "all") qs.set("category", params.category);
+    if (params?.highlight) qs.set("highlight", "true");
     if (params?.q) qs.set("q", params.q);
     if (params?.sort) qs.set("sort", params.sort);
     if (params?.limit != null) qs.set("limit", String(params.limit));

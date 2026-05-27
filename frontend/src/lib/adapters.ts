@@ -1,6 +1,9 @@
 import type { Provider, Review, Product } from "./types";
 import type { ApiProvider, ApiReview, ApiProduct } from "./api";
 
+// Displayed as the seller of any product that isn't linked to a real seller.
+export const ACHADINHOS_SELLER_NAME = "Achadinhos do Condomínio";
+
 export function adaptProvider(p: ApiProvider): Provider {
   return {
     id: p.id,
@@ -50,7 +53,8 @@ export function adaptProduct(p: ApiProduct): Product {
     oldPrice: p.old_price ?? undefined,
     rating: p.rating,
     reviews: p.reviews_count,
-    seller: p.seller?.name ?? "",
+    // Products without a seller link are sold by Achadinhos itself.
+    seller: p.seller?.name ?? ACHADINHOS_SELLER_NAME,
     tag: p.tag,
     whatsapp: p.whatsapp_override ?? p.seller?.whatsapp ?? "",
     link: p.link_override ?? p.seller?.link ?? "",
