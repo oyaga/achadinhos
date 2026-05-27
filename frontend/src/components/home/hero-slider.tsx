@@ -209,6 +209,7 @@ function SellerSlide({ seller: s, onClick }: { seller: AdminSeller; index: numbe
 
 function ProductSlide({ product: p, onClick }: { product: Product; index: number; onClick: () => void }) {
   const photo = p.photos?.[0];
+  const hasPrice = p.price > 0;
   return (
     <div className="hero hero-slide hero-slide--product" onClick={onClick} role="button" tabIndex={0}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}>
@@ -217,16 +218,20 @@ function ProductSlide({ product: p, onClick }: { product: Product; index: number
           <Icon.Box size={11} /> Shopping em destaque
         </div>
         <div className="hero-title hero-title--product">{p.name}</div>
-        <div className="hero-price-row">
-          {p.oldPrice && (
-            <span className="hero-old-price">
-              R$ {p.oldPrice.toFixed(2).replace(".", ",")}
+        {hasPrice ? (
+          <div className="hero-price-row">
+            {p.oldPrice && (
+              <span className="hero-old-price">
+                R$ {p.oldPrice.toFixed(2).replace(".", ",")}
+              </span>
+            )}
+            <span className="hero-price">
+              R$ {p.price.toFixed(2).replace(".", ",")}
             </span>
-          )}
-          <span className="hero-price">
-            R$ {p.price.toFixed(2).replace(".", ",")}
-          </span>
-        </div>
+          </div>
+        ) : p.desc?.trim() ? (
+          <div className="hero-meta hero-meta--desc">{p.desc}</div>
+        ) : null}
         <div className="hero-meta">
           <div className="hero-rating"><Icon.Star size={11} /> {p.rating.toFixed(1).replace(".", ",")}</div>
           <span className="hero-divider" />

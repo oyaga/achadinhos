@@ -481,6 +481,15 @@ select {
   font-size: 11px;
   color: var(--gold-200);
 }
+.hero-meta--desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+  margin: 4px 0 6px;
+  color: rgba(255, 255, 255, 0.78);
+}
 .hero-rating {
   display: flex;
   align-items: center;
@@ -2603,6 +2612,16 @@ textarea.field-input {
   align-items: baseline;
   gap: 6px;
 }
+.offer-desc {
+  padding: 0 10px 10px;
+  font-size: 11.5px;
+  color: var(--ink-500);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .offer-price {
   font-size: 14px;
   font-weight: 700;
@@ -2784,6 +2803,17 @@ textarea.field-input {
   align-items: flex-end;
   margin-top: auto;
   padding-top: 6px;
+}
+.product-desc {
+  font-size: 11.5px;
+  color: var(--ink-500);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
 }
 .product-prices {
   display: flex;

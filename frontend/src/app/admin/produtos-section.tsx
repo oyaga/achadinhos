@@ -46,6 +46,7 @@ interface FormState {
   badge: string;
   stock: string;
   link: string;
+  description: string;
   highlight: boolean;
 }
 
@@ -60,6 +61,7 @@ const EMPTY_FORM: FormState = {
   badge: "",
   stock: "",
   link: "",
+  description: "",
   highlight: false,
 };
 
@@ -128,6 +130,7 @@ export function ProdutosSection() {
       badge: p.badge ?? "",
       stock: p.stock ?? "",
       link: p.link_override ?? "",
+      description: p.description ?? "",
       highlight: p.highlight ?? false,
     });
     setExistingPhotos(p.photos ?? []);
@@ -199,6 +202,7 @@ export function ProdutosSection() {
       badge: form.badge,
       stock: form.stock.trim(),
       link: form.link.trim(),
+      description: form.description.trim(),
       highlight: form.highlight,
     };
     setSubmitting(true);
@@ -394,6 +398,17 @@ export function ProdutosSection() {
               value={form.link}
               onChange={(e) => update("link", e.target.value)}
               placeholder="https://..."
+            />
+          </div>
+
+          <div className="prof-field">
+            <label className="prof-label">Descrição (opcional)</label>
+            <textarea
+              className="prof-input"
+              rows={4}
+              value={form.description}
+              onChange={(e) => update("description", e.target.value)}
+              placeholder="Sobre o produto, materiais, tamanhos, prazos…"
             />
           </div>
 

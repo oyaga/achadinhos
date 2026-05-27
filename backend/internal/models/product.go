@@ -23,6 +23,7 @@ type Product struct {
 	WhatsAppOverride  string     `gorm:"size:32" json:"whatsapp_override,omitempty"`
 	LinkOverride      string     `gorm:"size:500" json:"link_override,omitempty"`
 	Manufacturer      string     `gorm:"size:255" json:"manufacturer,omitempty"`
+	Description       string     `gorm:"type:text;not null;default:''" json:"description"`
 	Highlight         bool       `gorm:"not null;default:false;index" json:"highlight"`
 
 	CreatedAt time.Time      `json:"created_at"`

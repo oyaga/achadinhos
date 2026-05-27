@@ -41,9 +41,9 @@ export function ProductDetail({
 
   const openWhatsapp = () => {
     const msg = encodeURIComponent(
-      `Olá! Tenho interesse no produto: ${product.name} — ${formatBRL(
-        product.price
-      )} (qtd: ${qty}). Total: ${total}.`
+      product.price > 0
+        ? `Olá! Tenho interesse no produto: ${product.name} — ${formatBRL(product.price)} (qtd: ${qty}). Total: ${total}.`
+        : `Olá! Tenho interesse no produto: ${product.name}. Pode me passar mais informações?`
     );
     const url = `https://wa.me/55${product.whatsapp}?text=${msg}`;
     window.open(url, "_blank", "noopener,noreferrer");
@@ -131,20 +131,23 @@ export function ProductDetail({
             </div>
           </div>
 
-          <div className="pd-price-block">
-            {product.oldPrice && (
-              <div className="pd-old-price">{formatBRL(product.oldPrice)}</div>
-            )}
-            <div className="pd-price">{formatBRL(product.price)}</div>
-            {product.oldPrice && (
-              <div className="pd-discount">
-                <Icon.Tag size={11} />{" "}
-                {discountPct(product.price, product.oldPrice)}% OFF · economia de{" "}
-                {formatBRL(product.oldPrice - product.price)}
-              </div>
-            )}
-          </div>
+          {product.price > 0 && (
+            <div className="pd-price-block">
+              {product.oldPrice && (
+                <div className="pd-old-price">{formatBRL(product.oldPrice)}</div>
+              )}
+              <div className="pd-price">{formatBRL(product.price)}</div>
+              {product.oldPrice && (
+                <div className="pd-discount">
+                  <Icon.Tag size={11} />{" "}
+                  {discountPct(product.price, product.oldPrice)}% OFF · economia de{" "}
+                  {formatBRL(product.oldPrice - product.price)}
+                </div>
+              )}
+            </div>
+          )}
 
+          {product.price > 0 && (
           <div className="pd-qty-row">
             <span className="pd-qty-label">Quantidade</span>
             <div className="pd-qty-stepper">
@@ -169,10 +172,16 @@ export function ProductDetail({
               Total <strong>{total}</strong>
             </span>
           </div>
+          )}
         </div>
 
         <div className="pd-section" style={{ padding: "22px 16px 0" }}>
           <h3>Sobre o produto</h3>
+          {product.desc?.trim() && (
+            <p style={{ fontSize: 13, lineHeight: 1.6, color: "var(--ink-700)", whiteSpace: "pre-wrap" }}>
+              {product.desc}
+            </p>
+          )}
           <p
             style={{
               fontSize: 13,
