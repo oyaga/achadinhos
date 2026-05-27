@@ -97,6 +97,7 @@ export interface Product {
   badge?: "OFERTA";
   stock: string;
   manufacturer?: string;
+  desc?: string;
   photos?: import("./api").ProductPhoto[];
 }
 

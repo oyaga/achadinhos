@@ -159,12 +159,16 @@ export function ShoppingScreen({
                     )}
                   </div>
                   <div className="offer-name">{p.name}</div>
-                  <div className="offer-prices">
-                    <span className="offer-price">{formatBRL(p.price)}</span>
-                    {p.oldPrice && (
-                      <span className="offer-old">{formatBRL(p.oldPrice)}</span>
-                    )}
-                  </div>
+                  {p.price > 0 ? (
+                    <div className="offer-prices">
+                      <span className="offer-price">{formatBRL(p.price)}</span>
+                      {p.oldPrice && (
+                        <span className="offer-old">{formatBRL(p.oldPrice)}</span>
+                      )}
+                    </div>
+                  ) : p.desc?.trim() ? (
+                    <div className="offer-desc">{p.desc}</div>
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -244,22 +248,36 @@ export function ShoppingScreen({
                       {p.tag && <div className="product-tag">{p.tag}</div>}
                       <div className="product-name">{p.name}</div>
                       <div className="product-seller">{p.seller}</div>
-                      <div className="product-price-row">
-                        <div className="product-prices">
-                          <span className="product-price">
-                            {formatBRL(p.price)}
-                          </span>
-                          {p.oldPrice && (
-                            <span className="product-old">
-                              {formatBRL(p.oldPrice)}
+                      {p.price > 0 ? (
+                        <div className="product-price-row">
+                          <div className="product-prices">
+                            <span className="product-price">
+                              {formatBRL(p.price)}
                             </span>
+                            {p.oldPrice && (
+                              <span className="product-old">
+                                {formatBRL(p.oldPrice)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="product-rating">
+                            <Icon.Star size={11} filled />{" "}
+                            {p.rating.toFixed(1).replace(".", ",")}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="product-price-row">
+                          {p.desc?.trim() ? (
+                            <div className="product-desc">{p.desc}</div>
+                          ) : (
+                            <div />
                           )}
+                          <div className="product-rating">
+                            <Icon.Star size={11} filled />{" "}
+                            {p.rating.toFixed(1).replace(".", ",")}
+                          </div>
                         </div>
-                        <div className="product-rating">
-                          <Icon.Star size={11} filled />{" "}
-                          {p.rating.toFixed(1).replace(".", ",")}
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 );

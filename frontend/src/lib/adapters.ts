@@ -61,6 +61,7 @@ export function adaptProduct(p: ApiProduct): Product {
     badge: p.badge as "OFERTA" | undefined,
     stock: p.stock,
     manufacturer: p.manufacturer,
+    desc: p.description,
     photos: p.photos,
   };
 }

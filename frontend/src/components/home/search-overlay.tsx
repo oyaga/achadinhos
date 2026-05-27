@@ -150,7 +150,7 @@ export function SearchOverlay({
                       </div>
                       <div className="suggest-text">
                         <div className="suggest-title">{p.name}</div>
-                        <div className="suggest-sub">{p.seller} · {formatBRL(p.price)}</div>
+                        <div className="suggest-sub">{p.seller}{p.price > 0 && ` · ${formatBRL(p.price)}`}</div>
                       </div>
                       <Icon.ChevRight size={14} />
                     </button>

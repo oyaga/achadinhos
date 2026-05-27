@@ -482,6 +482,7 @@ export interface ApiProduct {
   whatsapp_override?: string;
   link_override?: string;
   manufacturer?: string;
+  description?: string;
   highlight?: boolean;
   photos?: ProductPhoto[];
   seller?: {
@@ -580,6 +581,7 @@ export interface AdminProductPayload {
   stock?: string;
   link?: string;
   manufacturer?: string;
+  description?: string;
   highlight?: boolean;
 }
 

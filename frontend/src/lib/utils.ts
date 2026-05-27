@@ -3,9 +3,9 @@ export function cn(...inputs: Array<string | false | null | undefined>): string 
   return inputs.filter(Boolean).join(" ");
 }
 
-// Format currency in Brazilian style (R$ 89,90). Zero means "ask the seller".
+// Format currency in Brazilian style (R$ 89,90). Callers are expected to
+// hide the field for price <= 0 (e.g. "sob consulta" products).
 export function formatBRL(value: number): string {
-  if (!value || value <= 0) return "Sob consulta";
   return `R$ ${value.toFixed(2).replace(".", ",")}`;
 }
 

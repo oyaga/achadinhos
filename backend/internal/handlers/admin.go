@@ -456,6 +456,7 @@ func (h *AdminHandler) CreateProduct(c *gin.Context) {
 		Stock:        stock,
 		LinkOverride: strings.TrimSpace(req.Link),
 		Manufacturer: strings.TrimSpace(req.Manufacturer),
+		Description:  strings.TrimSpace(req.Description),
 		Highlight:    req.Highlight,
 	}
 	// Seller is optional. When provided, validate it exists and copy the
@@ -549,6 +550,9 @@ func (h *AdminHandler) UpdateProduct(c *gin.Context) {
 	}
 	if req.Manufacturer != nil {
 		updates["manufacturer"] = strings.TrimSpace(*req.Manufacturer)
+	}
+	if req.Description != nil {
+		updates["description"] = strings.TrimSpace(*req.Description)
 	}
 	if req.Highlight != nil {
 		updates["highlight"] = *req.Highlight

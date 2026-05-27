@@ -86,6 +86,7 @@ type AdminProductRequest struct {
 	Stock        string   `json:"stock" binding:"max=64"`
 	Link         string   `json:"link" binding:"omitempty,max=500"`
 	Manufacturer string   `json:"manufacturer" binding:"max=255"`
+	Description  string   `json:"description" binding:"max=2000"`
 	Highlight    bool     `json:"highlight"`
 }
 
@@ -101,5 +102,6 @@ type AdminProductPatch struct {
 	Stock        *string  `json:"stock" binding:"omitempty,max=64"`
 	Link         *string  `json:"link" binding:"omitempty,max=500"`
 	Manufacturer *string  `json:"manufacturer" binding:"omitempty,max=255"`
+	Description  *string  `json:"description" binding:"omitempty,max=2000"`
 	Highlight    *bool    `json:"highlight"`
 }
