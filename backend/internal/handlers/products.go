@@ -25,6 +25,9 @@ func (h *ProductsHandler) List(c *gin.Context) {
 	if cat := c.Query("category"); cat != "" && cat != "all" {
 		q = q.Where("category = ?", cat)
 	}
+	if c.Query("highlight") == "true" {
+		q = q.Where("highlight = ?", true)
+	}
 	if search := c.Query("q"); search != "" {
 		q = q.Where("name ILIKE ?", "%"+search+"%")
 	}

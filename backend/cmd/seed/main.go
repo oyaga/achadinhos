@@ -248,9 +248,10 @@ func Run(ctx context.Context, gdb *gorm.DB) error {
 
 	// Products.
 	for _, p := range products {
+		sellerID := sellerIDs[p.Seller]
 		mp := &models.Product{
 			ID:               p.ID,
-			SellerID:         sellerIDs[p.Seller],
+			SellerID:         &sellerID,
 			Name:             p.Name,
 			Category:         p.Cat,
 			Price:            p.Price,

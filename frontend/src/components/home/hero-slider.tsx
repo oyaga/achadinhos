@@ -28,7 +28,7 @@ export function HeroSlider({ onProvider, onProduct, onSeller }: HeroSliderProps)
     void Promise.allSettled([
       providersApi.list({ highlight: true, sort: "rating", limit: 3 }),
       sellersApi.list({ highlight: true }),
-      productsApi.list({ sort: "rating", limit: 2 }),
+      productsApi.list({ highlight: true, limit: 3 }),
     ]).then(([provRes, sellRes, prodRes]) => {
       const provSlides: SlideProvider[] =
         provRes.status === "fulfilled"

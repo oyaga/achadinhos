@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { productsApi } from "@/lib/api";
-import { adaptProduct } from "@/lib/adapters";
+import { adaptProduct, ACHADINHOS_SELLER_NAME } from "@/lib/adapters";
 import type { Product } from "@/lib/types";
 import type { ContactInput } from "@/hooks/use-whatsapp-history";
 import { discountPct, formatBRL } from "@/lib/utils";
@@ -35,6 +35,10 @@ export function ProductDetail({
     }).catch(() => {});
   }, [product.id]);
 
+  const hasWhatsapp = product.whatsapp.trim().length > 0;
+  const hasLink = product.link.trim().length > 0;
+  const isAchadinhos = product.seller === ACHADINHOS_SELLER_NAME;
+
   const openWhatsapp = () => {
     const msg = encodeURIComponent(
       `Olá! Tenho interesse no produto: ${product.name} — ${formatBRL(
@@ -48,7 +52,7 @@ export function ProductDetail({
       targetId: product.id,
       name: product.name,
       avatar: product.name.charAt(0).toUpperCase(),
-      subtitle: product.seller || "Produto",
+      subtitle: product.seller,
       whatsapp: product.whatsapp,
     });
     onShowToast("Abrindo WhatsApp da revenda");
@@ -106,7 +110,7 @@ export function ProductDetail({
             <div>
               <div className="pd-seller-name">{product.seller}</div>
               <div className="pd-seller-meta">
-                Revenda parceira · {product.stock}
+                {isAchadinhos ? "Achadinhos" : "Revenda parceira"} · {product.stock}
               </div>
             </div>
             <div className="pd-rating-pill">
@@ -165,10 +169,10 @@ export function ProductDetail({
               color: "var(--ink-700)",
             }}
           >
-            {product.name}. Vendido e enviado por {product.seller}, parceira
-            homologada. Pagamento, frete e garantia tratados diretamente com a
-            revenda. Use os botões abaixo para ir ao link do produto ou
-            conversar no WhatsApp com o vendedor.
+            {product.name}.{" "}
+            {isAchadinhos
+              ? "Disponibilizado pelo Achadinhos do Condomínio. Use os botões abaixo para tratar pedido, frete e garantia com a equipe."
+              : `Vendido e enviado por ${product.seller}. Pagamento, frete e garantia tratados diretamente com a revenda. Use os botões abaixo para ir ao link do produto ou conversar no WhatsApp com o vendedor.`}
           </p>
           <div className="pd-features">
             <div className="pd-feature">
@@ -209,16 +213,25 @@ export function ProductDetail({
       </div>
 
       <div className="sticky-cta product-cta">
-        <button
-          type="button"
-          className="btn-secondary product-btn-link"
-          onClick={openLink}
-        >
-          <Icon.ExternalLink size={14} /> Ver na revenda
-        </button>
-        <button type="button" className="btn-whatsapp" onClick={openWhatsapp}>
-          <Icon.Whatsapp size={16} /> Comprar no WhatsApp
-        </button>
+        {hasLink && (
+          <button
+            type="button"
+            className="btn-secondary product-btn-link"
+            onClick={openLink}
+          >
+            <Icon.ExternalLink size={14} /> Ver na revenda
+          </button>
+        )}
+        {hasWhatsapp && (
+          <button type="button" className="btn-whatsapp" onClick={openWhatsapp}>
+            <Icon.Whatsapp size={16} /> Comprar no WhatsApp
+          </button>
+        )}
+        {!hasLink && !hasWhatsapp && (
+          <div className="product-cta-empty">
+            Pedido pelo aplicativo — fale com a equipe do Achadinhos.
+          </div>
+        )}
       </div>
     </div>
   );
