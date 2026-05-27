@@ -21,7 +21,9 @@ func NewProductsHandler(db *gorm.DB) *ProductsHandler {
 
 // List handles GET /products.
 func (h *ProductsHandler) List(c *gin.Context) {
-	q := h.db.WithContext(c.Request.Context()).Model(&models.Product{}).Preload("Seller")
+	q := h.db.WithContext(c.Request.Context()).Model(&models.Product{}).
+		Preload("Seller").
+		Preload("Photos", orderByPosition)
 	if cat := c.Query("category"); cat != "" && cat != "all" {
 		q = q.Where("category = ?", cat)
 	}
@@ -66,7 +68,10 @@ func (h *ProductsHandler) List(c *gin.Context) {
 func (h *ProductsHandler) Get(c *gin.Context) {
 	id := c.Param("id")
 	var p models.Product
-	if err := h.db.WithContext(c.Request.Context()).Preload("Seller").First(&p, "id = ?", id).Error; err != nil {
+	if err := h.db.WithContext(c.Request.Context()).
+		Preload("Seller").
+		Preload("Photos", orderByPosition).
+		First(&p, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			JSONError(c, http.StatusNotFound, "product not found")
 			return
@@ -76,6 +81,7 @@ func (h *ProductsHandler) Get(c *gin.Context) {
 	}
 	var related []models.Product
 	if err := h.db.WithContext(c.Request.Context()).
+		Preload("Photos", orderByPosition).
 		Where("category = ? AND id <> ?", p.Category, p.ID).
 		Order("rating DESC").
 		Limit(4).
