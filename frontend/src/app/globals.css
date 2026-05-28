@@ -1435,6 +1435,17 @@ textarea.field-input {
   object-fit: cover;
   z-index: 0;
 }
+.pd-hero-btn {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  display: block;
+  z-index: 0;
+}
 .pd-hero::before {
   content: "";
   position: absolute;

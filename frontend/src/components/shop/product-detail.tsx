@@ -7,6 +7,7 @@ import type { Product } from "@/lib/types";
 import type { ContactInput } from "@/hooks/use-whatsapp-history";
 import { discountPct, formatBRL } from "@/lib/utils";
 import { Icon } from "../icons";
+import { PortfolioViewer } from "../screens/portfolio-viewer";
 
 interface ProductDetailProps {
   product: Product;
@@ -27,7 +28,10 @@ export function ProductDetail({
 }: ProductDetailProps) {
   const [qty, setQty] = useState(1);
   const [related, setRelated] = useState<Product[]>([]);
+  const [viewerUrl, setViewerUrl] = useState<string | null>(null);
   const total = formatBRL(product.price * qty);
+  const photos = product.photos ?? [];
+  const extraPhotos = photos.slice(1);
 
   useEffect(() => {
     void productsApi.get(product.id).then((res) => {
@@ -93,15 +97,22 @@ export function ProductDetail({
 
       <div className="screen-body" style={{ paddingTop: 0, padding: 0 }}>
         <div className="pd-hero" data-cat={product.cat}>
-          {product.photos && product.photos.length > 0 ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={getImageUrl(product.photos[0].url)}
-              alt={product.name}
-              className="pd-hero-img"
-              loading="eager"
-              decoding="async"
-            />
+          {photos.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setViewerUrl(photos[0].url)}
+              className="pd-hero-btn"
+              aria-label="Ampliar foto"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={getImageUrl(photos[0].url)}
+                alt={product.name}
+                className="pd-hero-img"
+                loading="eager"
+                decoding="async"
+              />
+            </button>
           ) : (
             <div className="pd-hero-letter">{product.name.charAt(0)}</div>
           )}
@@ -174,6 +185,30 @@ export function ProductDetail({
           </div>
           )}
         </div>
+
+        {extraPhotos.length > 0 && (
+          <div className="pd-section" style={{ padding: "22px 16px 0" }}>
+            <h3>Mais fotos</h3>
+            <div className="pd-portfolio">
+              {extraPhotos.map((photo) => (
+                <button
+                  key={photo.id}
+                  type="button"
+                  onClick={() => setViewerUrl(photo.url)}
+                  className="pd-portfolio-item"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={getImageUrl(photo.url)}
+                    alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="pd-section" style={{ padding: "22px 16px 0" }}>
           <h3>Sobre o produto</h3>
@@ -253,6 +288,8 @@ export function ProductDetail({
           </div>
         )}
       </div>
+
+      <PortfolioViewer url={viewerUrl} onClose={() => setViewerUrl(null)} />
     </div>
   );
 }
