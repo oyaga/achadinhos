@@ -1371,7 +1371,7 @@ textarea.field-input {
 }
 .screen-header {
   background: var(--navy-900);
-  padding: 58px 22px 16px;
+  padding: calc(env(safe-area-inset-top, 20px) + 16px) 22px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
