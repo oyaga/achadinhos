@@ -29,8 +29,7 @@ var CanonicalCategories = []models.Category{
 	{ID: "eletrica", Label: "Elétrica", Short: "Elétrica", Icon: "CatElectric", SortOrder: 13},
 
 	// ── Novos segmentos do ecossistema ─────────────────────────
-	{ID: "produtos-limpeza", Label: "Produtos de limpeza", Short: "Produtos\nde limpeza", Icon: "CatCleaning", SortOrder: 100},
-	{ID: "produtos-piscina", Label: "Produtos de piscina", Short: "Produtos\npiscina", Icon: "CatShopping", SortOrder: 101},
+
 	{ID: "poste-monitoramento", Label: "Poste de monitoramento", Short: "Poste\nmonitoramento", Icon: "CatSecurity", SortOrder: 102},
 	{ID: "sindico-interior", Label: "Síndico profissional (interior)", Short: "Síndico\ninterior", Icon: "CatPartners", SortOrder: 103},
 	{ID: "sindico-grandesp", Label: "Síndicos profissionais (Grande SP)", Short: "Síndicos\nGrande SP", Icon: "CatPartners", SortOrder: 104},
@@ -69,7 +68,7 @@ var CanonicalCategories = []models.Category{
 	{ID: "projetos-arquitetura", Label: "Projetos de arquitetura", Short: "Projetos\narquitetura", Icon: "CatPartners", SortOrder: 137},
 	{ID: "brinquedos-playground", Label: "Brinquedos para playground", Short: "Brinquedos\nplayground", Icon: "CatShopping", SortOrder: 138},
 	{ID: "jardinagem", Label: "Jardinagem", Short: "Jardinagem", Icon: "CatOutsource", SortOrder: 139},
-	{ID: "cobertura-ferias", Label: "Cobertura de férias", Short: "Cobertura\nde férias", Icon: "CatPortaria", SortOrder: 140},
+
 	{ID: "iluminacao", Label: "Iluminação", Short: "Iluminação", Icon: "CatElectric", SortOrder: 141},
 	{ID: "treinamento-funcionarios", Label: "Treinamento para funcionários próprios", Short: "Treinamento\nfuncionários", Icon: "CatPartners", SortOrder: 142},
 	{ID: "administracao-condominios", Label: "Administração de condomínios", Short: "Administração\ncondomínios", Icon: "CatPartners", SortOrder: 143},
