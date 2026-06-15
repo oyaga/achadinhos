@@ -983,6 +983,7 @@ select {
   align-items: end;
   gap: 4px;
   position: relative;
+  z-index: 50;
   flex-shrink: 0;
   overflow: visible;
 }
@@ -991,11 +992,12 @@ select {
 .bottom-nav::after {
   content: "";
   position: absolute;
-  top: 100%;
+  top: 0;
   left: 0;
   right: 0;
-  height: 100px;
+  bottom: -100px;
   background: white;
+  z-index: -1;
 }
 .nav-item {
   display: flex;
