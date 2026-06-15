@@ -166,9 +166,20 @@ function ProviderSlide({ provider: p, onClick }: { provider: Provider; index: nu
         {p.badge && <div className="hero-badge">{p.badge}</div>}
       </div>
       <div className="hero-slide-media">
-        <div className="hero-avatar-ring">
-          <span className="hero-avatar-letter">{p.avatar}</span>
-        </div>
+        {p.logoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={getImageUrl(p.logoUrl)}
+            alt={p.name}
+            className="hero-product-img"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div className="hero-avatar-ring">
+            <span className="hero-avatar-letter">{p.avatar}</span>
+          </div>
+        )}
         <div className="hero-slide-cat">{p.catLabel}</div>
       </div>
     </div>
