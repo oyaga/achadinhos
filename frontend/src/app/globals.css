@@ -176,7 +176,7 @@ select {
     var(--navy-900) 0%,
     var(--navy-800) 100%
   );
-  padding: calc(58px + 8px * var(--density)) 22px calc(28px * var(--density));
+  padding: calc(env(safe-area-inset-top, 20px) + 16px) 22px calc(28px * var(--density));
   position: relative;
   overflow: hidden;
   border-bottom-left-radius: 28px;
