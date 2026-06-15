@@ -69,7 +69,7 @@ export function ProviderDetail({
         </div>
       </div>
 
-      <div className="screen-body" style={{ paddingBottom: 100 }}>
+      <div className="screen-body" style={{ paddingBottom: "calc(100px + var(--bottom-nav-h, 0px))" }}>
         <div className="pd-hero">
           <div style={{ position: "relative", zIndex: 1 }}>
             <div

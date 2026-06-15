@@ -46,6 +46,7 @@
   --shadow-elev: 0 4px 12px rgba(11, 27, 59, 0.08),
     0 16px 32px rgba(11, 27, 59, 0.1);
   --density: 1;
+  --bottom-nav-h: calc(56px + env(safe-area-inset-bottom, 0px));
 
   /* Fonts (provided via next/font; fall back gracefully) */
   --font-display: var(--font-fraunces), Georgia, serif;
@@ -1762,7 +1763,7 @@ textarea.field-input {
 /* Sticky CTA */
 .sticky-cta {
   position: absolute;
-  bottom: 0;
+  bottom: var(--bottom-nav-h);
   left: 0;
   right: 0;
   background: linear-gradient(to top, white 80%, transparent);
