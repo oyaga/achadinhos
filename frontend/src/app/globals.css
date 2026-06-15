@@ -106,13 +106,14 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
+  overscroll-behavior-y: none;
 }
 
 body {
   font-family: var(--font-ui);
   color: var(--ink-900);
   background: var(--bone-50);
-  min-height: 100dvh;
+  min-height: 100%;
   overflow: auto;
 }
 
@@ -138,7 +139,7 @@ select {
 /* ===== Device canvas (phone frame on desktop) ===== */
 .device-frame {
   width: 100%;
-  height: 100dvh;
+  height: 100%;
   position: relative;
   overflow: hidden;
   background: var(--bone-50);
