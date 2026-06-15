@@ -1367,7 +1367,7 @@ textarea.field-input {
   background: var(--bone-50);
   display: flex;
   flex-direction: column;
-  z-index: 10;
+  z-index: 80;
   animation: slideIn 0.28s cubic-bezier(0.32, 0.72, 0.3, 1);
 }
 .screen-header {
@@ -1763,11 +1763,11 @@ textarea.field-input {
 /* Sticky CTA */
 .sticky-cta {
   position: absolute;
-  bottom: var(--bottom-nav-h);
+  bottom: 0;
   left: 0;
   right: 0;
   background: linear-gradient(to top, white 80%, transparent);
-  padding: 16px 22px 22px;
+  padding: 16px 22px calc(22px + env(safe-area-inset-bottom, 0px));
   display: flex;
   gap: 8px;
   z-index: 5;

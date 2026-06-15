@@ -264,7 +264,7 @@ export function ProductDetail({
           </div>
         )}
 
-        <div style={{ height: "calc(120px + var(--bottom-nav-h, 0px))" }} />
+        <div style={{ height: "calc(120px + env(safe-area-inset-bottom, 0px))" }} />
       </div>
 
       <div className="sticky-cta product-cta">
