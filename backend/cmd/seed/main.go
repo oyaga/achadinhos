@@ -128,17 +128,20 @@ func main() {
 
 // Run is the public seed entrypoint. Reusable from tests.
 func Run(ctx context.Context, gdb *gorm.DB) error {
-	// Truncate everything for idempotency.
-	tables := []string{
-		"review_helpfuls", "reviews", "favorites",
-		"refresh_tokens", "products", "sellers",
-		"providers", "users", "condominios", "categories",
-	}
-	for _, t := range tables {
-		if err := gdb.WithContext(ctx).Exec("TRUNCATE TABLE " + t + " RESTART IDENTITY CASCADE").Error; err != nil {
-			return err
+	// SAFETY: Destructive truncate disabled to prevent accidental data loss in production.
+	// To force a clean seed, manually truncate tables or uncomment below if in development.
+	/*
+		tables := []string{
+			"review_helpfuls", "reviews", "favorites",
+			"refresh_tokens", "products", "sellers",
+			"providers", "users", "condominios", "categories",
 		}
-	}
+		for _, t := range tables {
+			if err := gdb.WithContext(ctx).Exec("TRUNCATE TABLE " + t + " RESTART IDENTITY CASCADE").Error; err != nil {
+				return err
+			}
+		}
+	*/
 
 	// Categories — canonical list lives in internal/db (so api startup
 	// and the seed share the same source of truth).
