@@ -111,7 +111,13 @@ body {
   font-family: var(--font-ui);
   color: var(--ink-900);
   background: var(--bone-50);
+  /* Layered fallbacks: vh works everywhere; dvh updates to the visible
+     viewport; lvh forces the largest possible viewport (in iOS PWA
+     standalone this corresponds to the area including the home indicator
+     zone, so body extends past the safe-area instead of stopping short). */
+  min-height: 100vh;
   min-height: 100dvh;
+  min-height: 100lvh;
   overflow: auto;
 }
 
@@ -137,7 +143,9 @@ select {
 /* ===== Device canvas (phone frame on desktop) ===== */
 .device-frame {
   width: 100%;
+  height: 100vh;
   height: 100dvh;
+  height: 100lvh;
   position: relative;
   overflow: hidden;
   background: var(--bone-50);
