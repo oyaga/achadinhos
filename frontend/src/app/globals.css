@@ -983,12 +983,13 @@ select {
 
 /* ===== Bottom nav ===== */
 .bottom-nav {
-  /* Negative bottom to cancel iOS Safari's implicit safe-area-bottom inset
-     on fixed elements. With no padding-bottom, the nav extends all the way
-     to the physical screen edge — labels grudam na borda; the home
-     indicator overlays them. */
+  /* Fixed at the viewport bottom. iOS PWA standalone with viewport-fit:cover
+     reserves the home indicator area as safe-area-inset-bottom — that's why
+     a thin white strip remains visible below the labels (filled by body's
+     white background). That strip is the iOS-mandated clearance for the
+     home indicator and can't be eliminated without overlapping it. */
   position: fixed;
-  bottom: calc(0px - env(safe-area-inset-bottom, 0px));
+  bottom: 0;
   left: 0;
   right: 0;
   background: white;
