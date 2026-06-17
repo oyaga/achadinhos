@@ -983,10 +983,12 @@ select {
 
 /* ===== Bottom nav ===== */
 .bottom-nav {
-  /* Anchored to the viewport bottom — works in PWA standalone where the
-     viewport extends through the home indicator safe area. */
+  /* Negative bottom to cancel iOS Safari's implicit safe-area-bottom inset
+     on fixed elements. With no padding-bottom, the nav extends all the way
+     to the physical screen edge — labels grudam na borda; the home
+     indicator overlays them. */
   position: fixed;
-  bottom: 0;
+  bottom: calc(0px - env(safe-area-inset-bottom, 0px));
   left: 0;
   right: 0;
   background: white;
