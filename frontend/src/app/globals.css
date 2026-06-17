@@ -46,7 +46,6 @@
   --shadow-elev: 0 4px 12px rgba(11, 27, 59, 0.08),
     0 16px 32px rgba(11, 27, 59, 0.1);
   --density: 1;
-  --bottom-nav-h: calc(56px + env(safe-area-inset-bottom, 0px));
 
   /* Fonts (provided via next/font; fall back gracefully) */
   --font-display: var(--font-fraunces), Georgia, serif;
@@ -106,17 +105,13 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overscroll-behavior-y: none;
 }
 
 body {
   font-family: var(--font-ui);
   color: var(--ink-900);
-  /* white so the safe-area-inset-bottom region below the bottom-nav matches
-     the nav background. .app/.device-frame keep their own bone-50 so the
-     home content backgrounds are unchanged. */
-  background: white;
-  min-height: 100%;
+  background: var(--bone-50);
+  min-height: 100dvh;
   overflow: auto;
 }
 
@@ -142,7 +137,7 @@ select {
 /* ===== Device canvas (phone frame on desktop) ===== */
 .device-frame {
   width: 100%;
-  height: 100%;
+  height: 100dvh;
   position: relative;
   overflow: hidden;
   background: var(--bone-50);
@@ -169,9 +164,6 @@ select {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   position: relative;
-  /* Reserve space for the absolutely-positioned .bottom-nav so the last
-     section of the home isn't hidden behind it. */
-  padding-bottom: 64px;
 }
 .app-scroll::-webkit-scrollbar {
   display: none;
@@ -184,7 +176,7 @@ select {
     var(--navy-900) 0%,
     var(--navy-800) 100%
   );
-  padding: calc(env(safe-area-inset-top, 20px) + 16px) 22px calc(28px * var(--density));
+  padding: calc(58px + 8px * var(--density)) 22px calc(28px * var(--density));
   position: relative;
   overflow: hidden;
   border-bottom-left-radius: 28px;
@@ -983,23 +975,16 @@ select {
 
 /* ===== Bottom nav ===== */
 .bottom-nav {
-  /* Fixed at the viewport bottom. iOS PWA standalone with viewport-fit:cover
-     reserves the home indicator area as safe-area-inset-bottom — that's why
-     a thin white strip remains visible below the labels (filled by body's
-     white background). That strip is the iOS-mandated clearance for the
-     home indicator and can't be eliminated without overlapping it. */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   background: white;
   border-top: 1px solid var(--bone-200);
-  padding: 4px 14px 0;
+  padding: 4px 14px calc(6px + env(safe-area-inset-bottom, 0px));
   display: grid;
   grid-template-columns: 1fr 1fr 64px 1fr 1fr;
   align-items: end;
   gap: 4px;
+  position: relative;
   z-index: 50;
+  flex-shrink: 0;
   overflow: visible;
 }
 
@@ -1019,13 +1004,12 @@ select {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 6px 0 0;
+  padding: 6px 0;
   color: var(--ink-300);
   font-size: 10px;
   font-weight: 600;
   transition: color 0.15s;
   letter-spacing: 0.02em;
-  position: relative;
 }
 .nav-item.active {
   color: var(--navy-900);
@@ -1034,14 +1018,11 @@ select {
   opacity: 1;
 }
 .nav-dot {
-  position: absolute;
-  bottom: -1px;
-  left: 50%;
-  transform: translateX(-50%);
   width: 4px;
   height: 4px;
   border-radius: 50%;
   background: var(--gold-500);
+  margin-top: -2px;
   opacity: 0;
   transition: opacity 0.15s;
 }
@@ -1390,7 +1371,7 @@ textarea.field-input {
 }
 .screen-header {
   background: var(--navy-900);
-  padding: calc(env(safe-area-inset-top, 20px) + 16px) 22px 16px;
+  padding: 58px 22px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1781,7 +1762,7 @@ textarea.field-input {
 /* Sticky CTA */
 .sticky-cta {
   position: absolute;
-  bottom: var(--bottom-nav-h);
+  bottom: 0;
   left: 0;
   right: 0;
   background: linear-gradient(to top, white 80%, transparent);
