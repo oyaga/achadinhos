@@ -1017,6 +1017,7 @@ select {
   font-weight: 600;
   transition: color 0.15s;
   letter-spacing: 0.02em;
+  position: relative;
 }
 .nav-item.active {
   color: var(--navy-900);
@@ -1025,11 +1026,14 @@ select {
   opacity: 1;
 }
 .nav-dot {
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 4px;
   height: 4px;
   border-radius: 50%;
   background: var(--gold-500);
-  margin-top: -2px;
   opacity: 0;
   transition: opacity 0.15s;
 }
