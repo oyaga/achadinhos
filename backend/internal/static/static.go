@@ -126,8 +126,15 @@ func applyCacheHeaders(c *gin.Context, p string) {
 	switch {
 	case strings.HasPrefix(p, "_next/static/"):
 		c.Writer.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+	case strings.HasSuffix(p, "sw.js"):
+		// O service worker NUNCA pode ficar em cache de intermediários. O
+		// Cloudflare cacheia .js por extensão e, quando o faz, ignora o
+		// "no-cache" da origem e devolve ao navegador o Browser Cache TTL
+		// padrão (4h) — fazendo o PWA demorar a pegar novas versões.
+		// no-store/private são sinais mais fortes: o Cloudflare trata a
+		// resposta como não-cacheável (DYNAMIC) e o cliente sempre revalida.
+		c.Writer.Header().Set("Cache-Control", "private, no-store, no-cache, must-revalidate")
 	case strings.HasSuffix(p, ".html"),
-		strings.HasSuffix(p, "sw.js"),
 		strings.HasSuffix(p, "manifest.webmanifest"):
 		c.Writer.Header().Set("Cache-Control", "no-cache")
 	default:
