@@ -112,7 +112,10 @@ body {
 body {
   font-family: var(--font-ui);
   color: var(--ink-900);
-  background: var(--bone-50);
+  /* white so the safe-area-inset-bottom region below the bottom-nav matches
+     the nav background. .app/.device-frame keep their own bone-50 so the
+     home content backgrounds are unchanged. */
+  background: white;
   min-height: 100%;
   overflow: auto;
 }
@@ -2391,12 +2394,7 @@ textarea.field-input {
 }
 .shop-search-wrap {
   padding: 10px 16px 8px;
-  background: linear-gradient(
-    180deg,
-    var(--navy-800) 0%,
-    var(--navy-800) 60%,
-    transparent 100%
-  );
+  background: var(--navy-800);
 }
 .shop-search {
   display: flex;
