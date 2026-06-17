@@ -565,9 +565,15 @@ select {
 .hero-slider-track::-webkit-scrollbar { display: none; }
 
 .hero-slide {
-  min-width: 100%;
+  /* flex-basis 100% (não min-width: 100%): com min-width + flex-basis:auto a
+     slide crescia até a largura do conteúdo (nome longo numa linha),
+     ultrapassando a viewport e empurrando o logo pra fora da tela. flex:0 0
+     100% trava a slide na largura da track; min-width:0 deixa o conteúdo
+     encolher para o título quebrar em 2 linhas (line-clamp) em vez de vazar. */
+  flex: 0 0 100%;
+  min-width: 0;
+  max-width: 100%;
   scroll-snap-align: start;
-  flex-shrink: 0;
   border-radius: 0;
   box-shadow: none;
 }
