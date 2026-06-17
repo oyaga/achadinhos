@@ -983,9 +983,9 @@ select {
 
 /* ===== Bottom nav ===== */
 .bottom-nav {
-  /* Anchored to the very bottom of .app — defeats any flex/grid sizing
-     quirk that might leave room below it. */
-  position: absolute;
+  /* Anchored to the viewport bottom — works in PWA standalone where the
+     viewport extends through the home indicator safe area. */
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
