@@ -169,6 +169,9 @@ select {
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   position: relative;
+  /* Reserve space for the absolutely-positioned .bottom-nav so the last
+     section of the home isn't hidden behind it. */
+  padding-bottom: 64px;
 }
 .app-scroll::-webkit-scrollbar {
   display: none;
@@ -980,18 +983,20 @@ select {
 
 /* ===== Bottom nav ===== */
 .bottom-nav {
+  /* Anchored to the very bottom of .app — defeats any flex/grid sizing
+     quirk that might leave room below it. */
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: white;
   border-top: 1px solid var(--bone-200);
-  /* No bottom padding — labels meet the home indicator. body's white
-     background covers the safe-area visually. */
   padding: 4px 14px 0;
   display: grid;
   grid-template-columns: 1fr 1fr 64px 1fr 1fr;
   align-items: end;
   gap: 4px;
-  position: relative;
   z-index: 50;
-  flex-shrink: 0;
   overflow: visible;
 }
 
