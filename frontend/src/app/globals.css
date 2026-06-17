@@ -982,7 +982,10 @@ select {
 .bottom-nav {
   background: white;
   border-top: 1px solid var(--bone-200);
-  padding: 4px 14px max(6px, env(safe-area-inset-bottom, 6px));
+  /* Just the original 6px. The safe-area-inset-bottom region of iOS PWA is
+     covered by body's white background, so visually the nav appears to
+     extend continuously to the home indicator without an extra padding gap. */
+  padding: 4px 14px 6px;
   display: grid;
   grid-template-columns: 1fr 1fr 64px 1fr 1fr;
   align-items: end;
