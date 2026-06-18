@@ -75,6 +75,10 @@ type reviewSeed struct {
 var reviews = []reviewSeed{
 	{ProviderSlug: "premium-admin", Author: "Ricardo Silva", Condo: "Edifício Aurora · Síndico", Rating: 5, Text: "Excelente administradora. Transparência total nas contas e o suporte jurídico é muito eficiente.", Helpful: 12, Tags: []string{"Profissional", "Atencioso"}, CreatedAt: time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)},
 	{ProviderSlug: "premium-admin", Author: "Mariana Costa", Condo: "Condomínio Vila Nova · Síndica", Rating: 5, Text: "Gostamos muito do atendimento da Premium. O app deles facilita muito a vida dos moradores.", Helpful: 8, Tags: []string{"Preço justo", "Resolve rápido"}, CreatedAt: time.Date(2026, 6, 5, 10, 0, 0, 0, time.UTC)},
+	{ProviderSlug: "premium-admin", Author: "Felipe Andrade", Condo: "Residencial Jardim Europa · Síndico", Rating: 4, Text: "Equipe boa e atende rápido. Só achei o relatório financeiro um pouco confuso no começo, mas resolveram bem.", Helpful: 4, Tags: []string{"Profissional"}, CreatedAt: time.Date(2026, 6, 7, 10, 0, 0, 0, time.UTC)},
+	{ProviderSlug: "premium-admin", Author: "Patrícia Lopes", Condo: "Condomínio Solar das Flores · Subsíndica", Rating: 3, Text: "Atendimento ok no geral. Algumas demandas demoraram mais do que o esperado, mas no fim deu certo.", Helpful: 2, Tags: []string{}, CreatedAt: time.Date(2026, 6, 9, 10, 0, 0, 0, time.UTC)},
+	{ProviderSlug: "premium-admin", Author: "André Nogueira", Condo: "Edifício Costa Verde · Síndico", Rating: 2, Text: "Esperava mais. Demoraram pra responder em momentos críticos. Pode melhorar bastante.", Helpful: 1, Tags: []string{}, CreatedAt: time.Date(2026, 6, 11, 10, 0, 0, 0, time.UTC)},
+	{ProviderSlug: "premium-admin", Author: "Juliana Reis", Condo: "Residencial Aurora · Moradora", Rating: 5, Text: "Reuniões organizadas e atas bem feitas. Recomendo!", Helpful: 6, Tags: []string{"Atencioso"}, CreatedAt: time.Date(2026, 6, 13, 10, 0, 0, 0, time.UTC)},
 }
 
 func main() {

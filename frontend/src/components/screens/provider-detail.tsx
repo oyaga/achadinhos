@@ -17,14 +17,6 @@ interface ProviderDetailProps {
   onWhatsapp: () => void;
 }
 
-const RATING_DISTRIBUTION: Array<{ stars: number; pct: number }> = [
-  { stars: 5, pct: 78 },
-  { stars: 4, pct: 18 },
-  { stars: 3, pct: 3 },
-  { stars: 2, pct: 1 },
-  { stars: 1, pct: 0 },
-];
-
 export function ProviderDetail({
   provider,
   isFav,
@@ -36,6 +28,14 @@ export function ProviderDetail({
   const [reviews, setReviews] = useState<Review[]>([]);
   const [portfolio, setPortfolio] = useState<string[]>(provider.portfolio ?? []);
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+
+  const ratingDist = [5, 4, 3, 2, 1].map((stars) => {
+    const count = reviews.filter((r) => r.rating === stars).length;
+    return {
+      stars,
+      pct: reviews.length ? Math.round((count / reviews.length) * 100) : 0,
+    };
+  });
 
   useEffect(() => {
     void providersApi.listReviews(provider.id).then((res) => {
@@ -217,7 +217,7 @@ export function ProviderDetail({
               </div>
             </div>
             <div className="rating-bars">
-              {RATING_DISTRIBUTION.map((d) => (
+              {ratingDist.map((d) => (
                 <div key={d.stars} className="rating-bar-row">
                   <span>{d.stars}</span>
                   <div className="rating-bar">
