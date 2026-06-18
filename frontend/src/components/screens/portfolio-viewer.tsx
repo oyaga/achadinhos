@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { getImageUrl, isPdf } from "@/lib/api";
 import { Icon } from "../icons";
 import { PdfDocument } from "./pdf-document";
@@ -13,9 +14,11 @@ interface PortfolioViewerProps {
 // overlay with a "Voltar" button — so tapping a portfolio item keeps the user
 // inside the app instead of navigating away to the raw file.
 export function PortfolioViewer({ url, onClose }: PortfolioViewerProps) {
-  if (!url) return null;
+  if (!url || typeof document === "undefined") return null;
   const full = getImageUrl(url);
-  return (
+  // Portal to <body> so the overlay escapes the provider screen's stacking
+  // context — otherwise the bottom nav renders in front of the document.
+  return createPortal(
     <div className="pv-overlay" role="dialog" aria-modal="true" onClick={onClose}>
       <button
         type="button"
@@ -33,6 +36,7 @@ export function PortfolioViewer({ url, onClose }: PortfolioViewerProps) {
           <img src={full} alt="Portfólio" className="pv-img" />
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
