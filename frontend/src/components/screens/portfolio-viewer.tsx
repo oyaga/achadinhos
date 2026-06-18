@@ -2,6 +2,7 @@
 
 import { getImageUrl, isPdf } from "@/lib/api";
 import { Icon } from "../icons";
+import { PdfDocument } from "./pdf-document";
 
 interface PortfolioViewerProps {
   url: string | null;
@@ -26,7 +27,7 @@ export function PortfolioViewer({ url, onClose }: PortfolioViewerProps) {
       </button>
       <div className="pv-stage" onClick={(e) => e.stopPropagation()}>
         {isPdf(url) ? (
-          <iframe src={full} className="pv-pdf" title="Documento" />
+          <PdfDocument url={full} />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={full} alt="Portfólio" className="pv-img" />

@@ -6703,6 +6703,29 @@ textarea.field-input {
   border: none;
   border-radius: 8px;
   background: #fff;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pv-pdf-pages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.pv-pdf-page {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.pv-pdf-msg {
+  padding: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #0b1b3b;
+}
+.pv-pdf-msg a {
+  color: #1d4ed8;
+  text-decoration: underline;
 }
 
 /* ── Logo cropper ── */
