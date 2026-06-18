@@ -39,7 +39,7 @@ export interface Provider {
   logoUrl?: string;
   rating: number;
   reviews: number;
-  badge?: "Ouro" | "Verificado" | "Top";
+  badge?: "Ouro" | "Verificado" | "Premium Black";
   verified: boolean;
   distance: string;
   price: string;
