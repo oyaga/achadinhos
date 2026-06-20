@@ -29,6 +29,8 @@ services:
       APP_ENV: production
       APP_PORT: "8080"
       APP_LOG_LEVEL: ${APP_LOG_LEVEL:-info}
+      # URL pública usada para montar links (ex.: e-mail da ficha de cadastro).
+      APP_BASE_URL: ${APP_BASE_URL:-https://achadinhoscondominio.com.br}
       DB_HOST: postgres
       DB_PORT: "5432"
       DB_USER: ${POSTGRES_USER:-achadinhos}
