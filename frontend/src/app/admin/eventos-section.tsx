@@ -7,6 +7,7 @@ import {
   type ApiEvent,
 } from "@/lib/api";
 import { Icon } from "@/components/icons";
+import { cn } from "@/lib/utils";
 
 interface FormState {
   title: string;
@@ -160,21 +161,27 @@ export function EventosSection() {
           <div className="prof-row-fields">
             <div className="prof-field">
               <label className="prof-label">Data</label>
-              <input
-                className="prof-input"
-                type="date"
-                value={form.event_date}
-                onChange={(e) => update("event_date", e.target.value)}
-              />
+              <div className="prof-native">
+                <input
+                  className={cn("prof-input", form.event_date && "filled")}
+                  type="date"
+                  value={form.event_date}
+                  onChange={(e) => update("event_date", e.target.value)}
+                />
+                {!form.event_date && <span className="prof-native-ph">dd/mm/aaaa</span>}
+              </div>
             </div>
             <div className="prof-field">
               <label className="prof-label">Hora</label>
-              <input
-                className="prof-input"
-                type="time"
-                value={form.event_time}
-                onChange={(e) => update("event_time", e.target.value)}
-              />
+              <div className="prof-native">
+                <input
+                  className={cn("prof-input", form.event_time && "filled")}
+                  type="time"
+                  value={form.event_time}
+                  onChange={(e) => update("event_time", e.target.value)}
+                />
+                {!form.event_time && <span className="prof-native-ph">--:--</span>}
+              </div>
             </div>
           </div>
 

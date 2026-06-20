@@ -4828,11 +4828,40 @@ textarea.field-input {
   border-color: var(--navy-600);
   box-shadow: 0 0 0 3px rgba(14, 33, 64, 0.07);
 }
-/* Inputs nativos de data/hora (form de eventos) com a mesma altura dos demais
-   no mobile, onde o iOS tende a colapsar/alinhar o valor de forma inconsistente. */
+/* Inputs nativos de data/hora (form de eventos). No iOS PWA eles não pintam
+   placeholder quando vazios, ficando em branco; usamos um placeholder próprio
+   sobreposto (.prof-native-ph) e mantemos a altura consistente. */
 input[type="date"].prof-input,
 input[type="time"].prof-input {
   min-height: 42px;
+}
+.prof-native {
+  position: relative;
+}
+.prof-native .prof-input {
+  width: 100%;
+}
+.prof-native-ph {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-400);
+  font-size: 14px;
+  pointer-events: none;
+}
+/* Some o placeholder ao focar (o input nativo assume). */
+.prof-native .prof-input:focus + .prof-native-ph {
+  display: none;
+}
+/* Evita placeholder nativo duplicado (desktop) enquanto vazio; ao preencher ou
+   focar, o texto do input nativo volta a aparecer. */
+.prof-native .prof-input:not(.filled)::-webkit-datetime-edit {
+  color: transparent;
+}
+.prof-native .prof-input.filled::-webkit-datetime-edit,
+.prof-native .prof-input:focus::-webkit-datetime-edit {
+  color: var(--ink-800);
 }
 .prof-textarea {
   background: white;
