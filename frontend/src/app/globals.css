@@ -1790,10 +1790,19 @@ textarea.field-input {
   left: 0;
   right: 0;
   background: linear-gradient(to top, white 80%, transparent);
-  padding: 16px 22px 22px;
+  padding: 16px 22px calc(22px + env(safe-area-inset-bottom, 0px));
   display: flex;
   gap: 8px;
   z-index: 5;
+}
+
+/* A bottom-nav (z-index 50) é irmã das telas sobrepostas (.screen, z-index 10)
+   e, sem isto, pinta por cima do .sticky-cta escondendo os botões de WhatsApp/
+   Avaliar. Telas que têm CTA fixo sobem acima da nav (a nav fica oculta atrás
+   da tela de detalhe, que tem fundo opaco). Telas-aba (favoritos, calendário)
+   não têm sticky-cta, então mantêm a nav visível. */
+.screen:has(.sticky-cta) {
+  z-index: 60;
 }
 .btn-whatsapp {
   flex: 2;
@@ -4818,6 +4827,12 @@ textarea.field-input {
   outline: none;
   border-color: var(--navy-600);
   box-shadow: 0 0 0 3px rgba(14, 33, 64, 0.07);
+}
+/* Inputs nativos de data/hora (form de eventos) com a mesma altura dos demais
+   no mobile, onde o iOS tende a colapsar/alinhar o valor de forma inconsistente. */
+input[type="date"].prof-input,
+input[type="time"].prof-input {
+  min-height: 42px;
 }
 .prof-textarea {
   background: white;
