@@ -70,6 +70,7 @@ func AutoMigrate(gdb *gorm.DB) error {
 		&models.PortfolioPhoto{},
 		&models.RefreshToken{},
 		&models.FichaCadastro{},
+		&models.Event{},
 	)
 }
 

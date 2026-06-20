@@ -277,6 +277,18 @@ func Run(ctx context.Context, gdb *gorm.DB) error {
 			return err
 		}
 	}
+
+	// Eventos do condomínio (exemplos).
+	events := []models.Event{
+		{Title: "Assembleia Geral Ordinária", Description: "Prestação de contas e eleição do conselho.", Location: "Salão de festas", EventDate: time.Date(2026, 6, 25, 0, 0, 0, 0, time.UTC), EventTime: "19:00"},
+		{Title: "Dedetização das áreas comuns", Description: "Garagem e corredores. Evite o local no período.", Location: "Garagem", EventDate: time.Date(2026, 7, 2, 0, 0, 0, 0, time.UTC), EventTime: "09:00"},
+		{Title: "Manutenção dos elevadores", Description: "Elevador social ficará indisponível pela manhã.", Location: "Torre A", EventDate: time.Date(2026, 7, 10, 0, 0, 0, 0, time.UTC), EventTime: "08:00"},
+	}
+	for i := range events {
+		if err := gdb.WithContext(ctx).Create(&events[i]).Error; err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

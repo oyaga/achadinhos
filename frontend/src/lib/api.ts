@@ -685,6 +685,25 @@ export interface CreateFichaResult {
   email_enabled: boolean;
 }
 
+// ── Eventos do condomínio ──
+export interface ApiEvent {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  event_date: string; // ISO; use .slice(0,10) para a data "AAAA-MM-DD"
+  event_time: string; // "HH:MM"
+  created_at?: string;
+}
+
+export interface AdminEventPayload {
+  title: string;
+  description: string;
+  location: string;
+  event_date: string; // "AAAA-MM-DD"
+  event_time: string; // "HH:MM"
+}
+
 export const adminApi = {
   // ── Síndicos (read-only) ──
   async listSindicos(): Promise<AdminSindico[]> {
@@ -770,6 +789,21 @@ export const adminApi = {
     return request<void>(`/admin/fichas/${id}`, { method: "DELETE", parseAs: "none" });
   },
 
+  // ── Eventos do condomínio ──
+  async listEvents(): Promise<ApiEvent[]> {
+    const res = await request<{ data: ApiEvent[] }>("/admin/events");
+    return res.data ?? [];
+  },
+  async createEvent(payload: AdminEventPayload): Promise<ApiEvent> {
+    return request<ApiEvent>("/admin/events", { method: "POST", body: payload });
+  },
+  async updateEvent(id: string, payload: Partial<AdminEventPayload>): Promise<ApiEvent> {
+    return request<ApiEvent>(`/admin/events/${id}`, { method: "PATCH", body: payload });
+  },
+  async deleteEvent(id: string): Promise<void> {
+    return request<void>(`/admin/events/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+
   // ── Produtos ──
   async listProducts(): Promise<ApiProduct[]> {
     const res = await request<{ data: ApiProduct[] }>("/admin/products");
@@ -816,6 +850,14 @@ export const fichasApi = {
       body: payload,
       skipAuth: true,
     });
+  },
+};
+
+// Eventos do condomínio (leitura pública).
+export const eventsApi = {
+  async list(): Promise<ApiEvent[]> {
+    const res = await request<{ data: ApiEvent[] }>("/events");
+    return res.data ?? [];
   },
 };
 

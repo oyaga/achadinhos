@@ -45,6 +45,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	adminH := handlers.NewAdminHandler(db)
 	mailer := email.NewClient(cfg.ResendAPIKey, cfg.MailFrom)
 	fichaH := handlers.NewFichaHandler(db, mailer, cfg.AppBaseURL)
+	evH := handlers.NewEventHandler(db)
 
 	v1 := r.Group("/api/v1")
 
@@ -74,6 +75,10 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	// Public ficha de cadastro (preenchimento via link com token).
 	v1.GET("/fichas/:token", fichaH.GetByToken)
 	v1.POST("/fichas/:token", fichaH.Submit)
+
+	// Public events (calendário do condomínio).
+	v1.GET("/events", evH.List)
+	v1.GET("/events/:id", evH.Get)
 
 	// Authenticated (any logged-in user: síndico or admin).
 	authed := v1.Group("")
@@ -119,6 +124,11 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.POST("/fichas", fichaH.Create)
 		admin.POST("/fichas/:id/resend", fichaH.Resend)
 		admin.DELETE("/fichas/:id", fichaH.Delete)
+
+		admin.GET("/events", evH.List)
+		admin.POST("/events", evH.Create)
+		admin.PATCH("/events/:id", evH.Update)
+		admin.DELETE("/events/:id", evH.Delete)
 
 		admin.GET("/products", adminH.ListProducts)
 		admin.POST("/products", adminH.CreateProduct)

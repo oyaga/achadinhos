@@ -27,7 +27,7 @@ import { AllCategoriesScreen } from "./screens/all-categories-screen";
 import { HighlightsScreen } from "./screens/highlights-screen";
 import { RateScreen } from "./screens/rate-screen";
 import { FavoritesScreen } from "./screens/favorites-screen";
-import { OrdersScreen } from "./screens/orders-screen";
+import { EventsScreen } from "./screens/events-screen";
 import { ShoppingScreen } from "./shop/shopping-screen";
 import { ProductDetail } from "./shop/product-detail";
 import { ProfileScreen } from "./screens/profile-screen";
@@ -44,7 +44,7 @@ export function App({ initialRoute }: AppProps = {}) {
   const { toggle: toggleFavRaw, isFav } = useFavorites();
   const { toast, showToast } = useToast();
   const { canInstall, isIOS, isStandalone, promptInstall } = useInstallPrompt();
-  const { history: waHistory, record: recordWa, clear: clearWa } = useWhatsappHistory();
+  const { record: recordWa } = useWhatsappHistory();
 
   const [activeCat, setActiveCat] = useState<CategoryId>("destaque");
   const [activeNav, setActiveNav] = useState<NavId>("home");
@@ -127,7 +127,7 @@ export function App({ initialRoute }: AppProps = {}) {
     setActiveNav(id);
     if (id === "fav") navigate({ name: "favorites" });
     else if (id === "home") navigate({ name: "home" });
-    else if (id === "orders") navigate({ name: "orders" });
+    else if (id === "events") navigate({ name: "events" });
     else if (id === "profile") navigate({ name: "profile" });
   };
 
@@ -277,14 +277,12 @@ export function App({ initialRoute }: AppProps = {}) {
             onToggleSellerFav={toggleSellerFav}
           />
         )}
-        {route.name === "orders" && (
-          <OrdersScreen
-            history={waHistory}
+        {route.name === "events" && (
+          <EventsScreen
             onBack={() => {
               setActiveNav("home");
               back();
             }}
-            onClear={clearWa}
           />
         )}
         {route.name === "shopping" && (

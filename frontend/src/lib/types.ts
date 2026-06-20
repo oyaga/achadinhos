@@ -112,7 +112,7 @@ export type Route =
   | { name: "highlights" }
   | { name: "rate"; provider: Provider }
   | { name: "favorites" }
-  | { name: "orders" }
+  | { name: "events" }
   | { name: "shopping" }
   | { name: "product"; product: Product }
   | { name: "profile" };

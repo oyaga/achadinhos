@@ -122,6 +122,13 @@ export const Icon = {
       <path d="M12 5v14M5 12h14" />
     </Svg>
   ),
+  Calendar: ({ size = 20, ...rest }: IconProps = {}) => (
+    <Svg size={size} {...rest}>
+      <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
+      <path d="M3 9h18" />
+      <path d="M8 2.5v4M16 2.5v4" />
+    </Svg>
+  ),
   Send: ({ size = 16, ...rest }: IconProps = {}) => (
     <Svg size={size} {...rest}>
       <path d="m22 2-7 20-4-9-9-4 20-7Z" />

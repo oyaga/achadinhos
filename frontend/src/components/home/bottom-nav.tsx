@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
 
-export type NavId = "home" | "orders" | "fav" | "profile";
+export type NavId = "home" | "events" | "fav" | "profile";
 
 interface BottomNavProps {
   active: NavId;
@@ -16,7 +16,7 @@ type NavItem = { id: NavId; label: string; icon: keyof typeof Icon };
 
 const ITEMS_LEFT: NavItem[] = [
   { id: "home", label: "Início", icon: "Home" },
-  { id: "orders", label: "Pedidos", icon: "Box" },
+  { id: "events", label: "Calendário", icon: "Calendar" },
 ];
 
 export function BottomNav({ active, onSelect, onInstall, authed }: BottomNavProps) {
