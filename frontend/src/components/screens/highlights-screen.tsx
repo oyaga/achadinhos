@@ -49,7 +49,7 @@ export function HighlightsScreen({
         >
           Os{" "}
           <strong style={{ color: "var(--navy-900)" }}>
-            melhores prestadores
+            melhores afiliados
           </strong>{" "}
           selecionados pelo nosso algoritmo. Atualizado todo dia às 6h.
         </div>

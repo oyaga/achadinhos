@@ -4,7 +4,7 @@ interface BrandLockupProps {
   sub?: string;
 }
 
-export function BrandLockup({ sub = "Síndico · Prestadores · Shopping" }: BrandLockupProps) {
+export function BrandLockup({ sub = "Síndico · Afiliados · Shopping" }: BrandLockupProps) {
   return (
     <div className="auth-brand">
       <div className="auth-brand-mark">

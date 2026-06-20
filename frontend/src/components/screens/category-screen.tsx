@@ -119,10 +119,10 @@ export function CategoryScreen({
             {IconCmp ? <IconCmp /> : null}
           </div>
           <h1>{catLabel}</h1>
-          <p>{catDesc ?? "Encontre os melhores prestadores desta categoria"}</p>
+          <p>{catDesc ?? "Encontre os melhores afiliados desta categoria"}</p>
           <div className="cat-stats">
             <div className="cat-stat">
-              <strong>{providers.length}</strong> prestadores
+              <strong>{providers.length}</strong> afiliados
             </div>
             <div className="cat-stat">
               ⭐ <strong>4,8</strong> média

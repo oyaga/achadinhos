@@ -6,6 +6,7 @@ import (
 
 	"github.com/achadinhos/backend/internal/auth"
 	"github.com/achadinhos/backend/internal/config"
+	"github.com/achadinhos/backend/internal/email"
 	"github.com/achadinhos/backend/internal/handlers"
 	"github.com/achadinhos/backend/internal/middleware"
 	"github.com/achadinhos/backend/internal/models"
@@ -42,6 +43,8 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	prodH := handlers.NewProductsHandler(db)
 	sellH := handlers.NewSellersHandler(db)
 	adminH := handlers.NewAdminHandler(db)
+	mailer := email.NewClient(cfg.ResendAPIKey, cfg.MailFrom)
+	fichaH := handlers.NewFichaHandler(db, mailer, cfg.AppBaseURL)
 
 	v1 := r.Group("/api/v1")
 
@@ -67,6 +70,10 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	v1.GET("/sellers", sellH.List)
 	v1.GET("/sellers/:id", sellH.Get)
 	v1.GET("/sellers/:id/reviews", sellH.ListReviews)
+
+	// Public ficha de cadastro (preenchimento via link com token).
+	v1.GET("/fichas/:token", fichaH.GetByToken)
+	v1.POST("/fichas/:token", fichaH.Submit)
 
 	// Authenticated (any logged-in user: síndico or admin).
 	authed := v1.Group("")
@@ -107,6 +114,11 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.POST("/providers/:id/logo", adminH.UploadProviderLogo)
 		admin.POST("/providers/:id/portfolio", adminH.UploadProviderPortfolio)
 		admin.DELETE("/providers/:id/portfolio/:photo_id", adminH.DeleteProviderPortfolio)
+
+		admin.GET("/fichas", fichaH.List)
+		admin.POST("/fichas", fichaH.Create)
+		admin.POST("/fichas/:id/resend", fichaH.Resend)
+		admin.DELETE("/fichas/:id", fichaH.Delete)
 
 		admin.GET("/products", adminH.ListProducts)
 		admin.POST("/products", adminH.CreateProduct)

@@ -2311,7 +2311,7 @@ textarea.field-input {
   overflow: hidden;
 }
 .highlight-pic::after {
-  content: "foto do prestador";
+  content: "foto do afiliado";
   position: absolute;
   inset: 0;
   display: flex;
@@ -6302,6 +6302,147 @@ textarea.field-input {
   background: var(--gold-100);
   color: var(--ink-800);
   border: 1px solid var(--gold-300);
+}
+
+.admin-chip.green {
+  background: #e7f6ec;
+  color: #1c7a40;
+  border: 1px solid #b6e3c4;
+}
+
+.admin-chip.amber {
+  background: #fdf3e0;
+  color: #9a6612;
+  border: 1px solid #f1d7a6;
+}
+
+/* Botão secundário (contorno) reutilizando o .admin-new-btn */
+.admin-new-btn.ghost {
+  background: transparent;
+  color: var(--navy-900);
+  border: 1.5px solid var(--bone-300);
+}
+.admin-new-btn.ghost:hover {
+  opacity: 1;
+  background: var(--bone-100);
+}
+
+/* ── Ficha de cadastro (admin) ── */
+.ficha-success {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #e7f6ec;
+  border: 1px solid #b6e3c4;
+  color: #1c5733;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.ficha-success strong {
+  display: block;
+  margin-bottom: 2px;
+}
+.ficha-success p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ficha-link-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.ficha-link-row .prof-input {
+  flex: 1;
+}
+
+.ficha-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.ficha-detail-block {
+  background: #fff;
+  border: 1px solid var(--bone-200);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.ficha-detail-block-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--navy-900);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--bone-200);
+}
+.ficha-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+.ficha-detail-key {
+  color: var(--ink-500);
+  flex: 0 0 auto;
+}
+.ficha-detail-val {
+  color: var(--ink-900);
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+}
+.ficha-detail-obs {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--ink-900);
+}
+
+/* ── Ficha de cadastro (formulário público) ── */
+.ficha-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 8px;
+}
+.ficha-form-section {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--navy-900);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--gold-300);
+}
+.ficha-form-section:first-child {
+  margin-top: 0;
+}
+.ficha-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 16px 0;
+}
+.ficha-state-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #e7f6ec;
+  color: #1c7a40;
 }
 
 .admin-empty {

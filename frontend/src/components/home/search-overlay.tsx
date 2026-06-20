@@ -115,7 +115,7 @@ export function SearchOverlay({
             <>
               {searchProviders.length > 0 && (
                 <>
-                  <div className="search-section-label">Prestadores</div>
+                  <div className="search-section-label">Afiliados</div>
                   {searchProviders.map((p) => (
                     <button
                       type="button"

@@ -379,7 +379,7 @@ export function NegociosSection() {
     <section className="admin-section">
       <div className="admin-section-head">
         <div>
-          <h2 className="admin-section-title">Empresas e prestadores</h2>
+          <h2 className="admin-section-title">Empresas e afiliados</h2>
           <p className="admin-section-sub">{items.length} cadastrado(s)</p>
         </div>
         {!formOpen && (
@@ -404,7 +404,7 @@ export function NegociosSection() {
               {(
                 [
                   { v: "empresa", l: "Empresa" },
-                  { v: "prestador", l: "Prestador de serviço" },
+                  { v: "prestador", l: "Afiliado de serviço" },
                 ] as const
               ).map(({ v, l }) => (
                 <button
@@ -787,7 +787,7 @@ export function NegociosSection() {
       ) : loadError ? (
         <div className="prof-alert error">{loadError}</div>
       ) : items.length === 0 ? (
-        <div className="admin-empty">Nenhuma empresa ou prestador cadastrado ainda.</div>
+        <div className="admin-empty">Nenhuma empresa ou afiliado cadastrado ainda.</div>
       ) : (
         <div className="admin-list">
           {items.map((b) => {
@@ -812,7 +812,7 @@ export function NegociosSection() {
                   <div className="admin-row-name">
                     {name}
                     <span className={cn("admin-chip", b.kind === "prestador" && "gold")}>
-                      {b.kind === "empresa" ? "Empresa" : "Prestador"}
+                      {b.kind === "empresa" ? "Empresa" : "Afiliado"}
                     </span>
                   </div>
                   <div className="admin-row-meta">{meta}</div>

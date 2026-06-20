@@ -16,7 +16,7 @@ export const CATEGORIES_FULL: Category[] = [
     icon: "CatHighlight",
     badge: "TOP",
     count: 12,
-    desc: "Os melhores prestadores em destaque hoje",
+    desc: "Os melhores afiliados em destaque hoje",
   },
   {
     id: "shopping",

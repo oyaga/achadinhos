@@ -8,12 +8,14 @@ import { cn } from "@/lib/utils";
 import { ProdutosSection } from "./produtos-section";
 import { NegociosSection } from "./negocios-section";
 import { SindicosSection } from "./sindicos-section";
+import { CadastroEmpresasSection } from "./cadastro-empresas-section";
 
-type AdminTab = "produtos" | "negocios" | "sindicos";
+type AdminTab = "produtos" | "negocios" | "cadastro" | "sindicos";
 
 const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "produtos", label: "Produtos", icon: "CatShopping" },
-  { id: "negocios", label: "Empresas e prestadores", icon: "CatPartners" },
+  { id: "negocios", label: "Empresas e afiliados", icon: "CatPartners" },
+  { id: "cadastro", label: "Cadastro de empresas", icon: "Building" },
   { id: "sindicos", label: "Síndicos", icon: "User" },
 ];
 
@@ -98,6 +100,7 @@ export function AdminPanel() {
       <div className="admin-content">
         {tab === "produtos" && <ProdutosSection />}
         {tab === "negocios" && <NegociosSection />}
+        {tab === "cadastro" && <CadastroEmpresasSection />}
         {tab === "sindicos" && <SindicosSection />}
       </div>
     </main>

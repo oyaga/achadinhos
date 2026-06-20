@@ -261,7 +261,7 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
               </span>
               <span className="prof-admin-link-text">
                 <strong>Painel administrativo</strong>
-                <span>Gerenciar produtos, empresas e prestadores</span>
+                <span>Gerenciar produtos, empresas e afiliados</span>
               </span>
               <Icon.ChevRight size={16} />
             </Link>

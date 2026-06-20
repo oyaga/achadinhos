@@ -15,6 +15,9 @@ type Config struct {
 	AppEnv      string
 	AppPort     string
 	AppLogLevel string
+	// Public base URL of the frontend (used to build links sent by e-mail,
+	// e.g. the ficha de cadastro fill link). No trailing slash.
+	AppBaseURL string
 
 	DBHost     string
 	DBPort     string
@@ -44,6 +47,7 @@ func Load() (*Config, error) {
 		AppEnv:      getEnv("APP_ENV", "development"),
 		AppPort:     getEnv("APP_PORT", "8080"),
 		AppLogLevel: getEnv("APP_LOG_LEVEL", "info"),
+		AppBaseURL:  strings.TrimRight(getEnv("APP_BASE_URL", "http://localhost:3000"), "/"),
 
 		DBHost:     getEnv("DB_HOST", "localhost"),
 		DBPort:     getEnv("DB_PORT", "5432"),

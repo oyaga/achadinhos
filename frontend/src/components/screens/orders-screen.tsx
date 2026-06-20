@@ -11,7 +11,7 @@ interface OrdersScreenProps {
 }
 
 const KIND_LABEL: Record<ContactKind, string> = {
-  provider: "Prestador",
+  provider: "Afiliado",
   product: "Produto",
   seller: "Empresa",
 };
@@ -71,7 +71,7 @@ export function OrdersScreen({ history, onBack, onClear }: OrdersScreenProps) {
             <Icon.Box size={42} />
             <div className="empty-state-title">Nenhum contato ainda</div>
             <div className="empty-state-sub">
-              Quando você falar no WhatsApp com um prestador, uma empresa ou
+              Quando você falar no WhatsApp com um afiliado, uma empresa ou
               sobre um produto, o contato aparece aqui.
             </div>
           </div>

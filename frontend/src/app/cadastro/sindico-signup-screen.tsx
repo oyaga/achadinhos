@@ -215,7 +215,7 @@ export function SindicoSignupScreen() {
           </h1>
           <p className="auth-subtitle">
             Em menos de 2 minutos você já pode pedir orçamentos pros melhores
-            prestadores da sua região.
+            afiliados da sua região.
           </p>
 
           {serverError && (

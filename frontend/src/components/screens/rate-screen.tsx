@@ -122,7 +122,7 @@ export function RateScreen({ provider, onBack, onSent }: RateScreenProps) {
         <button type="button" className="screen-back" onClick={onBack} aria-label="Voltar">
           <Icon.ChevLeft size={16} />
         </button>
-        <div className="screen-title">Avaliar prestador</div>
+        <div className="screen-title">Avaliar afiliado</div>
       </div>
       <div className="screen-body" style={{ paddingBottom: 100 }}>
         <div className="rate-screen">

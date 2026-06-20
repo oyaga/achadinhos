@@ -625,6 +625,66 @@ export interface AdminSindico {
   created_at?: string;
 }
 
+// ── Fichas de cadastro de empresas ──
+export type FichaStatus = "pendente" | "concluido";
+
+export interface FichaCadastro {
+  id: string;
+  status: FichaStatus;
+  responsavel_nome: string;
+  responsavel_email: string;
+  // Dados do responsável (preenchidos no formulário)
+  resp_cpf: string;
+  resp_nascimento: string;
+  resp_endereco: string;
+  resp_telefone: string;
+  resp_cargo: string;
+  // Dados da empresa
+  razao_social: string;
+  cnpj: string;
+  empresa_endereco: string;
+  instagram: string;
+  facebook: string;
+  linkedin: string;
+  site: string;
+  contrato_inicio: string;
+  contrato_vigencia_meses: string;
+  valor_mensal: string;
+  valor_anual: string;
+  observacoes: string;
+  submitted_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Campos que o responsável preenche no formulário público.
+export type FichaFillPayload = Pick<
+  FichaCadastro,
+  | "resp_cpf"
+  | "resp_nascimento"
+  | "resp_endereco"
+  | "resp_telefone"
+  | "resp_cargo"
+  | "razao_social"
+  | "cnpj"
+  | "empresa_endereco"
+  | "instagram"
+  | "facebook"
+  | "linkedin"
+  | "site"
+  | "contrato_inicio"
+  | "contrato_vigencia_meses"
+  | "valor_mensal"
+  | "valor_anual"
+  | "observacoes"
+>;
+
+export interface CreateFichaResult {
+  ficha: FichaCadastro;
+  link: string;
+  email_enabled: boolean;
+}
+
 export const adminApi = {
   // ── Síndicos (read-only) ──
   async listSindicos(): Promise<AdminSindico[]> {
@@ -686,6 +746,30 @@ export const adminApi = {
     });
   },
 
+  // ── Fichas de cadastro de empresas ──
+  async listFichas(): Promise<FichaCadastro[]> {
+    const res = await request<{ data: FichaCadastro[] }>("/admin/fichas");
+    return res.data ?? [];
+  },
+  async createFicha(payload: {
+    responsavel_nome: string;
+    responsavel_email: string;
+  }): Promise<CreateFichaResult> {
+    return request<CreateFichaResult>("/admin/fichas", {
+      method: "POST",
+      body: payload,
+    });
+  },
+  async resendFicha(id: string): Promise<{ link: string; email_enabled: boolean }> {
+    return request<{ link: string; email_enabled: boolean }>(
+      `/admin/fichas/${id}/resend`,
+      { method: "POST" },
+    );
+  },
+  async deleteFicha(id: string): Promise<void> {
+    return request<void>(`/admin/fichas/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+
   // ── Produtos ──
   async listProducts(): Promise<ApiProduct[]> {
     const res = await request<{ data: ApiProduct[] }>("/admin/products");
@@ -714,6 +798,24 @@ export const adminApi = {
 export const categoriesApi = {
   async list(): Promise<ApiCategory[]> {
     return request<ApiCategory[]>("/categories");
+  },
+};
+
+// Public ficha de cadastro — acessada pelo link com token (sem login).
+export const fichasApi = {
+  async getByToken(token: string): Promise<FichaCadastro> {
+    const res = await request<{ ficha: FichaCadastro }>(
+      `/fichas/${encodeURIComponent(token)}`,
+      { skipAuth: true },
+    );
+    return res.ficha;
+  },
+  async submit(token: string, payload: FichaFillPayload): Promise<{ status: FichaStatus }> {
+    return request<{ status: FichaStatus }>(`/fichas/${encodeURIComponent(token)}`, {
+      method: "POST",
+      body: payload,
+      skipAuth: true,
+    });
   },
 };
 

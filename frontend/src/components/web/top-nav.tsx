@@ -45,7 +45,7 @@ export function TopNav({ onSearchClick, onProfile }: TopNavProps) {
             <Icon.Search size={18} />
           </span>
           <input
-            placeholder="Buscar serviços, prestadores, produtos…"
+            placeholder="Buscar serviços, afiliados, produtos…"
             readOnly
             tabIndex={-1}
             style={{ pointerEvents: "none" }}

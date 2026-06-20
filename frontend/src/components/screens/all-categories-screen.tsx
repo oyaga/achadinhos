@@ -50,7 +50,7 @@ export function AllCategoriesScreen({
           <div className="cats-intro-eyebrow">Serviços e Fornecedores</div>
           <p className="cats-intro-text">
             O Achadinhos do Condomínio reúne os principais fornecedores e
-            prestadores de serviço do mercado condominial em um único
+            afiliados de serviço do mercado condominial em um único
             ecossistema de soluções.
           </p>
           <p className="cats-intro-text" style={{ marginTop: 6 }}>
@@ -87,7 +87,7 @@ export function AllCategoriesScreen({
                 >
                   <div className="all-cat-icon">{I ? <I /> : null}</div>
                   <div className="all-cat-label">{c.label}</div>
-                  <div className="all-cat-count">{c.count} prestadores</div>
+                  <div className="all-cat-count">{c.count} afiliados</div>
                 </button>
               );
             })}

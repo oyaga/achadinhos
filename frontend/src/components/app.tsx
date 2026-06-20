@@ -116,7 +116,7 @@ export function App({ initialRoute }: AppProps = {}) {
       subtitle: provider.catLabel,
       whatsapp: provider.whatsapp,
     });
-    showToast("Abrindo WhatsApp do prestador");
+    showToast("Abrindo WhatsApp do afiliado");
   };
 
   const onNavSelect = (id: NavId) => {

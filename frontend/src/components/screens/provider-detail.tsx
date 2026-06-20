@@ -56,7 +56,7 @@ export function ProviderDetail({
         <button type="button" className="screen-back" onClick={onBack} aria-label="Voltar">
           <Icon.ChevLeft size={16} />
         </button>
-        <div className="screen-title">Prestador</div>
+        <div className="screen-title">Afiliado</div>
         <div className="screen-actions">
           <button
             type="button"
@@ -277,7 +277,7 @@ export function ProviderDetail({
                 fontSize: 13,
               }}
             >
-              Seja o primeiro a avaliar este prestador.
+              Seja o primeiro a avaliar este afiliado.
             </div>
           )}
         </div>

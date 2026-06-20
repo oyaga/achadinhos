@@ -56,7 +56,7 @@ export function Header({ onSearchClick }: HeaderProps) {
         >
           <Icon.Search size={18} />
           <input
-            placeholder="Buscar serviços, prestadores…"
+            placeholder="Buscar serviços, afiliados…"
             readOnly
             tabIndex={-1}
             style={{ pointerEvents: "none" }}

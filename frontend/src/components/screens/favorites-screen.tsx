@@ -21,7 +21,7 @@ interface FavoritesScreenProps {
 
 type Tab = "prestadores" | "empresas";
 const TABS: Array<{ id: Tab; label: string }> = [
-  { id: "prestadores", label: "Prestadores" },
+  { id: "prestadores", label: "Afiliados" },
   { id: "empresas", label: "Empresas" },
 ];
 
@@ -107,7 +107,7 @@ export function FavoritesScreen({
               Faça login para ver seus favoritos
             </div>
             <div className="empty-state-sub">
-              Entre na sua conta para salvar prestadores e empresas
+              Entre na sua conta para salvar afiliados e empresas
             </div>
           </div>
         ) : loading ? (
@@ -125,9 +125,9 @@ export function FavoritesScreen({
           providers.length === 0 ? (
             <div className="empty-state">
               <Icon.Heart size={50} />
-              <div className="empty-state-title">Nenhum prestador favorito</div>
+              <div className="empty-state-title">Nenhum afiliado favorito</div>
               <div className="empty-state-sub">
-                Toque no ❤️ pra salvar prestadores
+                Toque no ❤️ pra salvar afiliados
               </div>
             </div>
           ) : (

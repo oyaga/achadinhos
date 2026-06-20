@@ -69,6 +69,7 @@ func AutoMigrate(gdb *gorm.DB) error {
 		&models.ProductPhoto{},
 		&models.PortfolioPhoto{},
 		&models.RefreshToken{},
+		&models.FichaCadastro{},
 	)
 }
 
