@@ -57,6 +57,8 @@ services:
       - "traefik.http.routers.achadinhos.tls.certresolver=cloudflare"
       - "traefik.http.routers.achadinhos.middlewares=cloudflare-only@file,security-headers@file"
       - "traefik.http.services.achadinhos.loadbalancer.server.port=8080"
+      # Watchtower: só este container é vigiado (auto-redeploy ao publicar :latest).
+      - "com.centurylinklabs.watchtower.enable=true"
 
 volumes:
   achadinhos_pgdata:
