@@ -100,18 +100,24 @@ const s = StyleSheet.create({
   },
   empresa: { fontFamily: "Times-BoldItalic", fontSize: 14, color: C.navy },
   strong: { fontFamily: "Helvetica-Bold", color: C.navy2 },
-  sealWrap: { marginTop: 18, alignItems: "center", justifyContent: "center" },
+  sealWrap: { marginTop: 18, width: 132, alignItems: "center", justifyContent: "center" },
   sealLabel: {
     position: "absolute",
-    top: 74,
+    top: 80,
+    left: 0,
+    right: 0,
+    textAlign: "center",
     color: C.navy,
     fontFamily: "Helvetica-Bold",
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 2,
   },
   sealTop: {
     position: "absolute",
-    top: 20,
+    top: 97,
+    left: 0,
+    right: 0,
+    textAlign: "center",
     color: C.gold,
     fontFamily: "Helvetica-Bold",
     fontSize: 5.5,
@@ -214,15 +220,15 @@ function ApprovedSeal() {
         <Circle cx="66" cy="66" r="62" fill="none" stroke="url(#goldRing)" strokeWidth={6} />
         <Circle cx="66" cy="66" r="52" fill="none" stroke={C.gold} strokeWidth={1.2} />
         <Circle cx="66" cy="66" r="49" fill={C.bg} />
-        {/* Escudo dourado com check */}
+        {/* Escudo dourado com check, na metade superior do selo */}
         <Path
-          d="M66 36 L84 42 L84 60 C84 72 76 80 66 85 C56 80 48 72 48 60 L48 42 Z"
+          d="M66 26 L83 32 L83 49 C83 60 75 67 66 71 C57 67 49 60 49 49 L49 32 Z"
           fill="url(#goldRing)"
           stroke="#a8884a"
           strokeWidth={1}
         />
         <Path
-          d="M57 60 l6 6 l13 -14"
+          d="M59 48 l5 5 l12 -13"
           fill="none"
           stroke={C.navy}
           strokeWidth={3.4}
@@ -230,8 +236,8 @@ function ApprovedSeal() {
           strokeLinejoin="round"
         />
       </Svg>
-      <Text style={s.sealTop}>EMPRESA VERIFICADA</Text>
       <Text style={s.sealLabel}>APROVADO</Text>
+      <Text style={s.sealTop}>EMPRESA VERIFICADA</Text>
     </View>
   );
 }
@@ -268,7 +274,7 @@ export function CertificateDocument({ data }: { data: CertificateDocData }) {
       author="Achadinhos do Condomínio"
       subject={`Certificado de Empresa Qualificada — ${data.empresaNome}`}
     >
-      <Page size="A4" style={s.page}>
+      <Page size="A4" style={s.page} wrap={false}>
         <Guilloche />
         <View style={s.outerFrame} />
         <View style={s.goldFrame} />

@@ -2907,7 +2907,7 @@ textarea.field-input {
   right: 0;
   background: transparent;
   border: none;
-  padding: 14px 16px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px;
   z-index: 10;
 }
 .screen-back.floating,

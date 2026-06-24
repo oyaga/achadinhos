@@ -356,8 +356,8 @@ export const Icon = {
   ),
   Download: ({ size = 16, ...rest }: IconProps = {}) => (
     <Svg size={size} {...rest}>
-      <path d="M12 3v13M5 16l7 7 7-7" />
-      <path d="M3 21h18" />
+      <path d="M12 3v12M7 10l5 5 5-5" />
+      <path d="M5 20h14" />
     </Svg>
   ),
   Pencil: ({ size = 16, ...rest }: IconProps = {}) => (
