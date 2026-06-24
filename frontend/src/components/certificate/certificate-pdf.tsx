@@ -247,8 +247,11 @@ function Guilloche() {
   const cx = 297.64;
   const cy = 360;
   const rings = Array.from({ length: 18 }, (_, i) => 14 + i * 16);
+  // Altura um tiquinho menor que o A4 (841.89) de propósito: como fundo, se a
+  // SVG tiver exatamente a altura da página o react-pdf a considera "maior que
+  // a altura disponível" e empurra para uma 2ª página. 838 cabe com folga.
   return (
-    <Svg width={595.28} height={841.89} viewBox="0 0 595.28 841.89" style={s.fill}>
+    <Svg width={595.28} height={838} viewBox="0 0 595.28 841.89" style={s.fill}>
       {rings.map((r, i) => (
         <Ellipse
           key={i}
@@ -274,7 +277,7 @@ export function CertificateDocument({ data }: { data: CertificateDocData }) {
       author="Achadinhos do Condomínio"
       subject={`Certificado de Empresa Qualificada — ${data.empresaNome}`}
     >
-      <Page size="A4" style={s.page} wrap={false}>
+      <Page size="A4" style={s.page}>
         <Guilloche />
         <View style={s.outerFrame} />
         <View style={s.goldFrame} />
