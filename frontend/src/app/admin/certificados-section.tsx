@@ -10,6 +10,7 @@ import {
 import { Icon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { SignaturePad } from "@/components/admin/signature-pad";
+import { CertificateViewer } from "@/components/certificate/certificate-viewer";
 
 // "AAAA-MM-DD" da data de hoje (no fuso local).
 function todayISO(): string {
@@ -75,6 +76,7 @@ export function CertificadosSection() {
   const [formError, setFormError] = useState<string | null>(null);
 
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -141,9 +143,11 @@ export function CertificadosSection() {
         signature_png: signature ?? undefined,
       });
       setFormOpen(false);
-      // Gera e baixa o PDF na hora, usando a assinatura ainda em memória.
-      const { downloadCertificate } = await import("@/components/certificate/generate");
-      await downloadCertificate({
+      // Gera o PDF na hora (assinatura ainda em memória) e abre o preview.
+      const { buildCertificateBlob, certificateFileName } = await import(
+        "@/components/certificate/generate"
+      );
+      const blob = await buildCertificateBlob({
         empresaNome: cert.empresa_nome,
         categoria: cert.categoria,
         responsavelNome: cert.responsavel_nome,
@@ -152,6 +156,7 @@ export function CertificadosSection() {
         validUntil: cert.valid_until,
         signatureDataUrl: signature,
       });
+      setPreview({ blob, fileName: certificateFileName(cert.empresa_nome, cert.code) });
       await refresh();
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : "Não foi possível emitir o certificado.");
@@ -160,11 +165,13 @@ export function CertificadosSection() {
     }
   }
 
-  async function handleDownload(cert: ApiCertificate) {
+  async function handleView(cert: ApiCertificate) {
     setBusyId(cert.id);
     try {
-      const { downloadCertificate } = await import("@/components/certificate/generate");
-      await downloadCertificate({
+      const { buildCertificateBlob, certificateFileName } = await import(
+        "@/components/certificate/generate"
+      );
+      const blob = await buildCertificateBlob({
         empresaNome: cert.empresa_nome,
         categoria: cert.categoria,
         responsavelNome: cert.responsavel_nome,
@@ -173,8 +180,9 @@ export function CertificadosSection() {
         validUntil: cert.valid_until,
         signatureUrl: cert.signature_url || undefined,
       });
-    } catch {
-      window.alert("Não foi possível gerar o PDF.");
+      setPreview({ blob, fileName: certificateFileName(cert.empresa_nome, cert.code) });
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "Não foi possível gerar o PDF.");
     } finally {
       setBusyId(null);
     }
@@ -317,7 +325,7 @@ export function CertificadosSection() {
             </button>
             <button type="submit" className="admin-new-btn" disabled={submitting}>
               <Icon.Award size={16} />
-              {submitting ? "Emitindo…" : "Emitir e baixar PDF"}
+              {submitting ? "Emitindo…" : "Emitir e ver PDF"}
             </button>
           </div>
         </form>
@@ -353,10 +361,10 @@ export function CertificadosSection() {
                   <button
                     type="button"
                     className="admin-icon-btn"
-                    onClick={() => handleDownload(cert)}
+                    onClick={() => handleView(cert)}
                     disabled={busy}
-                    aria-label="Baixar PDF"
-                    title="Baixar PDF"
+                    aria-label="Ver / baixar PDF"
+                    title="Ver / baixar PDF"
                   >
                     <Icon.Download size={15} />
                   </button>
@@ -394,6 +402,14 @@ export function CertificadosSection() {
             );
           })}
         </div>
+      )}
+
+      {preview && (
+        <CertificateViewer
+          blob={preview.blob}
+          fileName={preview.fileName}
+          onClose={() => setPreview(null)}
+        />
       )}
     </section>
   );
