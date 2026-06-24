@@ -1,7 +1,8 @@
 name: Build & Deploy
 
-# A cada push na master: builda a imagem, publica no GitHub Container
-# Registry (ghcr.io) e dispara o redeploy da stack no Portainer.
+# A cada push na master: builda a imagem e publica no GitHub Container
+# Registry (ghcr.io). O redeploy é best-effort via webhook do Portainer e
+# finalizado manualmente com /root/achadinhos-redeploy.sh no servidor.
 
 on:
   push:
@@ -42,18 +43,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Disparar redeploy no Portainer
+      # Best-effort: dispara o webhook do Portainer se existir, mas NUNCA falha o job.
+      # O webhook costuma não responder a tempo (e às vezes nem dispara o redeploy),
+      # então o deploy é finalizado rodando /root/achadinhos-redeploy.sh no servidor.
+      - name: Disparar redeploy no Portainer (best-effort)
         env:
           WEBHOOK: ${{ secrets.PORTAINER_WEBHOOK }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           if [ -z "${WEBHOOK:-}" ]; then
-            echo "::warning::Secret PORTAINER_WEBHOOK ainda não configurado — redeploy pulado."
-            exit 0
+            echo "::notice::PORTAINER_WEBHOOK não configurado — redeploy pulado."
+          else
+            status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 -X POST "$WEBHOOK" || echo timeout)"
+            echo "Webhook do Portainer: HTTP ${status}"
           fi
-          status="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 -X POST "$WEBHOOK")"
-          echo "Webhook do Portainer: HTTP $status"
-          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
-            echo "::error::Webhook falhou (HTTP $status)."
-            exit 1
-          fi
+          echo "::notice::Imagem publicada no GHCR. Finalize o deploy rodando /root/achadinhos-redeploy.sh no servidor."
+          exit 0
