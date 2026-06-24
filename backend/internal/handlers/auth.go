@@ -28,10 +28,13 @@ func (h *AuthHandler) RegisterSindico(c *gin.Context) {
 		return
 	}
 	user, pair, err := h.svc.RegisterSindico(c.Request.Context(), auth.SindicoProfile{
+		AccountType:  req.AccountType,
 		Email:        req.Email,
 		Password:     req.Password,
 		Name:         req.Name,
 		CPF:          req.CPF,
+		CNPJ:         req.CNPJ,
+		CompanyName:  req.CompanyName,
 		Phone:        req.Phone,
 		CondoName:    req.CondoName,
 		CondoRole:    req.CondoRole,
@@ -69,11 +72,40 @@ func writeRegisterError(c *gin.Context, err error) {
 			Error: "cpf_taken",
 			Code:  http.StatusConflict,
 		})
+	case errors.Is(err, auth.ErrCNPJTaken):
+		c.AbortWithStatusJSON(http.StatusConflict, ErrorResponse{
+			Error: "cnpj_taken",
+			Code:  http.StatusConflict,
+		})
 	case errors.Is(err, auth.ErrInvalidCPF):
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, ErrorResponse{
 			Error:   "validation_error",
 			Code:    http.StatusUnprocessableEntity,
 			Details: map[string]string{"cpf": "invalid"},
+		})
+	case errors.Is(err, auth.ErrInvalidCNPJ):
+		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, ErrorResponse{
+			Error:   "validation_error",
+			Code:    http.StatusUnprocessableEntity,
+			Details: map[string]string{"cnpj": "invalid"},
+		})
+	case errors.Is(err, auth.ErrCompanyNameRequired):
+		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, ErrorResponse{
+			Error:   "validation_error",
+			Code:    http.StatusUnprocessableEntity,
+			Details: map[string]string{"company_name": "required"},
+		})
+	case errors.Is(err, auth.ErrCondoNameRequired):
+		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, ErrorResponse{
+			Error:   "validation_error",
+			Code:    http.StatusUnprocessableEntity,
+			Details: map[string]string{"condo_name": "required"},
+		})
+	case errors.Is(err, auth.ErrInvalidAccountType):
+		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, ErrorResponse{
+			Error:   "validation_error",
+			Code:    http.StatusUnprocessableEntity,
+			Details: map[string]string{"account_type": "invalid"},
 		})
 	case errors.Is(err, auth.ErrInvalidCEP):
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, ErrorResponse{

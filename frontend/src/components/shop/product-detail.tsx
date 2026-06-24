@@ -213,7 +213,7 @@ export function ProductDetail({
         <div className="pd-section" style={{ padding: "22px 16px 0" }}>
           <h3>Sobre o produto</h3>
           {product.desc?.trim() && (
-            <p style={{ fontSize: 13, lineHeight: 1.6, color: "var(--ink-700)", whiteSpace: "pre-wrap" }}>
+            <p style={{ fontSize: 13, lineHeight: 1.6, color: "var(--ink-700)", whiteSpace: "pre-wrap", textAlign: "justify", textJustify: "inter-word" }}>
               {product.desc}
             </p>
           )}

@@ -46,6 +46,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	mailer := email.NewClient(cfg.ResendAPIKey, cfg.MailFrom)
 	fichaH := handlers.NewFichaHandler(db, mailer, cfg.AppBaseURL)
 	evH := handlers.NewEventHandler(db)
+	certH := handlers.NewCertificateHandler(db)
 
 	v1 := r.Group("/api/v1")
 
@@ -79,6 +80,9 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	// Public events (calendário do condomínio).
 	v1.GET("/events", evH.List)
 	v1.GET("/events/:id", evH.Get)
+
+	// Public certificate verification (acessada pelo QR code).
+	v1.GET("/certificates/:code", certH.GetByCode)
 
 	// Authenticated (any logged-in user: síndico or admin).
 	authed := v1.Group("")
@@ -129,6 +133,11 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.POST("/events", evH.Create)
 		admin.PATCH("/events/:id", evH.Update)
 		admin.DELETE("/events/:id", evH.Delete)
+
+		admin.GET("/certificates", certH.List)
+		admin.POST("/certificates", certH.Create)
+		admin.PATCH("/certificates/:id", certH.Revoke)
+		admin.DELETE("/certificates/:id", certH.Delete)
 
 		admin.GET("/products", adminH.ListProducts)
 		admin.POST("/products", adminH.CreateProduct)

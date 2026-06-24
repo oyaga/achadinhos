@@ -69,6 +69,36 @@ func (h *MeHandler) Patch(c *gin.Context) {
 		}
 		updates["condo_id"] = cid
 	}
+	if req.CompanyName != nil {
+		updates["company_name"] = *req.CompanyName
+	}
+	if req.CondoName != nil {
+		updates["condo_name"] = *req.CondoName
+	}
+	if req.CondoRole != nil {
+		updates["condo_role"] = *req.CondoRole
+	}
+	if req.CEP != nil {
+		updates["cep"] = *req.CEP
+	}
+	if req.Street != nil {
+		updates["street"] = *req.Street
+	}
+	if req.Number != nil {
+		updates["number"] = *req.Number
+	}
+	if req.Complement != nil {
+		updates["complement"] = *req.Complement
+	}
+	if req.Neighborhood != nil {
+		updates["neighborhood"] = *req.Neighborhood
+	}
+	if req.City != nil {
+		updates["city"] = *req.City
+	}
+	if req.State != nil {
+		updates["state"] = *req.State
+	}
 
 	if len(updates) == 0 {
 		// Nothing to update — return current user.

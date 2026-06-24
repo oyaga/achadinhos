@@ -17,13 +17,24 @@ const (
 	RoleAdmin   Role = "admin"
 )
 
-// CondoRole is the granular role inside a condomínio.
+// CondoRole is the granular role inside a condomínio. "administradora" is used
+// by empresa (company) accounts that manage condomínios.
 type CondoRole string
 
 const (
-	CondoRoleMorador  CondoRole = "morador"
-	CondoRoleSindico  CondoRole = "sindico"
-	CondoRoleConselho CondoRole = "conselho"
+	CondoRoleMorador        CondoRole = "morador"
+	CondoRoleSindico        CondoRole = "sindico"
+	CondoRoleConselho       CondoRole = "conselho"
+	CondoRoleAdministradora CondoRole = "administradora"
+)
+
+// AccountType distinguishes a pessoa física (CPF) account from an empresa /
+// administradora (CNPJ) account. Both still log in with platform role=sindico.
+type AccountType string
+
+const (
+	AccountPessoa  AccountType = "pessoa"
+	AccountEmpresa AccountType = "empresa"
 )
 
 // DocumentType differentiates CPF (individuals) from CNPJ (companies).
@@ -47,9 +58,11 @@ type User struct {
 
 	// Profile fields populated by the síndico register endpoint.
 	// All optional at the DB level so older accounts keep working.
+	AccountType  string `gorm:"size:8;not null;default:'pessoa';column:account_type" json:"account_type,omitempty"`
 	CPF          string `gorm:"size:14;column:cpf" json:"cpf,omitempty"`
 	DocumentType string `gorm:"size:4;column:document_type" json:"document_type,omitempty"`
 	Document     string `gorm:"size:18;column:document" json:"document,omitempty"`
+	CompanyName  string `gorm:"size:160;column:company_name" json:"company_name,omitempty"`
 	CondoName    string `gorm:"size:120;column:condo_name" json:"condo_name,omitempty"`
 	CondoRole    string `gorm:"size:16;column:condo_role" json:"condo_role,omitempty"`
 

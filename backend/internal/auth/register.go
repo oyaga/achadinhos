@@ -13,20 +13,27 @@ import (
 
 // Profile-specific service errors.
 var (
-	ErrCPFTaken    = errors.New("cpf already registered")
-	ErrInvalidRole = errors.New("invalid condo_role")
+	ErrCPFTaken            = errors.New("cpf already registered")
+	ErrCNPJTaken           = errors.New("cnpj already registered")
+	ErrInvalidRole         = errors.New("invalid condo_role")
+	ErrInvalidAccountType  = errors.New("invalid account_type")
+	ErrCompanyNameRequired = errors.New("company_name required for empresa")
+	ErrCondoNameRequired   = errors.New("condo_name required")
 )
 
 // SindicoProfile carries the validated, normalized payload for RegisterSindico.
 // All digit fields must already be stripped by the caller.
 type SindicoProfile struct {
-	Email     string
-	Password  string
-	Name      string
-	CPF       string // 11 digits
-	Phone     string // digits only
-	CondoName string
-	CondoRole string // morador | sindico | conselho
+	AccountType string // pessoa | empresa (defaults to pessoa)
+	Email       string
+	Password    string
+	Name        string
+	CPF         string // 11 digits (pessoa)
+	CNPJ        string // 14 digits (empresa)
+	CompanyName string // razão social (empresa)
+	Phone       string // digits only
+	CondoName   string
+	CondoRole   string // morador | sindico | conselho (pessoa)
 
 	CEP          string // 8 digits
 	Street       string
@@ -53,28 +60,68 @@ func stripDigits(s string) string {
 func (s *Service) RegisterSindico(ctx context.Context, p SindicoProfile) (*models.User, *TokenPair, error) {
 	email := strings.ToLower(strings.TrimSpace(p.Email))
 
-	cpf := stripDigits(p.CPF)
-	if !IsValidCPF(cpf) {
-		return nil, nil, ErrInvalidCPF
+	accountType := strings.ToLower(strings.TrimSpace(p.AccountType))
+	if accountType == "" {
+		accountType = string(models.AccountPessoa)
 	}
+
 	cep := StripCEP(p.CEP)
 	if !IsValidCEP(cep) {
 		return nil, nil, ErrInvalidCEP
 	}
-	switch models.CondoRole(p.CondoRole) {
-	case models.CondoRoleMorador, models.CondoRoleSindico, models.CondoRoleConselho:
+
+	// Resolve the type-specific identity fields.
+	var (
+		cpf         string
+		documentTyp string
+		document    string
+		companyName string
+		condoRole   string
+	)
+	switch accountType {
+	case string(models.AccountEmpresa):
+		cnpj := stripDigits(p.CNPJ)
+		if !IsValidCNPJ(cnpj) {
+			return nil, nil, ErrInvalidCNPJ
+		}
+		companyName = strings.TrimSpace(p.CompanyName)
+		if companyName == "" {
+			return nil, nil, ErrCompanyNameRequired
+		}
+		documentTyp = string(models.DocCNPJ)
+		document = cnpj
+		condoRole = string(models.CondoRoleAdministradora)
+	case string(models.AccountPessoa):
+		cpf = stripDigits(p.CPF)
+		if !IsValidCPF(cpf) {
+			return nil, nil, ErrInvalidCPF
+		}
+		switch models.CondoRole(p.CondoRole) {
+		case models.CondoRoleMorador, models.CondoRoleSindico, models.CondoRoleConselho:
+		default:
+			return nil, nil, ErrInvalidRole
+		}
+		if strings.TrimSpace(p.CondoName) == "" {
+			return nil, nil, ErrCondoNameRequired
+		}
+		documentTyp = string(models.DocCPF)
+		document = cpf
+		condoRole = p.CondoRole
 	default:
-		return nil, nil, ErrInvalidRole
+		return nil, nil, ErrInvalidAccountType
 	}
 
-	// Uniqueness checks (email + cpf).
+	// Uniqueness checks (email always; document scoped to its type).
 	var existing models.User
 	if err := s.db.WithContext(ctx).Where("email = ?", email).First(&existing).Error; err == nil {
 		return nil, nil, ErrEmailTaken
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil, err
 	}
-	if err := s.db.WithContext(ctx).Where("cpf = ?", cpf).First(&existing).Error; err == nil {
+	if err := s.db.WithContext(ctx).Where("document = ?", document).First(&existing).Error; err == nil {
+		if accountType == string(models.AccountEmpresa) {
+			return nil, nil, ErrCNPJTaken
+		}
 		return nil, nil, ErrCPFTaken
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil, err
@@ -91,11 +138,13 @@ func (s *Service) RegisterSindico(ctx context.Context, p SindicoProfile) (*model
 		Name:         strings.TrimSpace(p.Name),
 		Role:         models.RoleSindico,
 		Phone:        stripDigits(p.Phone),
+		AccountType:  accountType,
 		CPF:          cpf,
-		DocumentType: string(models.DocCPF),
-		Document:     cpf,
+		DocumentType: documentTyp,
+		Document:     document,
+		CompanyName:  companyName,
 		CondoName:    strings.TrimSpace(p.CondoName),
-		CondoRole:    p.CondoRole,
+		CondoRole:    condoRole,
 		CEP:          cep,
 		Street:       strings.TrimSpace(p.Street),
 		Number:       strings.TrimSpace(p.Number),

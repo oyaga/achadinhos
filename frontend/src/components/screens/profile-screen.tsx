@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef, type FormEvent } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
-import { me as meApi, ApiError, type ChangePasswordPayload } from "@/lib/api";
+import {
+  me as meApi,
+  ApiError,
+  type ChangePasswordPayload,
+  type User,
+} from "@/lib/api";
+import { formatDocument } from "@/lib/document";
 import { Icon } from "../icons";
 import { cn } from "@/lib/utils";
 
@@ -36,35 +42,6 @@ function maskCep(v: string) {
   return d.replace(/(\d{5})(\d{0,3})/, "$1-$2").replace(/-$/, "");
 }
 
-// ─── Local storage for extended profile (until backend covers it) ────────────
-
-type LocalProfile = {
-  condo_name?: string;
-  condo_role?: "morador" | "sindico" | "conselho";
-  address?: AddressState;
-};
-
-function loadLocal(userId: string): LocalProfile {
-  try {
-    const raw = localStorage.getItem(`achadinhos.profile.${userId}`);
-    return raw ? (JSON.parse(raw) as LocalProfile) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveLocal(userId: string, data: Partial<LocalProfile>) {
-  try {
-    const existing = loadLocal(userId);
-    localStorage.setItem(
-      `achadinhos.profile.${userId}`,
-      JSON.stringify({ ...existing, ...data })
-    );
-  } catch {
-    // ignore
-  }
-}
-
 // ─── Address state ───────────────────────────────────────────────────────────
 
 interface AddressState {
@@ -87,6 +64,8 @@ const EMPTY_ADDRESS: AddressState = {
   state: "",
 };
 
+type CondoRoleValue = "morador" | "sindico" | "conselho" | "administradora";
+
 // ─── Props ───────────────────────────────────────────────────────────────────
 
 interface ProfileScreenProps {
@@ -98,10 +77,12 @@ interface ProfileScreenProps {
 export function ProfileScreen({ onBack }: ProfileScreenProps) {
   const { user, logout, updateUser } = useAuth();
 
+  const isEmpresa = (user?.account_type ?? "pessoa") === "empresa";
+
   // ── Basic user fields
   const [name, setName] = useState(user?.name ?? "");
-  const [email, setEmail] = useState(user?.email ?? "");
   const [phone, setPhone] = useState(maskPhone(user?.phone ?? ""));
+  const [companyName, setCompanyName] = useState(user?.company_name ?? "");
 
   // ── Address
   const [address, setAddress] = useState<AddressState>(EMPTY_ADDRESS);
@@ -109,7 +90,9 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
 
   // ── Condomínio
   const [condoName, setCondoName] = useState(user?.condo_name ?? "");
-  const [condoRole, setCondoRole] = useState<"morador" | "sindico" | "conselho">("morador");
+  const [condoRole, setCondoRole] = useState<CondoRoleValue>(
+    (user?.condo_role as CondoRoleValue) || (isEmpresa ? "administradora" : "morador"),
+  );
 
   // ── Password change
   const [pwdOpen, setPwdOpen] = useState(false);
@@ -129,14 +112,27 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
 
   const successTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Load local profile on mount
+  // ── Hydrate from the backend user (single source of truth)
   useEffect(() => {
-    if (!user?.id) return;
-    const local = loadLocal(user.id);
-    if (local.address) setAddress(local.address);
-    if (local.condo_name) setCondoName(local.condo_name);
-    if (local.condo_role) setCondoRole(local.condo_role);
-  }, [user?.id]);
+    if (!user) return;
+    setName(user.name ?? "");
+    setPhone(maskPhone(user.phone ?? ""));
+    setCompanyName(user.company_name ?? "");
+    setCondoName(user.condo_name ?? "");
+    setCondoRole(
+      (user.condo_role as CondoRoleValue) ||
+        (user.account_type === "empresa" ? "administradora" : "morador"),
+    );
+    setAddress({
+      cep: maskCep(user.cep ?? ""),
+      street: user.street ?? "",
+      number: user.number ?? "",
+      complement: user.complement ?? "",
+      neighborhood: user.neighborhood ?? "",
+      city: user.city ?? "",
+      state: user.state ?? "",
+    });
+  }, [user]);
 
   // ── CEP auto-fill
   async function handleCepBlur() {
@@ -164,9 +160,25 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
     setSaveSuccess(false);
 
     try {
-      const updated = await meApi.update({ name, phone: phone.replace(/\D/g, "") });
+      const patch: Partial<User> = {
+        name: name.trim(),
+        phone: phone.replace(/\D/g, ""),
+        condo_name: condoName.trim(),
+        cep: address.cep.replace(/\D/g, ""),
+        street: address.street.trim(),
+        number: address.number.trim(),
+        complement: address.complement.trim(),
+        neighborhood: address.neighborhood.trim(),
+        city: address.city.trim(),
+        state: address.state.trim().toUpperCase(),
+      };
+      if (isEmpresa) {
+        patch.company_name = companyName.trim();
+      } else {
+        patch.condo_role = condoRole;
+      }
+      const updated = await meApi.update(patch);
       updateUser(updated);
-      saveLocal(user.id, { address, condo_name: condoName, condo_role: condoRole });
 
       setSaveSuccess(true);
       if (successTimerRef.current) clearTimeout(successTimerRef.current);
@@ -212,12 +224,20 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
     .join("")
     .toUpperCase();
 
-  const roleLabel = {
-    sindico: "Síndico",
-    morador: "Morador",
-    conselho: "Conselho",
-    admin: "Admin",
-  }[user?.role === "admin" ? "admin" : condoRole];
+  const roleLabel =
+    user?.role === "admin"
+      ? "Admin"
+      : isEmpresa
+        ? "Administradora"
+        : { morador: "Morador", sindico: "Síndico", conselho: "Conselho", administradora: "Administradora" }[
+            condoRole
+          ];
+
+  // ── Documento (somente leitura — definido no cadastro)
+  const docType = (user?.document_type as "cpf" | "cnpj") ?? (isEmpresa ? "cnpj" : "cpf");
+  const docRaw = user?.document ?? user?.cpf ?? "";
+  const docLabel = docType === "cnpj" ? "CNPJ" : "CPF";
+  const docFormatted = docRaw ? formatDocument(docRaw, docType) : "—";
 
   return (
     <div className="screen">
@@ -248,7 +268,9 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
               <span className="prof-avatar-initials">{initials}</span>
             </div>
             <div className="prof-hero-info">
-              <div className="prof-hero-name">{user?.name ?? "Usuário"}</div>
+              <div className="prof-hero-name">
+                {isEmpresa ? user?.company_name || user?.name : user?.name || "Usuário"}
+              </div>
               <span className="prof-role-chip">{roleLabel}</span>
             </div>
           </div>
@@ -275,31 +297,43 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
             <div className="prof-alert success" role="status">Perfil salvo com sucesso!</div>
           )}
 
-          {/* ── Dados pessoais ── */}
+          {/* ── Dados ── */}
           <div className="prof-section">
-            <div className="prof-section-title">Dados pessoais</div>
+            <div className="prof-section-title">{isEmpresa ? "Dados da empresa" : "Dados pessoais"}</div>
+
+            {isEmpresa && (
+              <div className="prof-field">
+                <label className="prof-label">Razão social</label>
+                <input
+                  className="prof-input"
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Razão social da administradora"
+                />
+              </div>
+            )}
 
             <div className="prof-field">
-              <label className="prof-label">Nome completo</label>
+              <label className="prof-label">{isEmpresa ? "Responsável" : "Nome completo"}</label>
               <input
                 className="prof-input"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome"
+                placeholder={isEmpresa ? "Nome do responsável" : "Seu nome"}
               />
             </div>
 
             <div className="prof-field">
+              <label className="prof-label">{docLabel}</label>
+              <input className="prof-input" type="text" value={docFormatted} disabled readOnly />
+              <span className="prof-help">O documento é definido no cadastro e não pode ser alterado aqui.</span>
+            </div>
+
+            <div className="prof-field">
               <label className="prof-label">E-mail</label>
-              <input
-                className="prof-input"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
-                autoComplete="email"
-              />
+              <input className="prof-input" type="email" value={user?.email ?? ""} disabled readOnly />
             </div>
 
             <div className="prof-field">
@@ -412,37 +446,41 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
             <div className="prof-section-title">Condomínio</div>
 
             <div className="prof-field">
-              <label className="prof-label">Nome do condomínio</label>
+              <label className="prof-label">
+                {isEmpresa ? "Condomínio que administra" : "Nome do condomínio"}
+              </label>
               <input
                 className="prof-input"
                 type="text"
                 value={condoName}
                 onChange={(e) => setCondoName(e.target.value)}
-                placeholder="Ex: Residencial Aurora"
+                placeholder={isEmpresa ? "Opcional" : "Ex: Residencial Aurora"}
               />
             </div>
 
-            <div className="prof-field">
-              <label className="prof-label">Meu papel</label>
-              <div className="auth-seg-group">
-                {(
-                  [
-                    { v: "morador", l: "Morador" },
-                    { v: "sindico", l: "Síndico" },
-                    { v: "conselho", l: "Conselho" },
-                  ] as const
-                ).map(({ v, l }) => (
-                  <button
-                    key={v}
-                    type="button"
-                    className={cn("auth-seg-btn", condoRole === v && "active")}
-                    onClick={() => setCondoRole(v)}
-                  >
-                    {l}
-                  </button>
-                ))}
+            {!isEmpresa && (
+              <div className="prof-field">
+                <label className="prof-label">Meu papel</label>
+                <div className="auth-seg-group">
+                  {(
+                    [
+                      { v: "morador", l: "Morador" },
+                      { v: "sindico", l: "Síndico" },
+                      { v: "conselho", l: "Conselho" },
+                    ] as const
+                  ).map(({ v, l }) => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={cn("auth-seg-btn", condoRole === v && "active")}
+                      onClick={() => setCondoRole(v)}
+                    >
+                      {l}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* ── Alterar senha ── */}

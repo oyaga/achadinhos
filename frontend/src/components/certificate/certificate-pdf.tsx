@@ -1,0 +1,355 @@
+/* eslint-disable jsx-a11y/alt-text */
+// Documento PDF do "Certificado de Empresa Qualificada", em A4 retrato.
+//
+// Usa as fontes nativas do PDF (Times-Italic para os títulos serifados em
+// itálico, Helvetica para o corpo) — assim não dependemos de baixar nenhuma
+// fonte em runtime e o PDF é 100% vetorial e funciona offline. Para trocar por
+// Fraunces/Inter de verdade, registre os .ttf via Font.register e troque as
+// referências de fontFamily abaixo.
+import {
+  Document,
+  Page,
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Svg,
+  Path,
+  Circle,
+  Ellipse,
+  Line,
+  Defs,
+  LinearGradient,
+  Stop,
+} from "@react-pdf/renderer";
+
+export interface CertificateDocData {
+  empresaNome: string;
+  categoria?: string;
+  responsavelNome: string;
+  code: string;
+  issuedLabel: string; // "dd/mm/aaaa"
+  validLabel: string; // "dd/mm/aaaa"
+  qrDataUrl: string; // PNG data URL do QR
+  signatureDataUrl?: string | null; // PNG data URL da assinatura desenhada
+}
+
+const C = {
+  bg: "#fbf8f2",
+  navy: "#0b1b3b",
+  navy2: "#11254e",
+  gold: "#c9a961",
+  goldLight: "#e6cf96",
+  ink: "#1a1410",
+  amber: "#e97a2d",
+  cream: "#f3ecdc",
+};
+
+const s = StyleSheet.create({
+  page: { backgroundColor: C.bg, position: "relative", fontFamily: "Helvetica" },
+  fill: { position: "absolute", top: 0, left: 0 },
+  outerFrame: {
+    position: "absolute",
+    top: 20,
+    left: 20,
+    right: 20,
+    bottom: 20,
+    borderWidth: 2.5,
+    borderColor: C.navy,
+    borderRadius: 16,
+  },
+  goldFrame: {
+    position: "absolute",
+    top: 28,
+    left: 28,
+    right: 28,
+    bottom: 28,
+    borderWidth: 1.2,
+    borderColor: C.gold,
+    borderRadius: 12,
+  },
+  content: {
+    position: "absolute",
+    top: 46,
+    left: 50,
+    right: 50,
+    bottom: 44,
+    alignItems: "center",
+  },
+  header: {
+    width: "100%",
+    backgroundColor: C.navy,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerBrand: { fontFamily: "Helvetica-Bold", color: C.goldLight, fontSize: 15, letterSpacing: 3 },
+  headerSub: { color: C.cream, fontSize: 7, letterSpacing: 2, marginTop: 2, opacity: 0.85 },
+  kicker: { color: C.gold, fontSize: 9, letterSpacing: 4, marginTop: 26, fontFamily: "Helvetica-Bold" },
+  title: { color: C.navy, fontFamily: "Times-Italic", fontSize: 31, marginTop: 8, textAlign: "center" },
+  body: {
+    color: C.ink,
+    fontSize: 11.5,
+    lineHeight: 1.7,
+    textAlign: "center",
+    marginTop: 18,
+    maxWidth: 400,
+  },
+  empresa: { fontFamily: "Times-BoldItalic", fontSize: 14, color: C.navy },
+  strong: { fontFamily: "Helvetica-Bold", color: C.navy2 },
+  sealWrap: { marginTop: 18, alignItems: "center", justifyContent: "center" },
+  sealLabel: {
+    position: "absolute",
+    top: 74,
+    color: C.navy,
+    fontFamily: "Helvetica-Bold",
+    fontSize: 11,
+    letterSpacing: 2,
+  },
+  sealTop: {
+    position: "absolute",
+    top: 20,
+    color: C.gold,
+    fontFamily: "Helvetica-Bold",
+    fontSize: 5.5,
+    letterSpacing: 1.5,
+  },
+  infoGrid: {
+    marginTop: 22,
+    width: "100%",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  infoCell: { width: "48%", marginBottom: 10 },
+  infoCellFull: { width: "100%", marginBottom: 2, alignItems: "center" },
+  infoLabel: { color: C.gold, fontSize: 7, letterSpacing: 1.5, fontFamily: "Helvetica-Bold" },
+  infoValue: { color: C.ink, fontSize: 10.5, marginTop: 2 },
+  codeValue: { color: C.navy, fontSize: 12, marginTop: 2, fontFamily: "Helvetica-Bold", letterSpacing: 1 },
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
+  sign: { width: 230, alignItems: "center" },
+  signImg: { width: 150, height: 46, objectFit: "contain", marginBottom: 2 },
+  signLine: { width: 200, borderTopWidth: 1, borderTopColor: C.navy, marginTop: 2 },
+  signName: { color: C.navy, fontSize: 9.5, fontFamily: "Helvetica-Bold", marginTop: 4 },
+  signRole: { color: C.ink, fontSize: 7.5, marginTop: 1, opacity: 0.8 },
+  qrWrap: { alignItems: "center", width: 110 },
+  qrImg: { width: 72, height: 72 },
+  qrCaption: { color: C.ink, fontSize: 6.5, marginTop: 3, textAlign: "center", opacity: 0.8 },
+});
+
+// Filete dourado com losango central, usado como divisor sob o título.
+function GoldDivider() {
+  return (
+    <Svg width={180} height={12} viewBox="0 0 180 12" style={{ marginTop: 12 }}>
+      <Line x1="6" y1="6" x2="78" y2="6" stroke={C.gold} strokeWidth={1} />
+      <Line x1="102" y1="6" x2="174" y2="6" stroke={C.gold} strokeWidth={1} />
+      <Path d="M90 1 L95 6 L90 11 L85 6 Z" fill={C.gold} />
+    </Svg>
+  );
+}
+
+// Ornamento de quina (bracket dourado com losango). `corner` decide a orientação.
+function Corner({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
+  const B = 46;
+  const m = 5; // margem interna
+  // Pontos do "L" conforme a quina.
+  const x = corner === "tl" || corner === "bl" ? m : B - m;
+  const y = corner === "tl" || corner === "tr" ? m : B - m;
+  const hx2 = corner === "tl" || corner === "bl" ? B : 0; // direção horizontal
+  const vy2 = corner === "tl" || corner === "tr" ? B : 0; // direção vertical
+  const pos: Record<string, number> = {};
+  if (corner === "tl") {
+    pos.top = 22;
+    pos.left = 22;
+  } else if (corner === "tr") {
+    pos.top = 22;
+    pos.right = 22;
+  } else if (corner === "bl") {
+    pos.bottom = 22;
+    pos.left = 22;
+  } else {
+    pos.bottom = 22;
+    pos.right = 22;
+  }
+  const inset = 8; // linha interna paralela
+  const ix = corner === "tl" || corner === "bl" ? x + inset : x - inset;
+  const iy = corner === "tl" || corner === "tr" ? y + inset : y - inset;
+  return (
+    <View style={{ position: "absolute", width: B, height: B, ...pos }}>
+      <Svg width={B} height={B} viewBox={`0 0 ${B} ${B}`}>
+        <Line x1={x} y1={y} x2={hx2} y2={y} stroke={C.gold} strokeWidth={1.4} />
+        <Line x1={x} y1={y} x2={x} y2={vy2} stroke={C.gold} strokeWidth={1.4} />
+        <Line x1={ix} y1={iy} x2={hx2} y2={iy} stroke={C.gold} strokeWidth={0.6} />
+        <Line x1={ix} y1={iy} x2={ix} y2={vy2} stroke={C.gold} strokeWidth={0.6} />
+        <Path d={`M${x} ${y - 4} L${x + 4} ${y} L${x} ${y + 4} L${x - 4} ${y} Z`} fill={C.gold} />
+      </Svg>
+    </View>
+  );
+}
+
+// Selo circular dourado "APROVADO" com escudo + check (mesmo símbolo de
+// "verificado" da plataforma).
+function ApprovedSeal() {
+  return (
+    <View style={s.sealWrap}>
+      <Svg width={132} height={132} viewBox="0 0 132 132">
+        <Defs>
+          <LinearGradient id="goldRing" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0" stopColor={C.goldLight} />
+            <Stop offset="0.5" stopColor={C.gold} />
+            <Stop offset="1" stopColor="#a8884a" />
+          </LinearGradient>
+        </Defs>
+        <Circle cx="66" cy="66" r="62" fill="none" stroke="url(#goldRing)" strokeWidth={6} />
+        <Circle cx="66" cy="66" r="52" fill="none" stroke={C.gold} strokeWidth={1.2} />
+        <Circle cx="66" cy="66" r="49" fill={C.bg} />
+        {/* Escudo dourado com check */}
+        <Path
+          d="M66 36 L84 42 L84 60 C84 72 76 80 66 85 C56 80 48 72 48 60 L48 42 Z"
+          fill="url(#goldRing)"
+          stroke="#a8884a"
+          strokeWidth={1}
+        />
+        <Path
+          d="M57 60 l6 6 l13 -14"
+          fill="none"
+          stroke={C.navy}
+          strokeWidth={3.4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </Svg>
+      <Text style={s.sealTop}>EMPRESA VERIFICADA</Text>
+      <Text style={s.sealLabel}>APROVADO</Text>
+    </View>
+  );
+}
+
+// Fundo guilloché sutil (elipses concêntricas finas) sobre o papel bege.
+function Guilloche() {
+  const cx = 297.64;
+  const cy = 360;
+  const rings = Array.from({ length: 18 }, (_, i) => 14 + i * 16);
+  return (
+    <Svg width={595.28} height={841.89} viewBox="0 0 595.28 841.89" style={s.fill}>
+      {rings.map((r, i) => (
+        <Ellipse
+          key={i}
+          cx={cx}
+          cy={cy}
+          rx={r}
+          ry={r * 0.62}
+          fill="none"
+          stroke={C.navy}
+          strokeWidth={0.4}
+          opacity={0.045}
+        />
+      ))}
+    </Svg>
+  );
+}
+
+export function CertificateDocument({ data }: { data: CertificateDocData }) {
+  const categoria = (data.categoria ?? "").trim() || "—";
+  return (
+    <Document
+      title={`Certificado ${data.code}`}
+      author="Achadinhos do Condomínio"
+      subject={`Certificado de Empresa Qualificada — ${data.empresaNome}`}
+    >
+      <Page size="A4" style={s.page}>
+        <Guilloche />
+        <View style={s.outerFrame} />
+        <View style={s.goldFrame} />
+        <Corner corner="tl" />
+        <Corner corner="tr" />
+        <Corner corner="bl" />
+        <Corner corner="br" />
+
+        <View style={s.content}>
+          {/* Faixa superior azul-marinho com o logo/emissor */}
+          <View style={s.header}>
+            <Svg width={26} height={26} viewBox="0 0 24 24" style={{ marginRight: 10 }}>
+              <Path
+                d="M3 11 L12 4 L21 11 L21 20 a1 1 0 0 1 -1 1 h-5 v-6 h-6 v6 H4 a1 1 0 0 1 -1 -1 Z"
+                fill="none"
+                stroke={C.goldLight}
+                strokeWidth={1.6}
+                strokeLinejoin="round"
+              />
+              <Circle cx="12" cy="13" r="1.5" fill={C.goldLight} />
+            </Svg>
+            <View style={{ alignItems: "center" }}>
+              <Text style={s.headerBrand}>ACHADINHOS DO CONDOMÍNIO</Text>
+              <Text style={s.headerSub}>PLATAFORMA DE SERVIÇOS E COMÉRCIO PARA CONDOMÍNIOS</Text>
+            </View>
+          </View>
+
+          <Text style={s.kicker}>CERTIFICADO OFICIAL</Text>
+          <Text style={s.title}>Certificado de Empresa Qualificada</Text>
+          <GoldDivider />
+
+          <Text style={s.body}>
+            Certificamos que a empresa <Text style={s.empresa}>{data.empresaNome}</Text> foi
+            submetida a um rigoroso processo de avaliação e qualificação, atendendo a todos os
+            critérios de idoneidade, qualidade e confiabilidade exigidos, estando{" "}
+            <Text style={s.strong}>APROVADA e APTA</Text> a prestar serviços aos condomínios
+            parceiros da plataforma Achadinhos do Condomínio.
+          </Text>
+
+          <ApprovedSeal />
+
+          <View style={s.infoGrid}>
+            <View style={s.infoCell}>
+              <Text style={s.infoLabel}>EMPRESA</Text>
+              <Text style={s.infoValue}>{data.empresaNome}</Text>
+            </View>
+            <View style={s.infoCell}>
+              <Text style={s.infoLabel}>CATEGORIA / SEGMENTO</Text>
+              <Text style={s.infoValue}>{categoria}</Text>
+            </View>
+            <View style={s.infoCell}>
+              <Text style={s.infoLabel}>DATA DE EMISSÃO</Text>
+              <Text style={s.infoValue}>{data.issuedLabel}</Text>
+            </View>
+            <View style={s.infoCell}>
+              <Text style={s.infoLabel}>VÁLIDO ATÉ</Text>
+              <Text style={s.infoValue}>{data.validLabel}</Text>
+            </View>
+            <View style={s.infoCellFull}>
+              <Text style={s.infoLabel}>CÓDIGO DE VERIFICAÇÃO</Text>
+              <Text style={s.codeValue}>{data.code}</Text>
+            </View>
+          </View>
+
+          <View style={s.footer}>
+            <View style={s.sign}>
+              {data.signatureDataUrl ? <Image src={data.signatureDataUrl} style={s.signImg} /> : null}
+              <View style={s.signLine} />
+              <Text style={s.signName}>Achadinhos do Condomínio</Text>
+              <Text style={s.signRole}>Coordenação de Credenciamento</Text>
+              {data.responsavelNome ? (
+                <Text style={s.signRole}>Responsável: {data.responsavelNome}</Text>
+              ) : null}
+            </View>
+            <View style={s.qrWrap}>
+              <Image src={data.qrDataUrl} style={s.qrImg} />
+              <Text style={s.qrCaption}>Verifique a autenticidade</Text>
+            </View>
+          </View>
+        </View>
+      </Page>
+    </Document>
+  );
+}

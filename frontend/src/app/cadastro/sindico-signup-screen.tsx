@@ -8,17 +8,22 @@ import { useAuth, type RegisterSindicoPayload } from "@/contexts/auth-context";
 import { Icon } from "@/components/icons";
 import { BrandLockup } from "@/components/auth/brand-lockup";
 import { cn } from "@/lib/utils";
-import { formatCPF, isValidCPF, stripDocument } from "@/lib/document";
+import { formatCPF, formatCNPJ, isValidCPF, isValidCNPJ, stripDocument } from "@/lib/document";
 import { formatPhone, isValidPhone, stripPhone } from "@/lib/phone";
 import { formatCEP, isValidCEP, stripCEP } from "@/lib/cep";
 import { useViaCEP } from "@/hooks/use-via-cep";
 
+type AccountKind = "pessoa" | "empresa";
+
 interface FormState {
+  accountType: AccountKind;
   name: string;
   email: string;
   password: string;
   passwordConfirm: string;
   cpf: string;
+  cnpj: string;
+  companyName: string;
   phone: string;
   condoName: string;
   condoRole: "morador" | "sindico" | "conselho" | "";
@@ -38,6 +43,8 @@ interface FieldErrors {
   password?: string;
   passwordConfirm?: string;
   cpf?: string;
+  cnpj?: string;
+  companyName?: string;
   phone?: string;
   condoName?: string;
   condoRole?: string;
@@ -63,11 +70,14 @@ export function SindicoSignupScreen() {
   const cepLookedRef = useRef<string>("");
 
   const [form, setForm] = useState<FormState>({
+    accountType: "pessoa",
     name: "",
     email: "",
     password: "",
     passwordConfirm: "",
     cpf: "",
+    cnpj: "",
+    companyName: "",
     phone: "",
     condoName: "",
     condoRole: "",
@@ -114,7 +124,9 @@ export function SindicoSignupScreen() {
 
   function validate(): boolean {
     const next: FieldErrors = {};
-    if (!form.name.trim()) next.name = "Informe seu nome completo.";
+    const isEmpresa = form.accountType === "empresa";
+    if (!form.name.trim())
+      next.name = isEmpresa ? "Informe o nome do responsável." : "Informe seu nome completo.";
     if (!form.email.trim()) next.email = "Informe um e-mail.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
       next.email = "E-mail inválido.";
@@ -123,12 +135,20 @@ export function SindicoSignupScreen() {
     if (!form.passwordConfirm) next.passwordConfirm = "Confirme sua senha.";
     else if (form.password !== form.passwordConfirm)
       next.passwordConfirm = "As senhas não conferem.";
-    if (!form.cpf) next.cpf = "Informe seu CPF.";
-    else if (!isValidCPF(stripDocument(form.cpf))) next.cpf = "CPF inválido.";
+    if (isEmpresa) {
+      if (!form.companyName.trim()) next.companyName = "Informe a razão social.";
+      if (!form.cnpj) next.cnpj = "Informe o CNPJ.";
+      else if (!isValidCNPJ(stripDocument(form.cnpj))) next.cnpj = "CNPJ inválido.";
+    } else {
+      if (!form.cpf) next.cpf = "Informe seu CPF.";
+      else if (!isValidCPF(stripDocument(form.cpf))) next.cpf = "CPF inválido.";
+    }
     if (!form.phone) next.phone = "Informe seu telefone.";
     else if (!isValidPhone(stripPhone(form.phone))) next.phone = "Telefone inválido.";
-    if (!form.condoName.trim()) next.condoName = "Informe o nome do condomínio.";
-    if (!form.condoRole) next.condoRole = "Selecione seu papel no condomínio.";
+    if (!isEmpresa) {
+      if (!form.condoName.trim()) next.condoName = "Informe o nome do condomínio.";
+      if (!form.condoRole) next.condoRole = "Selecione seu papel no condomínio.";
+    }
     if (!form.cep) next.cep = "Informe o CEP.";
     else if (!isValidCEP(stripCEP(form.cep))) next.cep = "CEP inválido (8 dígitos).";
     if (!form.street.trim()) next.street = "Informe a rua.";
@@ -147,14 +167,14 @@ export function SindicoSignupScreen() {
     setServerError(null);
     if (!validate()) return;
 
+    const isEmpresa = form.accountType === "empresa";
     const payload: RegisterSindicoPayload = {
+      account_type: form.accountType,
       name: form.name.trim(),
       email: form.email.trim(),
       password: form.password,
-      cpf: stripDocument(form.cpf),
       phone: stripPhone(form.phone),
       condo_name: form.condoName.trim(),
-      condo_role: form.condoRole as "morador" | "sindico" | "conselho",
       address: {
         cep: stripCEP(form.cep),
         street: form.street.trim(),
@@ -165,6 +185,13 @@ export function SindicoSignupScreen() {
         state: form.state.trim().toUpperCase(),
       },
     };
+    if (isEmpresa) {
+      payload.cnpj = stripDocument(form.cnpj);
+      payload.company_name = form.companyName.trim();
+    } else {
+      payload.cpf = stripDocument(form.cpf);
+      payload.condo_role = form.condoRole as "morador" | "sindico" | "conselho";
+    }
 
     setSubmitting(true);
     try {
@@ -173,7 +200,7 @@ export function SindicoSignupScreen() {
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 409) {
-          setServerError("Esse e-mail ou CPF já tem uma conta. Tente entrar.");
+          setServerError("Esse e-mail, CPF ou CNPJ já tem uma conta. Tente entrar.");
         } else if (err.status === 422) {
           setServerError(err.message || "Confira os dados e tente novamente.");
         } else if (err.status === 0) {
@@ -209,7 +236,9 @@ export function SindicoSignupScreen() {
         <BrandLockup />
 
         <div className="auth-card">
-          <div className="auth-eyebrow">Síndico ou morador</div>
+          <div className="auth-eyebrow">
+            {form.accountType === "empresa" ? "Administradora de condomínios" : "Síndico ou morador"}
+          </div>
           <h1 className="auth-title">
             Crie sua <em>conta</em>
           </h1>
@@ -226,6 +255,48 @@ export function SindicoSignupScreen() {
           )}
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            {/* Account type */}
+            <div>
+              <div className="auth-label">Tipo de conta</div>
+              <div className="auth-seg-group" role="group" aria-label="Tipo de conta">
+                {(
+                  [
+                    { id: "pessoa", label: "Síndico / Morador" },
+                    { id: "empresa", label: "Administradora" },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    className={cn("auth-seg-btn", form.accountType === t.id && "active")}
+                    onClick={() => update("accountType", t.id)}
+                    disabled={submitting}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Razão social (empresa) */}
+            {form.accountType === "empresa" && (
+              <div>
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><Icon.Building size={18} /></span>
+                  <input
+                    className={cn("auth-input", errors.companyName && "invalid")}
+                    type="text"
+                    placeholder="Razão social da administradora"
+                    aria-label="Razão social"
+                    value={form.companyName}
+                    onChange={(e) => update("companyName", e.target.value)}
+                    disabled={submitting}
+                  />
+                </div>
+                {errors.companyName && <div className="auth-field-error">{errors.companyName}</div>}
+              </div>
+            )}
+
             {/* Name */}
             <div>
               <div className="auth-input-wrap">
@@ -234,8 +305,10 @@ export function SindicoSignupScreen() {
                   className={cn("auth-input", errors.name && "invalid")}
                   type="text"
                   autoComplete="name"
-                  placeholder="Seu nome completo"
-                  aria-label="Nome completo"
+                  placeholder={
+                    form.accountType === "empresa" ? "Nome do responsável" : "Seu nome completo"
+                  }
+                  aria-label={form.accountType === "empresa" ? "Nome do responsável" : "Nome completo"}
                   value={form.name}
                   onChange={(e) => update("name", e.target.value)}
                   disabled={submitting}
@@ -307,24 +380,44 @@ export function SindicoSignupScreen() {
               {errors.passwordConfirm && <div className="auth-field-error">{errors.passwordConfirm}</div>}
             </div>
 
-            {/* CPF */}
-            <div>
-              <div className="auth-input-wrap">
-                <span className="auth-input-icon"><Icon.User size={18} /></span>
-                <input
-                  className={cn("auth-input", errors.cpf && "invalid")}
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="000.000.000-00"
-                  aria-label="CPF"
-                  value={form.cpf}
-                  onChange={(e) => update("cpf", formatCPF(e.target.value))}
-                  disabled={submitting}
-                  maxLength={14}
-                />
+            {/* CPF (pessoa) / CNPJ (empresa) */}
+            {form.accountType === "empresa" ? (
+              <div>
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><Icon.Building size={18} /></span>
+                  <input
+                    className={cn("auth-input", errors.cnpj && "invalid")}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="00.000.000/0000-00"
+                    aria-label="CNPJ"
+                    value={form.cnpj}
+                    onChange={(e) => update("cnpj", formatCNPJ(e.target.value))}
+                    disabled={submitting}
+                    maxLength={18}
+                  />
+                </div>
+                {errors.cnpj && <div className="auth-field-error">{errors.cnpj}</div>}
               </div>
-              {errors.cpf && <div className="auth-field-error">{errors.cpf}</div>}
-            </div>
+            ) : (
+              <div>
+                <div className="auth-input-wrap">
+                  <span className="auth-input-icon"><Icon.User size={18} /></span>
+                  <input
+                    className={cn("auth-input", errors.cpf && "invalid")}
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="000.000.000-00"
+                    aria-label="CPF"
+                    value={form.cpf}
+                    onChange={(e) => update("cpf", formatCPF(e.target.value))}
+                    disabled={submitting}
+                    maxLength={14}
+                  />
+                </div>
+                {errors.cpf && <div className="auth-field-error">{errors.cpf}</div>}
+              </div>
+            )}
 
             {/* Phone */}
             <div>
@@ -353,7 +446,11 @@ export function SindicoSignupScreen() {
                 <input
                   className={cn("auth-input", errors.condoName && "invalid")}
                   type="text"
-                  placeholder="Nome do condomínio"
+                  placeholder={
+                    form.accountType === "empresa"
+                      ? "Condomínio que administra (opcional)"
+                      : "Nome do condomínio"
+                  }
                   aria-label="Nome do condomínio"
                   value={form.condoName}
                   onChange={(e) => update("condoName", e.target.value)}
@@ -363,24 +460,26 @@ export function SindicoSignupScreen() {
               {errors.condoName && <div className="auth-field-error">{errors.condoName}</div>}
             </div>
 
-            {/* Condo role */}
-            <div>
-              <div className="auth-label">Seu papel no condomínio</div>
-              <div className="auth-seg-group" role="group" aria-label="Papel no condomínio">
-                {CONDO_ROLES.map((r) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    className={cn("auth-seg-btn", form.condoRole === r.id && "active")}
-                    onClick={() => update("condoRole", r.id)}
-                    disabled={submitting}
-                  >
-                    {r.label}
-                  </button>
-                ))}
+            {/* Condo role (pessoa apenas — empresa entra como administradora) */}
+            {form.accountType !== "empresa" && (
+              <div>
+                <div className="auth-label">Seu papel no condomínio</div>
+                <div className="auth-seg-group" role="group" aria-label="Papel no condomínio">
+                  {CONDO_ROLES.map((r) => (
+                    <button
+                      key={r.id}
+                      type="button"
+                      className={cn("auth-seg-btn", form.condoRole === r.id && "active")}
+                      onClick={() => update("condoRole", r.id)}
+                      disabled={submitting}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+                {errors.condoRole && <div className="auth-field-error">{errors.condoRole}</div>}
               </div>
-              {errors.condoRole && <div className="auth-field-error">{errors.condoRole}</div>}
-            </div>
+            )}
 
             {/* CEP */}
             <div>

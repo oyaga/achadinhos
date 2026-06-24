@@ -19,6 +19,8 @@ const BASE_URL =
 // Only síndicos (public sign-up) and admins (internal) have login accounts.
 export type UserRole = "sindico" | "admin";
 
+export type AccountType = "pessoa" | "empresa";
+
 export interface User {
   id: string;
   email: string;
@@ -26,8 +28,22 @@ export interface User {
   role: UserRole;
   phone?: string | null;
   avatar_url?: string | null;
+  // Tipo de conta: pessoa física (CPF) ou empresa/administradora (CNPJ).
+  account_type?: AccountType | null;
+  company_name?: string | null; // razão social (empresa)
+  document_type?: "cpf" | "cnpj" | null;
+  document?: string | null;
+  cpf?: string | null;
   condo_name?: string | null;
   condo_role?: string | null;
+  // Endereço (persistido no backend).
+  cep?: string | null;
+  street?: string | null;
+  number?: string | null;
+  complement?: string | null;
+  neighborhood?: string | null;
+  city?: string | null;
+  state?: string | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -312,14 +328,18 @@ export interface AddressPayload {
 }
 
 export interface RegisterSindicoPayload {
+  // "pessoa" (física, CPF) ou "empresa" (administradora, CNPJ). Default pessoa.
+  account_type?: AccountType;
   name: string;
   email: string;
   password: string;
-  cpf: string;
+  cpf?: string; // pessoa
+  cnpj?: string; // empresa
+  company_name?: string; // razão social (empresa)
   phone: string;
   address: AddressPayload;
-  condo_name: string;
-  condo_role: "morador" | "sindico" | "conselho";
+  condo_name?: string;
+  condo_role?: "morador" | "sindico" | "conselho";
 }
 
 export const auth = {
@@ -704,6 +724,45 @@ export interface AdminEventPayload {
   event_time: string; // "HH:MM"
 }
 
+// ── Certificados de empresa qualificada ──
+export interface ApiCertificate {
+  id: string;
+  code: string;
+  seller_id: string;
+  empresa_nome: string;
+  categoria: string;
+  responsavel_nome: string;
+  responsavel_cpf: string;
+  signature_url: string;
+  issued_at: string; // ISO; use .slice(0,10)
+  valid_until: string; // ISO; use .slice(0,10)
+  revoked: boolean;
+  created_at?: string;
+  seller?: AdminSeller;
+}
+
+export interface AdminCertificatePayload {
+  seller_id: string;
+  responsavel_nome: string;
+  responsavel_cpf?: string;
+  issued_at?: string; // "AAAA-MM-DD" (default: hoje)
+  valid_until?: string; // "AAAA-MM-DD" (default: +12 meses)
+  signature_png?: string; // data URL "data:image/png;base64,..."
+}
+
+// Resposta pública da verificação por código (GET /certificates/:code).
+export interface CertificateVerification {
+  code: string;
+  empresa_nome: string;
+  categoria: string;
+  responsavel_nome: string;
+  issued_at: string;
+  valid_until: string;
+  revoked: boolean;
+  valid: boolean;
+  seller?: { id: string; name: string; logo_url?: string };
+}
+
 export const adminApi = {
   // ── Síndicos (read-only) ──
   async listSindicos(): Promise<AdminSindico[]> {
@@ -804,6 +863,24 @@ export const adminApi = {
     return request<void>(`/admin/events/${id}`, { method: "DELETE", parseAs: "none" });
   },
 
+  // ── Certificados ──
+  async listCertificates(): Promise<ApiCertificate[]> {
+    const res = await request<{ data: ApiCertificate[] }>("/admin/certificates");
+    return res.data ?? [];
+  },
+  async createCertificate(payload: AdminCertificatePayload): Promise<ApiCertificate> {
+    return request<ApiCertificate>("/admin/certificates", { method: "POST", body: payload });
+  },
+  async revokeCertificate(id: string, revoked: boolean): Promise<ApiCertificate> {
+    return request<ApiCertificate>(`/admin/certificates/${id}`, {
+      method: "PATCH",
+      body: { revoked },
+    });
+  },
+  async deleteCertificate(id: string): Promise<void> {
+    return request<void>(`/admin/certificates/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+
   // ── Produtos ──
   async listProducts(): Promise<ApiProduct[]> {
     const res = await request<{ data: ApiProduct[] }>("/admin/products");
@@ -858,6 +935,16 @@ export const eventsApi = {
   async list(): Promise<ApiEvent[]> {
     const res = await request<{ data: ApiEvent[] }>("/events");
     return res.data ?? [];
+  },
+};
+
+// Verificação pública de certificados (acessada pelo QR code, sem login).
+export const certificatesApi = {
+  async verify(code: string): Promise<CertificateVerification> {
+    return request<CertificateVerification>(
+      `/certificates/${encodeURIComponent(code)}`,
+      { skipAuth: true },
+    );
   },
 };
 

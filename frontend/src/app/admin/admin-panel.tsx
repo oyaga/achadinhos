@@ -10,13 +10,15 @@ import { NegociosSection } from "./negocios-section";
 import { SindicosSection } from "./sindicos-section";
 import { CadastroEmpresasSection } from "./cadastro-empresas-section";
 import { EventosSection } from "./eventos-section";
+import { CertificadosSection } from "./certificados-section";
 
-type AdminTab = "produtos" | "negocios" | "cadastro" | "eventos" | "sindicos";
+type AdminTab = "produtos" | "negocios" | "cadastro" | "certificados" | "eventos" | "sindicos";
 
 const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "produtos", label: "Produtos", icon: "CatShopping" },
   { id: "negocios", label: "Empresas e afiliados", icon: "CatPartners" },
   { id: "cadastro", label: "Cadastro de empresas", icon: "Building" },
+  { id: "certificados", label: "Certificados", icon: "Award" },
   { id: "eventos", label: "Eventos", icon: "Calendar" },
   { id: "sindicos", label: "Síndicos", icon: "User" },
 ];
@@ -103,6 +105,7 @@ export function AdminPanel() {
         {tab === "produtos" && <ProdutosSection />}
         {tab === "negocios" && <NegociosSection />}
         {tab === "cadastro" && <CadastroEmpresasSection />}
+        {tab === "certificados" && <CertificadosSection />}
         {tab === "eventos" && <EventosSection />}
         {tab === "sindicos" && <SindicosSection />}
       </div>

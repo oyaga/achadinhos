@@ -176,6 +176,21 @@ export const Icon = {
       <path d="M3 7l4 5 5-7 5 7 4-5v11H3V7Z" />
     </svg>
   ),
+  Award: ({ size = 18, ...rest }: IconProps = {}) => (
+    <Svg size={size} {...rest}>
+      <circle cx="12" cy="9" r="6" />
+      <path d="m9 14.5-1.5 7L12 19l4.5 2.5L15 14.5" />
+      <path d="m9.5 9 1.7 1.7L15 7" />
+    </Svg>
+  ),
+  QrCode: ({ size = 18, ...rest }: IconProps = {}) => (
+    <Svg size={size} strokeWidth={1.6} {...rest}>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 14h3v3M21 14v7M17 21h4M14 21h.01" />
+    </Svg>
+  ),
   Building: ({ size = 18, ...rest }: IconProps = {}) => (
     <Svg size={size} {...rest}>
       <rect x="4" y="3" width="16" height="18" rx="1" />
