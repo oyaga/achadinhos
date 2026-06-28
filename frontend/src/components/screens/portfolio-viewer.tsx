@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { getImageUrl, isPdf } from "@/lib/api";
+import { getImageUrl, isPdf, isVideo } from "@/lib/api";
 import { Icon } from "../icons";
 import { PdfDocument } from "./pdf-document";
 
@@ -10,7 +10,7 @@ interface PortfolioViewerProps {
   onClose: () => void;
 }
 
-// PortfolioViewer shows a portfolio item (image or PDF) in a full-screen
+// PortfolioViewer shows a portfolio item (image, PDF or video) in a full-screen
 // overlay with a "Voltar" button — so tapping a portfolio item keeps the user
 // inside the app instead of navigating away to the raw file.
 export function PortfolioViewer({ url, onClose }: PortfolioViewerProps) {
@@ -31,6 +31,8 @@ export function PortfolioViewer({ url, onClose }: PortfolioViewerProps) {
       <div className="pv-stage" onClick={(e) => e.stopPropagation()}>
         {isPdf(url) ? (
           <PdfDocument url={full} />
+        ) : isVideo(url) ? (
+          <video src={full} className="pv-img" controls autoPlay playsInline />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={full} alt="Portfólio" className="pv-img" />

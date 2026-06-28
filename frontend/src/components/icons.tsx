@@ -84,6 +84,11 @@ export const Icon = {
       <path d="m15 6-6 6 6 6" />
     </Svg>
   ),
+  Play: ({ size = 14, ...rest }: IconProps = {}) => (
+    <Svg size={size} strokeWidth={2} fill="currentColor" {...rest}>
+      <polygon points="6 3 20 12 6 21 6 3" />
+    </Svg>
+  ),
   Star: ({ size = 14, filled = true, ...rest }: IconProps = {}) => (
     <Svg
       size={size}

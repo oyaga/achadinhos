@@ -5,6 +5,7 @@ import {
   sellersApi,
   getImageUrl,
   isPdf,
+  isVideo,
   type AdminSeller,
   type ApiProduct,
   type SellerReview,
@@ -238,6 +239,11 @@ export function SellerDetail({
                   {isPdf(url) ? (
                     <span className="upload-doc">
                       <strong>PDF</strong>
+                    </span>
+                  ) : isVideo(url) ? (
+                    <span className="upload-doc">
+                      <Icon.Play size={20} />
+                      <strong>VÍDEO</strong>
                     </span>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element

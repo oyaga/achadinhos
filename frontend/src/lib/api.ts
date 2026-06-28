@@ -429,6 +429,11 @@ export function isPdf(path: string): boolean {
   return /\.pdf(\?|$)/i.test(path ?? "");
 }
 
+/** True when the given path or URL points to a video file. */
+export function isVideo(path: string): boolean {
+  return /\.(mp4|webm|mov)(\?|$)/i.test(path ?? "");
+}
+
 export interface PagedResponse<T> {
   data: T[];
   total: number;

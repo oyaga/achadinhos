@@ -6,6 +6,7 @@ import {
   categoriesApi,
   getImageUrl,
   isPdf,
+  isVideo,
   ApiError,
   type AdminSeller,
   type ApiProvider,
@@ -722,6 +723,16 @@ export function NegociosSection() {
                     >
                       <strong>PDF</strong>
                     </a>
+                  ) : isVideo(ph.url) ? (
+                    <a
+                      href={getImageUrl(ph.url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="upload-doc"
+                    >
+                      <Icon.Play size={20} />
+                      <strong>VÍDEO</strong>
+                    </a>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={getImageUrl(ph.url)} alt="Portfólio" />
@@ -742,6 +753,11 @@ export function NegociosSection() {
                     <div className="upload-doc">
                       <strong>PDF</strong>
                     </div>
+                  ) : file.type.startsWith("video/") ? (
+                    <div className="upload-doc">
+                      <Icon.Play size={20} />
+                      <strong>VÍDEO</strong>
+                    </div>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={URL.createObjectURL(file)} alt="Pré-visualização" />
@@ -761,7 +777,7 @@ export function NegociosSection() {
                   <Icon.Plus size={20} />
                   <input
                     type="file"
-                    accept="image/*,application/pdf"
+                    accept="image/*,application/pdf,video/mp4,video/webm,video/quicktime"
                     multiple
                     className="file-overlay"
                     onChange={(e) => { addPortfolioFiles(e.target.files); e.target.value = ""; }}

@@ -764,10 +764,11 @@ func validateDocument(c *gin.Context, docType, raw string) (string, bool) {
 
 // saveUploadedFile reads the "file" multipart field, validates it and stores it
 // under ./uploads/<subdir>/. Images (jpg/png/webp/gif) are always accepted, up
-// to 5 MB. When allowPDF is true, PDF files are accepted too, up to 20 MB —
-// used by the portfolio so businesses can upload presentation decks.
+// to 5 MB. When allowRichMedia is true, PDF files (up to 20 MB) and videos
+// (mp4/webm/mov, up to 50 MB) are accepted too — used by the portfolio so
+// businesses can upload presentation decks and short showcase videos.
 // Returns the public URL path. On failure it writes the error and returns false.
-func saveUploadedFile(c *gin.Context, subdir string, allowPDF bool) (string, bool) {
+func saveUploadedFile(c *gin.Context, subdir string, allowRichMedia bool) (string, bool) {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		JSONError(c, http.StatusBadRequest, "campo 'file' ausente ou inválido")
@@ -779,15 +780,23 @@ func saveUploadedFile(c *gin.Context, subdir string, allowPDF bool) (string, boo
 		"image/webp": ".webp",
 		"image/gif":  ".gif",
 	}
-	if allowPDF {
+	videoTypes := map[string]bool{
+		"video/mp4":       true,
+		"video/webm":      true,
+		"video/quicktime": true,
+	}
+	if allowRichMedia {
 		allowed["application/pdf"] = ".pdf"
+		allowed["video/mp4"] = ".mp4"
+		allowed["video/webm"] = ".webm"
+		allowed["video/quicktime"] = ".mov"
 	}
 	contentType := fileHeader.Header.Get("Content-Type")
 	ext, ok := allowed[contentType]
 	if !ok {
 		msg := "tipo de arquivo não permitido (use jpg, png, webp)"
-		if allowPDF {
-			msg = "tipo de arquivo não permitido (use jpg, png, webp ou pdf)"
+		if allowRichMedia {
+			msg = "tipo de arquivo não permitido (use jpg, png, webp, pdf ou vídeo mp4/webm/mov)"
 		}
 		JSONError(c, http.StatusBadRequest, msg)
 		return "", false
@@ -797,6 +806,9 @@ func saveUploadedFile(c *gin.Context, subdir string, allowPDF bool) (string, boo
 	if contentType == "application/pdf" {
 		maxSize = 20 << 20 // 20 MB para PDFs (apresentações)
 		sizeMsg = "arquivo muito grande (máx 20 MB)"
+	} else if videoTypes[contentType] {
+		maxSize = 50 << 20 // 50 MB para vídeos
+		sizeMsg = "arquivo muito grande (máx 50 MB)"
 	}
 	if fileHeader.Size > maxSize {
 		JSONError(c, http.StatusBadRequest, sizeMsg)

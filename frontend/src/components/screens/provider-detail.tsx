@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { providersApi, getImageUrl, isPdf } from "@/lib/api";
+import { providersApi, getImageUrl, isPdf, isVideo } from "@/lib/api";
 import { adaptReview } from "@/lib/adapters";
 import type { Provider, Review } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -162,6 +162,11 @@ export function ProviderDetail({
                   {isPdf(url) ? (
                     <span className="upload-doc">
                       <strong>PDF</strong>
+                    </span>
+                  ) : isVideo(url) ? (
+                    <span className="upload-doc">
+                      <Icon.Play size={20} />
+                      <strong>VÍDEO</strong>
                     </span>
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
