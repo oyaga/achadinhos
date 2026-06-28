@@ -168,7 +168,7 @@ function GoldDivider() {
 // Ornamento de quina (bracket dourado com losango). `corner` decide a orientação.
 function Corner({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
   const B = 46;
-  const m = 5; // margem interna
+  const m = 6; // offset do vértice: View em 22 + 6 = 28pt, alinhando o ornamento ao canto da moldura dourada
   // Pontos do "L" conforme a quina.
   const x = corner === "tl" || corner === "bl" ? m : B - m;
   const y = corner === "tl" || corner === "tr" ? m : B - m;
@@ -194,8 +194,8 @@ function Corner({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
   return (
     <View style={{ position: "absolute", width: B, height: B, ...pos }}>
       <Svg width={B} height={B} viewBox={`0 0 ${B} ${B}`}>
-        <Line x1={x} y1={y} x2={hx2} y2={y} stroke={C.gold} strokeWidth={1.4} />
-        <Line x1={x} y1={y} x2={x} y2={vy2} stroke={C.gold} strokeWidth={1.4} />
+        <Line x1={x} y1={y} x2={hx2} y2={y} stroke={C.gold} strokeWidth={1.2} />
+        <Line x1={x} y1={y} x2={x} y2={vy2} stroke={C.gold} strokeWidth={1.2} />
         <Line x1={ix} y1={iy} x2={hx2} y2={iy} stroke={C.gold} strokeWidth={0.6} />
         <Line x1={ix} y1={iy} x2={ix} y2={vy2} stroke={C.gold} strokeWidth={0.6} />
         <Path d={`M${x} ${y - 4} L${x + 4} ${y} L${x} ${y + 4} L${x - 4} ${y} Z`} fill={C.gold} />
