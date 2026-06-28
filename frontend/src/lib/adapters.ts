@@ -24,6 +24,11 @@ export function adaptProvider(p: ApiProvider): Provider {
     yearsActive: p.years_active,
     jobsDone: p.jobs_done,
     whatsapp: p.whatsapp,
+    instagram: p.instagram,
+    facebook: p.facebook,
+    tiktok: p.tiktok,
+    youtube: p.youtube,
+    site: p.site,
     highlight: p.highlight,
     portfolio: (p.portfolio_photos ?? []).map((ph) => ph.url),
   };

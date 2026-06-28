@@ -75,6 +75,11 @@ type Provider struct {
 	YearsActive       int         `json:"years_active"`
 	JobsDone          int         `json:"jobs_done"`
 	WhatsApp          string      `gorm:"size:32" json:"whatsapp"`
+	Instagram         string      `gorm:"size:255" json:"instagram,omitempty"`
+	Facebook          string      `gorm:"size:255" json:"facebook,omitempty"`
+	TikTok            string      `gorm:"column:tiktok;size:255" json:"tiktok,omitempty"`
+	YouTube           string      `gorm:"column:youtube;size:255" json:"youtube,omitempty"`
+	Site              string      `gorm:"size:500" json:"site,omitempty"`
 	Highlight         bool        `gorm:"default:false;index" json:"highlight"`
 	OwnerUserID       *uuid.UUID  `gorm:"type:uuid;index" json:"owner_user_id,omitempty"`
 	Coverage          Coverage    `gorm:"size:16;default:'cidade'" json:"coverage"`

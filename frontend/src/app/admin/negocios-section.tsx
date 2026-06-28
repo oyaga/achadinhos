@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import {
   adminApi,
   categoriesApi,
   getImageUrl,
   isPdf,
+  isVideo,
+  isVideoLink,
   ApiError,
   type AdminSeller,
   type ApiProvider,
@@ -46,10 +48,16 @@ interface FormState {
   document: string;
   whatsapp: string;
   description: string;
+  // redes sociais (empresa e afiliado)
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  youtube: string;
   // empresa
   link: string;
   partner: boolean;
   // prestador
+  site: string;
   categoryId: string;
   services: string[];
   yearsActive: string;
@@ -69,8 +77,13 @@ const EMPTY_FORM: FormState = {
   document: "",
   whatsapp: "",
   description: "",
+  instagram: "",
+  facebook: "",
+  tiktok: "",
+  youtube: "",
   link: "",
   partner: false,
+  site: "",
   categoryId: "",
   services: [],
   yearsActive: "",
@@ -97,6 +110,8 @@ export function NegociosSection() {
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [existingLogo, setExistingLogo] = useState<string>("");
   const [portfolioFiles, setPortfolioFiles] = useState<File[]>([]);
+  const [portfolioLinks, setPortfolioLinks] = useState<string[]>([]);
+  const [videoLinkInput, setVideoLinkInput] = useState("");
   const [existingPortfolio, setExistingPortfolio] = useState<PortfolioPhoto[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -143,6 +158,8 @@ export function NegociosSection() {
     setLogoFile(null);
     setExistingLogo("");
     setPortfolioFiles([]);
+    setPortfolioLinks([]);
+    setVideoLinkInput("");
     setExistingPortfolio([]);
     setFormError(null);
     setFormOpen(true);
@@ -161,6 +178,10 @@ export function NegociosSection() {
         document: s.document ? formatDocument(s.document, (s.document_type as DocumentType) || "cnpj") : "",
         whatsapp: formatPhone(s.whatsapp ?? ""),
         description: s.description ?? "",
+        instagram: s.instagram ?? "",
+        facebook: s.facebook ?? "",
+        tiktok: s.tiktok ?? "",
+        youtube: s.youtube ?? "",
         link: s.link ?? "",
         partner: s.partner,
         highlight: s.highlight ?? false,
@@ -178,6 +199,11 @@ export function NegociosSection() {
         document: p.document ? formatDocument(p.document, (p.document_type as DocumentType) || "cnpj") : "",
         whatsapp: formatPhone(p.whatsapp ?? ""),
         description: p.description ?? "",
+        instagram: p.instagram ?? "",
+        facebook: p.facebook ?? "",
+        tiktok: p.tiktok ?? "",
+        youtube: p.youtube ?? "",
+        site: p.site ?? "",
         categoryId: p.category_id,
         services: p.services ?? [],
         yearsActive: p.years_active ? String(p.years_active) : "",
@@ -207,6 +233,8 @@ export function NegociosSection() {
     setCropFile(null);
     setExistingLogo("");
     setPortfolioFiles([]);
+    setPortfolioLinks([]);
+    setVideoLinkInput("");
     setExistingPortfolio([]);
     setFormError(null);
   }
@@ -233,9 +261,26 @@ export function NegociosSection() {
     // Array.from into the state updater would then read an empty list.
     const picked = Array.from(files);
     setPortfolioFiles((prev) => {
-      const room = 5 - existingPortfolio.length - prev.length;
+      const room = 5 - existingPortfolio.length - portfolioLinks.length - prev.length;
       return room <= 0 ? prev : [...prev, ...picked.slice(0, room)];
     });
+  }
+
+  function addVideoLink() {
+    const url = videoLinkInput.trim();
+    if (!url) return;
+    if (!isVideoLink(url)) {
+      setFormError("Informe um link de vídeo do YouTube ou Vimeo.");
+      return;
+    }
+    if (existingPortfolio.length + portfolioFiles.length + portfolioLinks.length >= 5) return;
+    if (portfolioLinks.includes(url)) {
+      setVideoLinkInput("");
+      return;
+    }
+    setPortfolioLinks((prev) => [...prev, url]);
+    setVideoLinkInput("");
+    setFormError(null);
   }
 
   async function removeExistingPortfolio(photoId: string) {
@@ -299,6 +344,10 @@ export function NegociosSection() {
           description: form.description.trim(),
           whatsapp: whatsappDigits,
           link: form.link.trim(),
+          instagram: form.instagram.trim(),
+          facebook: form.facebook.trim(),
+          tiktok: form.tiktok.trim(),
+          youtube: form.youtube.trim(),
           partner: form.partner,
           highlight: form.highlight,
           document_type: form.docType,
@@ -318,6 +367,11 @@ export function NegociosSection() {
           description: form.description.trim(),
           services: form.services,
           whatsapp: whatsappDigits,
+          instagram: form.instagram.trim(),
+          facebook: form.facebook.trim(),
+          tiktok: form.tiktok.trim(),
+          youtube: form.youtube.trim(),
+          site: form.site.trim(),
           years_active: Number(form.yearsActive) || 0,
           jobs_done: Number(form.jobsDone) || 0,
           price_label: form.priceLabel.trim(),
@@ -344,6 +398,10 @@ export function NegociosSection() {
       for (const file of portfolioFiles) {
         if (kind === "empresa") await adminApi.uploadSellerPortfolio(id, file);
         else await adminApi.uploadProviderPortfolio(id, file);
+      }
+      for (const link of portfolioLinks) {
+        if (kind === "empresa") await adminApi.addSellerPortfolioLink(id, link);
+        else await adminApi.addProviderPortfolioLink(id, link);
       }
 
       closeForm();
@@ -372,7 +430,8 @@ export function NegociosSection() {
     return categories.find((c) => c.id === id)?.label ?? id;
   }
 
-  const photoSlotsLeft = 5 - existingPortfolio.length - portfolioFiles.length;
+  const photoSlotsLeft =
+    5 - existingPortfolio.length - portfolioFiles.length - portfolioLinks.length;
   const isPrestador = form.kind === "prestador";
 
   return (
@@ -526,6 +585,41 @@ export function NegociosSection() {
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) setCropFile(f); e.target.value = ""; }}
                 />
               </label>
+            </div>
+          </div>
+
+          {/* Redes sociais — aparecem como ícones no perfil público */}
+          <div className="prof-field">
+            <label className="prof-label">Redes sociais</label>
+            <div className="admin-hint" style={{ marginBottom: 8 }}>
+              Cole a URL completa. Quando preenchidas, aparecem como ícones no perfil.
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {(
+                [
+                  { key: "instagram", icon: <Icon.Instagram size={18} />, ph: "https://instagram.com/usuario" },
+                  { key: "facebook", icon: <Icon.Facebook size={18} />, ph: "https://facebook.com/pagina" },
+                  { key: "tiktok", icon: <Icon.TikTok size={18} />, ph: "https://tiktok.com/@usuario" },
+                  { key: "youtube", icon: <Icon.YouTube size={18} />, ph: "https://youtube.com/@canal" },
+                  ...(isPrestador
+                    ? [{ key: "site" as const, icon: <Icon.Globe size={18} />, ph: "https://seusite.com.br" }]
+                    : []),
+                ] as Array<{ key: keyof FormState; icon: ReactNode; ph: string }>
+              ).map(({ key, icon, ph }) => (
+                <div key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ flex: "0 0 22px", display: "flex", justifyContent: "center", color: "var(--ink-500)" }}>
+                    {icon}
+                  </span>
+                  <input
+                    className="prof-input"
+                    type="url"
+                    inputMode="url"
+                    value={form[key] as string}
+                    onChange={(e) => update(key, e.target.value as FormState[typeof key])}
+                    placeholder={ph}
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
@@ -705,15 +799,20 @@ export function NegociosSection() {
             </>
           )}
 
-          {/* Portfólio */}
+          {/* Portfólio — fotos, PDFs e vídeos (arquivo ou link) */}
           <div className="prof-field">
             <label className="prof-label">
-              Portfólio ({existingPortfolio.length + portfolioFiles.length}/5)
+              Portfólio ({existingPortfolio.length + portfolioFiles.length + portfolioLinks.length}/5)
             </label>
             <div className="admin-photos">
               {existingPortfolio.map((ph) => (
                 <div key={ph.id} className="admin-photo">
-                  {isPdf(ph.url) ? (
+                  {isVideo(ph.url) ? (
+                    <div className="upload-doc admin-video-tile">
+                      <Icon.Play size={20} />
+                      <strong>VÍDEO</strong>
+                    </div>
+                  ) : isPdf(ph.url) ? (
                     <a
                       href={getImageUrl(ph.url)}
                       target="_blank"
@@ -730,7 +829,7 @@ export function NegociosSection() {
                     type="button"
                     className="admin-photo-remove"
                     onClick={() => removeExistingPortfolio(ph.id)}
-                    aria-label="Remover foto"
+                    aria-label="Remover item"
                   >
                     ×
                   </button>
@@ -738,7 +837,12 @@ export function NegociosSection() {
               ))}
               {portfolioFiles.map((file, i) => (
                 <div key={`${file.name}-${i}`} className="admin-photo">
-                  {file.type === "application/pdf" ? (
+                  {file.type.startsWith("video/") ? (
+                    <div className="upload-doc admin-video-tile">
+                      <Icon.Play size={20} />
+                      <strong>VÍDEO</strong>
+                    </div>
+                  ) : file.type === "application/pdf" ? (
                     <div className="upload-doc">
                       <strong>PDF</strong>
                     </div>
@@ -750,7 +854,23 @@ export function NegociosSection() {
                     type="button"
                     className="admin-photo-remove"
                     onClick={() => setPortfolioFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                    aria-label="Remover foto"
+                    aria-label="Remover item"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              {portfolioLinks.map((url, i) => (
+                <div key={`${url}-${i}`} className="admin-photo">
+                  <div className="upload-doc admin-video-tile">
+                    <Icon.Play size={20} />
+                    <strong>VÍDEO</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className="admin-photo-remove"
+                    onClick={() => setPortfolioLinks((prev) => prev.filter((_, idx) => idx !== i))}
+                    aria-label="Remover vídeo"
                   >
                     ×
                   </button>
@@ -761,7 +881,7 @@ export function NegociosSection() {
                   <Icon.Plus size={20} />
                   <input
                     type="file"
-                    accept="image/*,application/pdf"
+                    accept="image/*,video/*,application/pdf"
                     multiple
                     className="file-overlay"
                     onChange={(e) => { addPortfolioFiles(e.target.files); e.target.value = ""; }}
@@ -769,6 +889,22 @@ export function NegociosSection() {
                 </label>
               )}
             </div>
+            {photoSlotsLeft > 0 && (
+              <div className="prof-tag-input-row" style={{ marginTop: 8 }}>
+                <input
+                  className="prof-input"
+                  type="url"
+                  inputMode="url"
+                  value={videoLinkInput}
+                  onChange={(e) => setVideoLinkInput(e.target.value)}
+                  placeholder="Adicionar vídeo por link (YouTube/Vimeo)"
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addVideoLink(); } }}
+                />
+                <button type="button" className="prof-tag-add-btn" onClick={addVideoLink} aria-label="Adicionar vídeo">
+                  <Icon.Plus size={16} />
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="admin-form-actions">

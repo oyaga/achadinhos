@@ -114,6 +114,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.DELETE("/sellers/:id", adminH.DeleteSeller)
 		admin.POST("/sellers/:id/logo", adminH.UploadSellerLogo)
 		admin.POST("/sellers/:id/portfolio", adminH.UploadSellerPortfolio)
+		admin.POST("/sellers/:id/portfolio/link", adminH.AddSellerPortfolioLink)
 		admin.DELETE("/sellers/:id/portfolio/:photo_id", adminH.DeleteSellerPortfolio)
 
 		admin.GET("/providers", adminH.ListProviders)
@@ -122,6 +123,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.DELETE("/providers/:id", adminH.DeleteProvider)
 		admin.POST("/providers/:id/logo", adminH.UploadProviderLogo)
 		admin.POST("/providers/:id/portfolio", adminH.UploadProviderPortfolio)
+		admin.POST("/providers/:id/portfolio/link", adminH.AddProviderPortfolioLink)
 		admin.DELETE("/providers/:id/portfolio/:photo_id", adminH.DeleteProviderPortfolio)
 
 		admin.GET("/fichas", fichaH.List)

@@ -49,6 +49,11 @@ export interface Provider {
   yearsActive: number;
   jobsDone: number;
   whatsapp: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  youtube?: string;
+  site?: string;
   highlight?: boolean;
   portfolio?: string[];
 }

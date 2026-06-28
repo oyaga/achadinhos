@@ -374,6 +374,41 @@ export const Icon = {
       <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
     </Svg>
   ),
+  Instagram: ({ size = 16, ...rest }: IconProps = {}) => (
+    <Svg size={size} {...rest}>
+      <rect x="2" y="2" width="20" height="20" rx="5.5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none" />
+    </Svg>
+  ),
+  Facebook: ({ size = 16, style, className }: IconProps = {}) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden style={style} className={className}>
+      <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z" />
+    </svg>
+  ),
+  TikTok: ({ size = 16, style, className }: IconProps = {}) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden style={style} className={className}>
+      <path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.77.12v-3.16a5.7 5.7 0 0 0-.77-.05A5.71 5.71 0 1 0 15.54 15.4V9.01a7.34 7.34 0 0 0 4.3 1.38V7.3a4.28 4.28 0 0 1-3.24-1.48z" />
+    </svg>
+  ),
+  YouTube: ({ size = 16, style, className }: IconProps = {}) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden style={style} className={className}>
+      <path d="M23 12s0-3.2-.41-4.74a2.5 2.5 0 0 0-1.76-1.77C19.29 5 12 5 12 5s-7.29 0-8.83.49a2.5 2.5 0 0 0-1.76 1.77C1 8.8 1 12 1 12s0 3.2.41 4.74a2.5 2.5 0 0 0 1.76 1.77C4.71 19 12 19 12 19s7.29 0 8.83-.49a2.5 2.5 0 0 0 1.76-1.77C23 15.2 23 12 23 12zm-13 3.05V8.95L15.2 12 10 15.05z" />
+    </svg>
+  ),
+  Globe: ({ size = 16, ...rest }: IconProps = {}) => (
+    <Svg size={size} {...rest}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
+    </Svg>
+  ),
+  Play: ({ size = 16, ...rest }: IconProps = {}) => (
+    <Svg size={size} {...rest}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M10 8.5 16 12l-6 3.5z" fill="currentColor" stroke="none" />
+    </Svg>
+  ),
   // Brand house mark used in the header lockup.
   BrandHouse: ({ size = 22, style, className }: IconProps = {}) => (
     <svg

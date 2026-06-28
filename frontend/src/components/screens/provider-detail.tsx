@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { providersApi, getImageUrl, isPdf } from "@/lib/api";
+import { providersApi, getImageUrl, isPdf, isVideo } from "@/lib/api";
 import { adaptReview } from "@/lib/adapters";
 import type { Provider, Review } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
 import { PortfolioViewer } from "./portfolio-viewer";
+import { SocialLinks } from "./social-links";
 
 interface ProviderDetailProps {
   provider: Provider;
@@ -159,7 +160,11 @@ export function ProviderDetail({
                   onClick={() => setViewerUrl(url)}
                   className="pd-portfolio-item"
                 >
-                  {isPdf(url) ? (
+                  {isVideo(url) ? (
+                    <span className="upload-doc pd-video-thumb">
+                      <Icon.Play size={22} />
+                    </span>
+                  ) : isPdf(url) ? (
                     <span className="upload-doc">
                       <strong>PDF</strong>
                     </span>
@@ -172,6 +177,16 @@ export function ProviderDetail({
             </div>
           </div>
         )}
+
+        <SocialLinks
+          data={{
+            instagram: provider.instagram,
+            facebook: provider.facebook,
+            tiktok: provider.tiktok,
+            youtube: provider.youtube,
+            site: provider.site,
+          }}
+        />
 
         <div className="pd-section">
           <div

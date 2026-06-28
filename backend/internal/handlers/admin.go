@@ -83,6 +83,10 @@ func (h *AdminHandler) CreateSeller(c *gin.Context) {
 		Description:  strings.TrimSpace(req.Description),
 		WhatsApp:     strings.TrimSpace(req.WhatsApp),
 		Link:         strings.TrimSpace(req.Link),
+		Instagram:    strings.TrimSpace(req.Instagram),
+		Facebook:     strings.TrimSpace(req.Facebook),
+		TikTok:       strings.TrimSpace(req.TikTok),
+		YouTube:      strings.TrimSpace(req.YouTube),
 		Partner:      req.Partner,
 		Highlight:    req.Highlight,
 		DocumentType: req.DocumentType,
@@ -135,6 +139,18 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 	}
 	if req.Link != nil {
 		updates["link"] = strings.TrimSpace(*req.Link)
+	}
+	if req.Instagram != nil {
+		updates["instagram"] = strings.TrimSpace(*req.Instagram)
+	}
+	if req.Facebook != nil {
+		updates["facebook"] = strings.TrimSpace(*req.Facebook)
+	}
+	if req.TikTok != nil {
+		updates["tiktok"] = strings.TrimSpace(*req.TikTok)
+	}
+	if req.YouTube != nil {
+		updates["youtube"] = strings.TrimSpace(*req.YouTube)
 	}
 	if req.Partner != nil {
 		updates["partner"] = *req.Partner
@@ -212,6 +228,11 @@ func (h *AdminHandler) UploadSellerPortfolio(c *gin.Context) {
 	h.uploadPortfolio(c, "seller", &models.Seller{})
 }
 
+// AddSellerPortfolioLink handles POST /admin/sellers/:id/portfolio/link.
+func (h *AdminHandler) AddSellerPortfolioLink(c *gin.Context) {
+	h.addPortfolioLink(c, "seller", &models.Seller{})
+}
+
 // DeleteSellerPortfolio handles DELETE /admin/sellers/:id/portfolio/:photo_id.
 func (h *AdminHandler) DeleteSellerPortfolio(c *gin.Context) {
 	h.deletePortfolio(c, "seller")
@@ -262,6 +283,11 @@ func (h *AdminHandler) CreateProvider(c *gin.Context) {
 		Description:       strings.TrimSpace(req.Description),
 		Services:          models.StringSlice(req.Services),
 		WhatsApp:          strings.TrimSpace(req.WhatsApp),
+		Instagram:         strings.TrimSpace(req.Instagram),
+		Facebook:          strings.TrimSpace(req.Facebook),
+		TikTok:            strings.TrimSpace(req.TikTok),
+		YouTube:           strings.TrimSpace(req.YouTube),
+		Site:              strings.TrimSpace(req.Site),
 		YearsActive:       req.YearsActive,
 		JobsDone:          req.JobsDone,
 		PriceLabel:        strings.TrimSpace(req.PriceLabel),
@@ -322,6 +348,21 @@ func (h *AdminHandler) UpdateProvider(c *gin.Context) {
 	}
 	if req.WhatsApp != nil {
 		updates["whats_app"] = strings.TrimSpace(*req.WhatsApp)
+	}
+	if req.Instagram != nil {
+		updates["instagram"] = strings.TrimSpace(*req.Instagram)
+	}
+	if req.Facebook != nil {
+		updates["facebook"] = strings.TrimSpace(*req.Facebook)
+	}
+	if req.TikTok != nil {
+		updates["tiktok"] = strings.TrimSpace(*req.TikTok)
+	}
+	if req.YouTube != nil {
+		updates["youtube"] = strings.TrimSpace(*req.YouTube)
+	}
+	if req.Site != nil {
+		updates["site"] = strings.TrimSpace(*req.Site)
 	}
 	if req.YearsActive != nil {
 		updates["years_active"] = *req.YearsActive
@@ -412,6 +453,11 @@ func (h *AdminHandler) UploadProviderLogo(c *gin.Context) {
 // UploadProviderPortfolio handles POST /admin/providers/:id/portfolio.
 func (h *AdminHandler) UploadProviderPortfolio(c *gin.Context) {
 	h.uploadPortfolio(c, "provider", &models.Provider{})
+}
+
+// AddProviderPortfolioLink handles POST /admin/providers/:id/portfolio/link.
+func (h *AdminHandler) AddProviderPortfolioLink(c *gin.Context) {
+	h.addPortfolioLink(c, "provider", &models.Provider{})
 }
 
 // DeleteProviderPortfolio handles DELETE /admin/providers/:id/portfolio/:photo_id.
@@ -605,7 +651,7 @@ func (h *AdminHandler) UploadProductPhoto(c *gin.Context) {
 		JSONError(c, http.StatusBadRequest, "máximo de 5 fotos por produto")
 		return
 	}
-	url, ok := saveUploadedFile(c, "products", false)
+	url, ok := saveUploadedFile(c, "products", false, false)
 	if !ok {
 		return
 	}
@@ -656,7 +702,7 @@ func (h *AdminHandler) uploadLogo(c *gin.Context, model any) {
 		JSONError(c, http.StatusNotFound, "registro não encontrado")
 		return
 	}
-	url, ok := saveUploadedFile(c, "logos", false)
+	url, ok := saveUploadedFile(c, "logos", false, false)
 	if !ok {
 		return
 	}
@@ -692,7 +738,7 @@ func (h *AdminHandler) uploadPortfolio(c *gin.Context, ownerType string, model a
 		JSONError(c, http.StatusBadRequest, "máximo de 5 itens no portfólio")
 		return
 	}
-	url, ok := saveUploadedFile(c, "portfolio", true)
+	url, ok := saveUploadedFile(c, "portfolio", true, true)
 	if !ok {
 		return
 	}
@@ -707,6 +753,62 @@ func (h *AdminHandler) uploadPortfolio(c *gin.Context, ownerType string, model a
 		return
 	}
 	c.JSON(http.StatusCreated, photo)
+}
+
+// addPortfolioLink attaches a video link (YouTube/Vimeo) to the owner's
+// portfolio as a PortfolioPhoto whose URL is the external link. The frontend
+// detects the media type from the URL, so no extra column is needed.
+func (h *AdminHandler) addPortfolioLink(c *gin.Context, ownerType string, model any) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+	var req dto.PortfolioLinkRequest
+	if !BindJSON(c, &req) {
+		return
+	}
+	link := strings.TrimSpace(req.URL)
+	if !isVideoLinkURL(link) {
+		JSONError(c, http.StatusBadRequest, "informe um link de vídeo do YouTube ou Vimeo")
+		return
+	}
+	var count int64
+	if err := h.db.WithContext(c.Request.Context()).Model(model).Where("id = ?", id).
+		Count(&count).Error; err != nil || count == 0 {
+		JSONError(c, http.StatusNotFound, "registro não encontrado")
+		return
+	}
+	var photoCount int64
+	if err := h.db.WithContext(c.Request.Context()).Model(&models.PortfolioPhoto{}).
+		Where("owner_type = ? AND owner_id = ?", ownerType, id).
+		Count(&photoCount).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to count photos")
+		return
+	}
+	if photoCount >= maxPortfolioPhotos {
+		JSONError(c, http.StatusBadRequest, "máximo de 5 itens no portfólio")
+		return
+	}
+	photo := &models.PortfolioPhoto{
+		OwnerType: ownerType,
+		OwnerID:   id,
+		URL:       link,
+		Position:  int(photoCount),
+	}
+	if err := h.db.WithContext(c.Request.Context()).Create(photo).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to save link")
+		return
+	}
+	c.JSON(http.StatusCreated, photo)
+}
+
+// isVideoLinkURL reports whether url points to a supported video host.
+func isVideoLinkURL(url string) bool {
+	u := strings.ToLower(url)
+	return strings.Contains(u, "youtube.com/") ||
+		strings.Contains(u, "youtu.be/") ||
+		strings.Contains(u, "vimeo.com/")
 }
 
 // deletePortfolio removes a portfolio photo.
@@ -765,9 +867,10 @@ func validateDocument(c *gin.Context, docType, raw string) (string, bool) {
 // saveUploadedFile reads the "file" multipart field, validates it and stores it
 // under ./uploads/<subdir>/. Images (jpg/png/webp/gif) are always accepted, up
 // to 5 MB. When allowPDF is true, PDF files are accepted too, up to 20 MB —
-// used by the portfolio so businesses can upload presentation decks.
+// used by the portfolio so businesses can upload presentation decks. When
+// allowVideo is true, mp4/webm/mov are accepted up to 50 MB.
 // Returns the public URL path. On failure it writes the error and returns false.
-func saveUploadedFile(c *gin.Context, subdir string, allowPDF bool) (string, bool) {
+func saveUploadedFile(c *gin.Context, subdir string, allowPDF, allowVideo bool) (string, bool) {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		JSONError(c, http.StatusBadRequest, "campo 'file' ausente ou inválido")
@@ -782,21 +885,39 @@ func saveUploadedFile(c *gin.Context, subdir string, allowPDF bool) (string, boo
 	if allowPDF {
 		allowed["application/pdf"] = ".pdf"
 	}
+	videoTypes := map[string]bool{}
+	if allowVideo {
+		allowed["video/mp4"] = ".mp4"
+		allowed["video/webm"] = ".webm"
+		allowed["video/quicktime"] = ".mov"
+		videoTypes["video/mp4"] = true
+		videoTypes["video/webm"] = true
+		videoTypes["video/quicktime"] = true
+	}
 	contentType := fileHeader.Header.Get("Content-Type")
 	ext, ok := allowed[contentType]
 	if !ok {
 		msg := "tipo de arquivo não permitido (use jpg, png, webp)"
-		if allowPDF {
+		switch {
+		case allowPDF && allowVideo:
+			msg = "tipo de arquivo não permitido (use jpg, png, webp, pdf ou vídeo mp4/webm/mov)"
+		case allowPDF:
 			msg = "tipo de arquivo não permitido (use jpg, png, webp ou pdf)"
+		case allowVideo:
+			msg = "tipo de arquivo não permitido (use jpg, png, webp ou vídeo mp4/webm/mov)"
 		}
 		JSONError(c, http.StatusBadRequest, msg)
 		return "", false
 	}
 	maxSize := int64(5 << 20) // 5 MB para imagens
 	sizeMsg := "arquivo muito grande (máx 5 MB)"
-	if contentType == "application/pdf" {
+	switch {
+	case contentType == "application/pdf":
 		maxSize = 20 << 20 // 20 MB para PDFs (apresentações)
 		sizeMsg = "arquivo muito grande (máx 20 MB)"
+	case videoTypes[contentType]:
+		maxSize = 50 << 20 // 50 MB para vídeos curtos
+		sizeMsg = "vídeo muito grande (máx 50 MB)"
 	}
 	if fileHeader.Size > maxSize {
 		JSONError(c, http.StatusBadRequest, sizeMsg)

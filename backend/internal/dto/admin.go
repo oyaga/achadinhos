@@ -9,6 +9,10 @@ type AdminSellerRequest struct {
 	Description  string `json:"description" binding:"max=2000"`
 	WhatsApp     string `json:"whatsapp" binding:"required,min=8,max=32"`
 	Link         string `json:"link" binding:"omitempty,max=500"`
+	Instagram    string `json:"instagram" binding:"omitempty,max=255"`
+	Facebook     string `json:"facebook" binding:"omitempty,max=255"`
+	TikTok       string `json:"tiktok" binding:"omitempty,max=255"`
+	YouTube      string `json:"youtube" binding:"omitempty,max=255"`
 	Partner      bool   `json:"partner"`
 	Highlight    bool   `json:"highlight"`
 	DocumentType string `json:"document_type" binding:"required,oneof=cpf cnpj"`
@@ -22,6 +26,10 @@ type AdminSellerPatch struct {
 	Description  *string `json:"description" binding:"omitempty,max=2000"`
 	WhatsApp     *string `json:"whatsapp" binding:"omitempty,min=8,max=32"`
 	Link         *string `json:"link" binding:"omitempty,max=500"`
+	Instagram    *string `json:"instagram" binding:"omitempty,max=255"`
+	Facebook     *string `json:"facebook" binding:"omitempty,max=255"`
+	TikTok       *string `json:"tiktok" binding:"omitempty,max=255"`
+	YouTube      *string `json:"youtube" binding:"omitempty,max=255"`
 	Partner      *bool   `json:"partner"`
 	Highlight    *bool   `json:"highlight"`
 	DocumentType *string `json:"document_type" binding:"omitempty,oneof=cpf cnpj"`
@@ -37,6 +45,11 @@ type AdminProviderRequest struct {
 	Description       string   `json:"description" binding:"required,min=10"`
 	Services          []string `json:"services" binding:"omitempty,dive,min=1,max=128"`
 	WhatsApp          string   `json:"whatsapp" binding:"required,min=8,max=32"`
+	Instagram         string   `json:"instagram" binding:"omitempty,max=255"`
+	Facebook          string   `json:"facebook" binding:"omitempty,max=255"`
+	TikTok            string   `json:"tiktok" binding:"omitempty,max=255"`
+	YouTube           string   `json:"youtube" binding:"omitempty,max=255"`
+	Site              string   `json:"site" binding:"omitempty,max=500"`
 	YearsActive       int      `json:"years_active" binding:"min=0,max=99"`
 	JobsDone          int      `json:"jobs_done" binding:"min=0"`
 	PriceLabel        string   `json:"price_label" binding:"max=64"`
@@ -58,6 +71,11 @@ type AdminProviderPatch struct {
 	Description       *string   `json:"description" binding:"omitempty,min=10"`
 	Services          *[]string `json:"services"`
 	WhatsApp          *string   `json:"whatsapp" binding:"omitempty,min=8,max=32"`
+	Instagram         *string   `json:"instagram" binding:"omitempty,max=255"`
+	Facebook          *string   `json:"facebook" binding:"omitempty,max=255"`
+	TikTok            *string   `json:"tiktok" binding:"omitempty,max=255"`
+	YouTube           *string   `json:"youtube" binding:"omitempty,max=255"`
+	Site              *string   `json:"site" binding:"omitempty,max=500"`
 	YearsActive       *int      `json:"years_active" binding:"omitempty,min=0,max=99"`
 	JobsDone          *int      `json:"jobs_done" binding:"omitempty,min=0"`
 	PriceLabel        *string   `json:"price_label" binding:"omitempty,max=64"`
@@ -88,6 +106,14 @@ type AdminProductRequest struct {
 	Manufacturer string   `json:"manufacturer" binding:"max=255"`
 	Description  string   `json:"description" binding:"max=2000"`
 	Highlight    bool     `json:"highlight"`
+}
+
+// ── Portfólio ────────────────────────────────────────────────────────────────
+
+// PortfolioLinkRequest is the body for POST /admin/{sellers,providers}/:id/portfolio/link.
+// Used to add a video link (YouTube/Vimeo) to the portfolio without uploading a file.
+type PortfolioLinkRequest struct {
+	URL string `json:"url" binding:"required,url,max=1000"`
 }
 
 // AdminProductPatch is the body for PATCH /admin/products/:id. All optional.

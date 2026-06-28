@@ -416,6 +416,13 @@ export interface PortfolioPhoto {
   position: number;
 }
 
+/** Normalises a user-typed link into an absolute href (prepends https:// when missing). */
+export function externalHref(url: string): string {
+  const u = (url ?? "").trim();
+  if (!u) return "";
+  return /^https?:\/\//i.test(u) ? u : `https://${u}`;
+}
+
 export function getImageUrl(path: string): string {
   if (!path) return "";
   if (path.startsWith("http")) return path;
@@ -427,6 +434,36 @@ export function getImageUrl(path: string): string {
 /** True when the given path or URL points to a PDF file. */
 export function isPdf(path: string): boolean {
   return /\.pdf(\?|$)/i.test(path ?? "");
+}
+
+/** True when the URL is a YouTube/Vimeo link (embedded video). */
+export function isVideoLink(path: string): boolean {
+  return /(?:youtube\.com\/|youtu\.be\/|vimeo\.com\/)/i.test(path ?? "");
+}
+
+/** True when the URL points to an uploaded video file. */
+export function isVideoFile(path: string): boolean {
+  return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(path ?? "");
+}
+
+/** True for any video — uploaded file or external link. */
+export function isVideo(path: string): boolean {
+  return isVideoFile(path) || isVideoLink(path);
+}
+
+/**
+ * Converts a YouTube/Vimeo watch URL into its embeddable player URL. Returns the
+ * original URL when no known pattern matches.
+ */
+export function videoEmbedUrl(url: string): string {
+  const u = url ?? "";
+  let m = u.match(/youtu\.be\/([\w-]+)/i);
+  if (m) return `https://www.youtube.com/embed/${m[1]}`;
+  m = u.match(/youtube\.com\/(?:watch\?v=|embed\/|shorts\/)([\w-]+)/i);
+  if (m) return `https://www.youtube.com/embed/${m[1]}`;
+  m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (m) return `https://player.vimeo.com/video/${m[1]}`;
+  return u;
 }
 
 export interface PagedResponse<T> {
@@ -465,6 +502,11 @@ export interface ApiProvider {
   years_active: number;
   jobs_done: number;
   whatsapp: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  youtube?: string;
+  site?: string;
   highlight: boolean;
   owner_user_id?: string;
   document_type?: string;
@@ -539,6 +581,10 @@ export interface AdminSeller {
   description?: string;
   whatsapp: string;
   link?: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  youtube?: string;
   partner: boolean;
   highlight?: boolean;
   rating?: number;
@@ -563,6 +609,10 @@ export interface AdminSellerPayload {
   description?: string;
   whatsapp: string;
   link?: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  youtube?: string;
   partner?: boolean;
   highlight?: boolean;
   document_type: "cpf" | "cnpj";
@@ -575,6 +625,11 @@ export interface AdminProviderPayload {
   description: string;
   services?: string[];
   whatsapp: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  youtube?: string;
+  site?: string;
   years_active?: number;
   jobs_done?: number;
   price_label?: string;
@@ -790,6 +845,12 @@ export const adminApi = {
   async uploadSellerPortfolio(id: string, file: File): Promise<PortfolioPhoto> {
     return uploadImage(`/admin/sellers/${id}/portfolio`, file);
   },
+  async addSellerPortfolioLink(id: string, url: string): Promise<PortfolioPhoto> {
+    return request<PortfolioPhoto>(`/admin/sellers/${id}/portfolio/link`, {
+      method: "POST",
+      body: { url },
+    });
+  },
   async deleteSellerPortfolio(id: string, photoId: string): Promise<void> {
     return request<void>(`/admin/sellers/${id}/portfolio/${photoId}`, {
       method: "DELETE",
@@ -816,6 +877,12 @@ export const adminApi = {
   },
   async uploadProviderPortfolio(id: string, file: File): Promise<PortfolioPhoto> {
     return uploadImage(`/admin/providers/${id}/portfolio`, file);
+  },
+  async addProviderPortfolioLink(id: string, url: string): Promise<PortfolioPhoto> {
+    return request<PortfolioPhoto>(`/admin/providers/${id}/portfolio/link`, {
+      method: "POST",
+      body: { url },
+    });
   },
   async deleteProviderPortfolio(id: string, photoId: string): Promise<void> {
     return request<void>(`/admin/providers/${id}/portfolio/${photoId}`, {

@@ -5,6 +5,7 @@ import {
   sellersApi,
   getImageUrl,
   isPdf,
+  isVideo,
   type AdminSeller,
   type ApiProduct,
   type SellerReview,
@@ -13,6 +14,7 @@ import { useAuth } from "@/contexts/auth-context";
 import type { ContactInput } from "@/hooks/use-whatsapp-history";
 import { Icon } from "../icons";
 import { PortfolioViewer } from "./portfolio-viewer";
+import { SocialLinks } from "./social-links";
 
 interface SellerDetailProps {
   seller: AdminSeller;
@@ -235,7 +237,11 @@ export function SellerDetail({
                   onClick={() => setViewerUrl(url)}
                   className="pd-portfolio-item"
                 >
-                  {isPdf(url) ? (
+                  {isVideo(url) ? (
+                    <span className="upload-doc pd-video-thumb">
+                      <Icon.Play size={22} />
+                    </span>
+                  ) : isPdf(url) ? (
                     <span className="upload-doc">
                       <strong>PDF</strong>
                     </span>
@@ -248,6 +254,16 @@ export function SellerDetail({
             </div>
           </div>
         )}
+
+        <SocialLinks
+          data={{
+            instagram: full.instagram,
+            facebook: full.facebook,
+            tiktok: full.tiktok,
+            youtube: full.youtube,
+            site: full.link,
+          }}
+        />
 
         {/* Avaliações */}
         <div className="pd-section">

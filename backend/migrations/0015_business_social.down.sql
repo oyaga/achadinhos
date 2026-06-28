@@ -1,0 +1,12 @@
+ALTER TABLE sellers
+    DROP COLUMN IF EXISTS instagram,
+    DROP COLUMN IF EXISTS facebook,
+    DROP COLUMN IF EXISTS tiktok,
+    DROP COLUMN IF EXISTS youtube;
+
+ALTER TABLE providers
+    DROP COLUMN IF EXISTS instagram,
+    DROP COLUMN IF EXISTS facebook,
+    DROP COLUMN IF EXISTS tiktok,
+    DROP COLUMN IF EXISTS youtube,
+    DROP COLUMN IF EXISTS site;

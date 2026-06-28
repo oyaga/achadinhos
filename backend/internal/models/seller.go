@@ -17,6 +17,10 @@ type Seller struct {
 	Description  string    `gorm:"type:text" json:"description,omitempty"`
 	WhatsApp     string    `gorm:"size:32" json:"whatsapp"`
 	Link         string    `gorm:"size:500" json:"link,omitempty"`
+	Instagram    string    `gorm:"size:255" json:"instagram,omitempty"`
+	Facebook     string    `gorm:"size:255" json:"facebook,omitempty"`
+	TikTok       string    `gorm:"column:tiktok;size:255" json:"tiktok,omitempty"`
+	YouTube      string    `gorm:"column:youtube;size:255" json:"youtube,omitempty"`
 	Partner      bool      `gorm:"default:false" json:"partner"`
 	Highlight    bool      `gorm:"default:false;index" json:"highlight"`
 	Rating       float64   `gorm:"type:numeric(3,2);default:0" json:"rating"`

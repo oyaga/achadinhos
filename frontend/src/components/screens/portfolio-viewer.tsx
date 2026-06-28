@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { getImageUrl, isPdf } from "@/lib/api";
+import { getImageUrl, isPdf, isVideoFile, isVideoLink, videoEmbedUrl } from "@/lib/api";
 import { Icon } from "../icons";
 import { PdfDocument } from "./pdf-document";
 
@@ -29,7 +29,20 @@ export function PortfolioViewer({ url, onClose }: PortfolioViewerProps) {
         <Icon.ChevLeft size={16} /> Voltar
       </button>
       <div className="pv-stage" onClick={(e) => e.stopPropagation()}>
-        {isPdf(url) ? (
+        {isVideoLink(url) ? (
+          <div className="pv-video-wrap">
+            <iframe
+              className="pv-video"
+              src={videoEmbedUrl(url)}
+              title="Vídeo do portfólio"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        ) : isVideoFile(url) ? (
+          // eslint-disable-next-line jsx-a11y/media-has-caption
+          <video className="pv-img" src={full} controls autoPlay playsInline />
+        ) : isPdf(url) ? (
           <PdfDocument url={full} />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
