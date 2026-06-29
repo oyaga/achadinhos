@@ -5,7 +5,8 @@ import Link from "next/link";
 import { certificatesApi, ApiError, type CertificateVerification } from "@/lib/api";
 import { BrandLockup } from "@/components/auth/brand-lockup";
 import { Icon } from "@/components/icons";
-import { cn, tierLabel } from "@/lib/utils";
+import { tierLabel } from "@/lib/utils";
+import { CertSeal } from "@/components/cert-seal";
 
 // Titular genérico (empresa ou afiliado), com fallback ao campo seller antigo.
 function ownerOf(cert: CertificateVerification) {
@@ -128,9 +129,7 @@ export function VerificarScreen() {
               {cert.tipo === "afiliado" ? "AFILIADO VERIFICADO E APROVADO" : "EMPRESA VERIFICADA E APROVADA"}
             </div>
             <h1 className="verify-title">{cert.empresa_nome}</h1>
-            {tierLabel(cert.tier) && (
-              <span className={cn("cert-seal lg", cert.tier)}>Nível {tierLabel(cert.tier)}</span>
-            )}
+            <CertSeal tier={cert.tier} size="lg" prefix="Nível " />
             <p className="verify-text">
               {cert.tipo === "afiliado" ? "O afiliado" : "A empresa"}{" "}
               <strong>{cert.empresa_nome}</strong> foi verificado(a) e <strong>aprovado(a)</strong>{" "}
@@ -174,6 +173,10 @@ export function VerificarScreen() {
                 <Icon.ChevRight size={15} />
               </Link>
             )}
+
+            <Link href="/certificacao" className="verify-learn-link">
+              Saiba mais sobre a certificação
+            </Link>
           </div>
         )}
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { providersApi, sellersApi, type AdminSeller } from "@/lib/api";
@@ -216,6 +217,13 @@ export function App({ initialRoute }: AppProps = {}) {
                   isFav={isFav}
                   onToggleFav={toggleSellerFav}
                 />
+                <Link href="/certificacao" className="home-cert-link">
+                  <Icon.Award size={16} />
+                  <span>
+                    Selo verificado? Conheça a <strong>Certificação Achadinhos</strong>
+                  </span>
+                  <Icon.ChevRight size={15} />
+                </Link>
                 <div className="bottom-spacer" />
               </div>
             </div>

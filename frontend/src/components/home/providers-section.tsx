@@ -2,8 +2,9 @@
 
 import type { Provider } from "@/lib/types";
 import { getImageUrl, type AdminSeller } from "@/lib/api";
-import { cn, tierLabel } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
+import { CertSeal } from "../cert-seal";
 import { CompanyCard } from "./featured-companies";
 
 interface ProvidersSectionProps {
@@ -132,9 +133,7 @@ export function ProviderCard({
       <div className="provider-info">
         <div className="provider-name">
           {provider.name}
-          {provider.certTier && (
-            <span className={cn("cert-seal", provider.certTier)}>{tierLabel(provider.certTier)}</span>
-          )}
+          <CertSeal tier={provider.certTier} />
           {provider.badge && (
             <span className="provider-badge">{provider.badge}</span>
           )}
