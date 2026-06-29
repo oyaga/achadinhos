@@ -51,6 +51,10 @@ export function TopNav({ onSearchClick, onProfile }: TopNavProps) {
         </button>
 
         <div className="top-nav-actions">
+          <Link href="/certificacao" className="top-nav-link">
+            Certificação
+          </Link>
+
           <button
             type="button"
             className="top-nav-install"

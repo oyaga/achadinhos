@@ -573,6 +573,20 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
             <Icon.LogOut size={16} />
             Sair da conta
           </button>
+
+          {/* CTA: certificação */}
+          <Link href="/certificacao" className="cert-profile-cta">
+            <span className="cert-profile-cta-icon">
+              <Icon.Award size={20} />
+            </span>
+            <span>
+              <span className="cert-profile-cta-title">Certificação Achadinhos</span>
+              <span className="cert-profile-cta-sub">
+                Conheça os selos Prata, Ouro e Black e como avaliamos cada perfil.
+              </span>
+            </span>
+            <Icon.ChevRight size={16} style={{ marginLeft: "auto", opacity: 0.7 }} />
+          </Link>
         </form>
       </div>
     </div>

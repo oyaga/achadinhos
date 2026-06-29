@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { providersApi, productsApi, sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
 import { adaptProvider, adaptProduct } from "@/lib/adapters";
 import type { Provider, Product } from "@/lib/types";
-import { cn, tierLabel } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { CertSeal } from "../cert-seal";
 import { Icon } from "../icons";
 
 type SlideProvider = { kind: "provider"; data: Provider };
@@ -196,11 +197,7 @@ function ProviderSlide({ provider: p, onClick, onWhatsapp }: { provider: Provide
         </div>
         <div className="hero-title">
           {p.name}
-          {p.certTier && (
-            <span className={cn("cert-seal", p.certTier)} style={{ marginLeft: 8, verticalAlign: "middle" }}>
-              {tierLabel(p.certTier)}
-            </span>
-          )}
+          <CertSeal tier={p.certTier} style={{ marginLeft: 8, verticalAlign: "middle" }} />
         </div>
         {p.desc?.trim() && <div className="hero-meta hero-meta--desc">{p.desc}</div>}
         <div className="hero-meta">

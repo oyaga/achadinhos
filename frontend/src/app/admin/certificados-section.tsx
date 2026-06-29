@@ -10,7 +10,7 @@ import {
   type CertTipo,
   type CertTier,
 } from "@/lib/api";
-import { tierLabel } from "@/lib/utils";
+import { CertSeal } from "@/components/cert-seal";
 import { Icon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { SignaturePad } from "@/components/admin/signature-pad";
@@ -428,7 +428,7 @@ export function CertificadosSection() {
                 <div className="admin-row-main">
                   <div className="admin-row-name">
                     {cert.empresa_nome}
-                    <span className={cn("cert-seal", cert.tier)}>{tierLabel(cert.tier)}</span>
+                    <CertSeal tier={cert.tier} linked={false} />
                     <span className={cn("cert-badge", st.tone)}>{st.label}</span>
                   </div>
                   <div className="admin-row-meta">
