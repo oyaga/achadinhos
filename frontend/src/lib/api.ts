@@ -839,6 +839,11 @@ export const adminApi = {
   async deleteSeller(id: string): Promise<void> {
     return request<void>(`/admin/sellers/${id}`, { method: "DELETE", parseAs: "none" });
   },
+  // Converte uma empresa em afiliado, preservando logo e portfólio. Retorna o
+  // novo prestador (com novo id). Avaliações não são transferidas.
+  async convertSellerToProvider(id: string, payload: AdminProviderPayload): Promise<ApiProvider> {
+    return request<ApiProvider>(`/admin/sellers/${id}/convert`, { method: "POST", body: payload });
+  },
   async uploadSellerLogo(id: string, file: File): Promise<{ logo_url: string }> {
     return uploadImage(`/admin/sellers/${id}/logo`, file);
   },
@@ -871,6 +876,11 @@ export const adminApi = {
   },
   async deleteProvider(id: string): Promise<void> {
     return request<void>(`/admin/providers/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+  // Converte um afiliado em empresa, preservando logo e portfólio. Retorna a
+  // nova empresa (com novo id). Avaliações não são transferidas.
+  async convertProviderToSeller(id: string, payload: AdminSellerPayload): Promise<AdminSeller> {
+    return request<AdminSeller>(`/admin/providers/${id}/convert`, { method: "POST", body: payload });
   },
   async uploadProviderLogo(id: string, file: File): Promise<{ logo_url: string }> {
     return uploadImage(`/admin/providers/${id}/logo`, file);

@@ -336,6 +336,10 @@ export function NegociosSection() {
     try {
       let id: string;
       let kind: Kind;
+      // Conversão empresa ⇄ afiliado: o tipo mudou em relação ao cadastro
+      // existente. Um endpoint dedicado cria a nova entidade, migra logo e
+      // portfólio e remove a antiga, devolvendo um novo id.
+      const isConversion = !!editing && editing.kind !== form.kind;
 
       if (form.kind === "empresa") {
         kind = "empresa";
@@ -354,7 +358,9 @@ export function NegociosSection() {
           document_type: form.docType,
           document: stripDocument(form.document),
         };
-        if (editing) {
+        if (editing && isConversion) {
+          id = (await adminApi.convertProviderToSeller(editing.id, payload)).id;
+        } else if (editing) {
           await adminApi.updateSeller(editing.id, payload);
           id = editing.id;
         } else {
@@ -384,7 +390,9 @@ export function NegociosSection() {
           document_type: form.docType,
           document: stripDocument(form.document),
         };
-        if (editing) {
+        if (editing && isConversion) {
+          id = (await adminApi.convertSellerToProvider(editing.id, payload)).id;
+        } else if (editing) {
           await adminApi.updateProvider(editing.id, payload);
           id = editing.id;
         } else {
@@ -471,15 +479,18 @@ export function NegociosSection() {
                   key={v}
                   type="button"
                   className={cn("auth-seg-btn", form.kind === v && "active")}
-                  onClick={() => !editing && update("kind", v)}
-                  disabled={!!editing}
+                  onClick={() => update("kind", v)}
                 >
                   {l}
                 </button>
               ))}
             </div>
-            {editing && (
-              <div className="admin-hint">O tipo não pode ser alterado depois de criado.</div>
+            {editing && editing.kind !== form.kind && (
+              <div className="admin-hint">
+                Ao salvar, o cadastro será convertido para{" "}
+                {form.kind === "empresa" ? "empresa" : "afiliado de serviço"}. Logo e
+                portfólio são mantidos; avaliações e nota não são transferidas.
+              </div>
             )}
           </div>
 
