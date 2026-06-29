@@ -55,12 +55,7 @@ export function Header({ onSearchClick }: HeaderProps) {
           aria-label="Abrir busca"
         >
           <Icon.Search size={18} />
-          <input
-            placeholder="Buscar serviços, afiliados…"
-            readOnly
-            tabIndex={-1}
-            style={{ pointerEvents: "none" }}
-          />
+          <span className="search-ph">Buscar serviços, afiliados…</span>
           <Icon.Filter size={16} />
         </button>
       </div>

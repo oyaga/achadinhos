@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { providersApi, productsApi, sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
 import { adaptProvider, adaptProduct } from "@/lib/adapters";
 import type { Provider, Product } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
 
 type SlideProvider = { kind: "provider"; data: Provider };
@@ -15,9 +16,10 @@ interface HeroSliderProps {
   onProvider: (p: Provider) => void;
   onProduct:  (p: Product)  => void;
   onSeller:   (s: AdminSeller) => void;
+  onWhatsapp?: (p: Provider) => void;
 }
 
-export function HeroSlider({ onProvider, onProduct, onSeller }: HeroSliderProps) {
+export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp }: HeroSliderProps) {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [active, setActive] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -56,6 +58,19 @@ export function HeroSlider({ onProvider, onProduct, onSeller }: HeroSliderProps)
   function stopTimer() {
     if (timerRef.current) clearInterval(timerRef.current);
   }
+
+  // Manual navigation pauses the auto-advance (mirrors the dots' behaviour); the
+  // timer resumes when the pointer leaves the slider (onMouseLeave).
+  function goTo(i: number) {
+    stopTimer();
+    const n = slides.length;
+    setActive(((i % n) + n) % n);
+  }
+  const next = () => goTo(active + 1);
+  const prev = () => goTo(active - 1);
+
+  const counter =
+    `${String(active + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
 
   useEffect(() => {
     if (slides.length > 1) startTimer();
@@ -107,6 +122,7 @@ export function HeroSlider({ onProvider, onProduct, onSeller }: HeroSliderProps)
                 provider={slide.data}
                 index={i}
                 onClick={() => onProvider(slide.data)}
+                onWhatsapp={onWhatsapp ? () => onWhatsapp(slide.data) : undefined}
               />
             ) : slide.kind === "seller" ? (
               <SellerSlide
@@ -126,19 +142,42 @@ export function HeroSlider({ onProvider, onProduct, onSeller }: HeroSliderProps)
           )}
         </div>
 
-        {/* Dots */}
         {slides.length > 1 && (
-          <div className="hero-slider-dots" aria-label="Slides">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`hero-dot${i === active ? " active" : ""}`}
-                onClick={() => { stopTimer(); setActive(i); }}
-                aria-label={`Slide ${i + 1}`}
-              />
-            ))}
-          </div>
+          <>
+            {/* Contador 01 / 04 */}
+            <div className="hero-slider-count">{counter}</div>
+
+            {/* Setas prev / next */}
+            <button
+              type="button"
+              className="hero-slider-nav prev"
+              onClick={prev}
+              aria-label="Slide anterior"
+            >
+              <Icon.ChevLeft size={18} />
+            </button>
+            <button
+              type="button"
+              className="hero-slider-nav next"
+              onClick={next}
+              aria-label="Próximo slide"
+            >
+              <Icon.ChevRight size={18} />
+            </button>
+
+            {/* Progresso segmentado */}
+            <div className="hero-progress" aria-label="Slides">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={cn("hero-progress-seg", i === active && "active")}
+                  onClick={() => goTo(i)}
+                  aria-label={`Ir para o slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -147,7 +186,7 @@ export function HeroSlider({ onProvider, onProduct, onSeller }: HeroSliderProps)
 
 // ── Provider slide ────────────────────────────────────────────────────────────
 
-function ProviderSlide({ provider: p, onClick }: { provider: Provider; index: number; onClick: () => void }) {
+function ProviderSlide({ provider: p, onClick, onWhatsapp }: { provider: Provider; index: number; onClick: () => void; onWhatsapp?: () => void }) {
   return (
     <div className="hero hero-slide" onClick={onClick} role="button" tabIndex={0}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}>
@@ -156,6 +195,7 @@ function ProviderSlide({ provider: p, onClick }: { provider: Provider; index: nu
           <Icon.Crown size={11} /> Destaque do dia
         </div>
         <div className="hero-title">{p.name}</div>
+        {p.desc?.trim() && <div className="hero-meta hero-meta--desc">{p.desc}</div>}
         <div className="hero-meta">
           <div className="hero-rating"><Icon.Star size={11} /> {p.rating.toFixed(1).replace(".", ",")}</div>
           <span className="hero-divider" />
@@ -164,6 +204,24 @@ function ProviderSlide({ provider: p, onClick }: { provider: Provider; index: nu
           <span>{p.distance}</span>
         </div>
         {p.badge && <div className="hero-badge">{p.badge}</div>}
+        <div className="hero-slide-cta">
+          <button
+            type="button"
+            className="hero-cta-btn primary"
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+          >
+            Ver perfil
+          </button>
+          {onWhatsapp && (
+            <button
+              type="button"
+              className="hero-cta-btn ghost"
+              onClick={(e) => { e.stopPropagation(); onWhatsapp(); }}
+            >
+              <Icon.Whatsapp size={15} /> WhatsApp
+            </button>
+          )}
+        </div>
       </div>
       <div className="hero-slide-media">
         {p.logoUrl ? (

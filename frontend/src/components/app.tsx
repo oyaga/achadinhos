@@ -20,6 +20,7 @@ import { FeaturedCompanies } from "./home/featured-companies";
 import { BottomNav, type NavId } from "./home/bottom-nav";
 import { SearchOverlay } from "./home/search-overlay";
 import { InstallSheet } from "./home/install-sheet";
+import { InstallBanner } from "./home/install-banner";
 import { ProviderDetail } from "./screens/provider-detail";
 import { SellerDetail } from "./screens/seller-detail";
 import { CategoryScreen } from "./screens/category-screen";
@@ -32,6 +33,7 @@ import { ShoppingScreen } from "./shop/shopping-screen";
 import { ProductDetail } from "./shop/product-detail";
 import { ProfileScreen } from "./screens/profile-screen";
 import { TopNav } from "./web/top-nav";
+import { CategorySidebar, type FilterId } from "./web/category-sidebar";
 import { cn } from "@/lib/utils";
 
 interface AppProps {
@@ -63,6 +65,10 @@ export function App({ initialRoute }: AppProps = {}) {
       setInstallHelpOpen(true);
     }
   };
+
+  // FAB central: "Pedir orçamento" — abre a busca para o usuário escolher o
+  // serviço/afiliado que quer orçar (handoff M3).
+  const handleQuote = () => setSearchOpen(true);
 
   const navigate = (r: Route) => setRoute(r);
   // When the App was mounted on a deep-link page (e.g. /empresa/[id]) the
@@ -133,6 +139,24 @@ export function App({ initialRoute }: AppProps = {}) {
 
   const [homeProviders, setHomeProviders] = useState<Provider[]>([]);
   const [homeSellers, setHomeSellers] = useState<AdminSeller[]>([]);
+  const [activeFilters, setActiveFilters] = useState<Set<FilterId>>(new Set());
+
+  const toggleFilter = (id: FilterId) =>
+    setActiveFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  // Filtros da sidebar desktop, aplicados client-side sobre os recomendados.
+  const filteredProviders = homeProviders.filter((p) => {
+    if (activeFilters.has("verified") && !p.verified) return false;
+    if (activeFilters.has("rating45") && p.rating < 4.5) return false;
+    if (activeFilters.has("now") && !/min|agora|hora/i.test(p.responseTime || "")) return false;
+    if (activeFilters.has("homologado") && !p.badge) return false;
+    return true;
+  });
 
   useEffect(() => {
     void providersApi.list({ limit: 6, sort: "rating" }).then((res) => {
@@ -158,39 +182,54 @@ export function App({ initialRoute }: AppProps = {}) {
         <div className="app-scroll">
           <Header onSearchClick={() => setSearchOpen(true)} />
           <div className="web-container">
-            <LocationBar />
-            <HeroSlider
-              onProvider={goProvider}
-              onProduct={onProductOpen}
-              onSeller={goSeller}
-            />
-            <CategoriesSection
-              active={activeCat}
-              onSelect={goCategory}
-              onSeeAll={() => navigate({ name: "allcats" })}
-            />
-            <ProvidersSection
-              providers={homeProviders}
-              isFav={isFav}
-              onToggleFav={toggleProviderFav}
-              onProvider={goProvider}
-              sellers={homeSellers}
-              onSeller={goSeller}
-              onToggleSellerFav={toggleSellerFav}
-            />
-            <FeaturedCompanies
-              onSeller={goSeller}
-              isFav={isFav}
-              onToggleFav={toggleSellerFav}
-            />
-            <div className="bottom-spacer" />
+            <div className="web-shell">
+              <aside className="web-sidebar">
+                <CategorySidebar
+                  activeCat={activeCat}
+                  onSelectCat={goCategory}
+                  filters={activeFilters}
+                  onToggleFilter={toggleFilter}
+                />
+              </aside>
+              <div className="web-main">
+                <LocationBar />
+                <HeroSlider
+                  onProvider={goProvider}
+                  onProduct={onProductOpen}
+                  onSeller={goSeller}
+                  onWhatsapp={openWhatsapp}
+                />
+                <CategoriesSection
+                  active={activeCat}
+                  onSelect={goCategory}
+                  onSeeAll={() => navigate({ name: "allcats" })}
+                />
+                <InstallBanner onInstall={handleInstall} />
+                <ProvidersSection
+                  providers={filteredProviders}
+                  isFav={isFav}
+                  onToggleFav={toggleProviderFav}
+                  onProvider={goProvider}
+                  onQuote={openWhatsapp}
+                  sellers={homeSellers}
+                  onSeller={goSeller}
+                  onToggleSellerFav={toggleSellerFav}
+                />
+                <FeaturedCompanies
+                  onSeller={goSeller}
+                  isFav={isFav}
+                  onToggleFav={toggleSellerFav}
+                />
+                <div className="bottom-spacer" />
+              </div>
+            </div>
           </div>
         </div>
 
         <BottomNav
           active={activeNav}
           onSelect={onNavSelect}
-          onInstall={handleInstall}
+          onQuote={handleQuote}
           authed={isAuthenticated}
         />
 

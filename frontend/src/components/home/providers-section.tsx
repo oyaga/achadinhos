@@ -11,6 +11,7 @@ interface ProvidersSectionProps {
   isFav: (id: number | string) => boolean;
   onToggleFav: (id: string) => void;
   onProvider: (p: Provider) => void;
+  onQuote?: (p: Provider) => void;
   sellers?: AdminSeller[];
   onSeller?: (s: AdminSeller) => void;
   onToggleSellerFav?: (id: string) => void;
@@ -23,6 +24,7 @@ export function ProvidersSection({
   isFav,
   onToggleFav,
   onProvider,
+  onQuote,
   sellers = [],
   onSeller,
   onToggleSellerFav,
@@ -49,6 +51,7 @@ export function ProvidersSection({
             isFav={isFav(p.id)}
             onClick={() => onProvider(p)}
             onToggleFav={() => onToggleFav(p.id)}
+            onQuote={onQuote ? () => onQuote(p) : undefined}
           />
         ))}
         {sellers.map((s) => (
@@ -83,6 +86,7 @@ interface ProviderCardProps {
   isFav: boolean;
   onClick: () => void;
   onToggleFav: () => void;
+  onQuote?: () => void;
   showCatLabel?: boolean;
   trailing?: string;
 }
@@ -93,12 +97,13 @@ export function ProviderCard({
   isFav,
   onClick,
   onToggleFav,
+  onQuote,
   showCatLabel = true,
   trailing,
 }: ProviderCardProps) {
   return (
     <div
-      className="provider fade-up"
+      className={cn("provider fade-up", onQuote && "provider--cta")}
       onClick={onClick}
       style={{ animationDelay: `${200 + index * 40}ms` }}
       role="button"
@@ -153,6 +158,18 @@ export function ProviderCard({
       >
         <Icon.Heart size={18} filled={isFav} />
       </button>
+      {onQuote && (
+        <button
+          type="button"
+          className="provider-quote"
+          onClick={(e) => {
+            e.stopPropagation();
+            onQuote();
+          }}
+        >
+          <Icon.Whatsapp size={15} /> Pedir orçamento
+        </button>
+      )}
     </div>
   );
 }
