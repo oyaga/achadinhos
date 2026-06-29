@@ -8,7 +8,7 @@ export type NavId = "home" | "events" | "fav" | "profile";
 interface BottomNavProps {
   active: NavId;
   onSelect: (id: NavId) => void;
-  onQuote: () => void;
+  onInstall: () => void;
   authed?: boolean;
 }
 
@@ -19,7 +19,7 @@ const ITEMS_LEFT: NavItem[] = [
   { id: "fav", label: "Favoritos", icon: "Heart" },
 ];
 
-export function BottomNav({ active, onSelect, onQuote, authed }: BottomNavProps) {
+export function BottomNav({ active, onSelect, onInstall, authed }: BottomNavProps) {
   const itemsRight: NavItem[] = [
     { id: "events", label: "Eventos", icon: "Calendar" },
     { id: "profile", label: authed ? "Perfil" : "Login", icon: "User" },
@@ -47,13 +47,13 @@ export function BottomNav({ active, onSelect, onQuote, authed }: BottomNavProps)
       <button
         type="button"
         className="nav-fab"
-        onClick={onQuote}
-        aria-label="Pedir orçamento"
+        onClick={onInstall}
+        aria-label="Instalar o app"
       >
         <span className="nav-fab-circle">
-          <Icon.Whatsapp size={22} />
+          <Icon.Download size={22} />
         </span>
-        <span className="nav-fab-label">Orçamento</span>
+        <span className="nav-fab-label">Instalar</span>
       </button>
       {itemsRight.map(renderItem)}
     </nav>

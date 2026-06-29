@@ -465,6 +465,191 @@ func (h *AdminHandler) DeleteProviderPortfolio(c *gin.Context) {
 	h.deletePortfolio(c, "provider")
 }
 
+// ── Conversão empresa ⇄ afiliado ─────────────────────────────────────────────
+
+// ConvertSellerToProvider handles POST /admin/sellers/:id/convert. It transforms
+// an empresa (seller) into an afiliado/prestador (provider), preserving the logo
+// and portfolio. Ratings and reviews do not carry over (they live in separate
+// tables), so the new provider starts with a clean rating.
+func (h *AdminHandler) ConvertSellerToProvider(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "invalid seller id")
+		return
+	}
+	var req dto.AdminProviderRequest
+	if !BindJSON(c, &req) {
+		return
+	}
+	if !h.categoryExists(c, req.CategoryID) {
+		return
+	}
+	doc, ok := validateDocument(c, req.DocumentType, req.Document)
+	if !ok {
+		return
+	}
+
+	var seller models.Seller
+	if err := h.db.WithContext(c.Request.Context()).First(&seller, "id = ?", id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			JSONError(c, http.StatusNotFound, "seller not found")
+			return
+		}
+		JSONError(c, http.StatusInternalServerError, "failed to fetch seller")
+		return
+	}
+
+	// Empresas com produtos vinculados não podem ser convertidas — os produtos
+	// dependem da empresa. O admin deve reatribuí-los ou removê-los antes.
+	var productCount int64
+	if err := h.db.WithContext(c.Request.Context()).Model(&models.Product{}).
+		Where("seller_id = ?", id).Count(&productCount).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to check products")
+		return
+	}
+	if productCount > 0 {
+		JSONError(c, http.StatusConflict, "empresa possui produtos vinculados — remova-os antes de converter em afiliado")
+		return
+	}
+
+	coverage := models.Coverage(req.Coverage)
+	if coverage == "" {
+		coverage = models.CoverageCidade
+	}
+	radius := req.RadiusKM
+	if radius == 0 {
+		radius = 10
+	}
+	name := strings.TrimSpace(req.Name)
+	p := &models.Provider{
+		Name:              name,
+		CategoryID:        req.CategoryID,
+		Avatar:            firstRune(name),
+		LogoURL:           seller.LogoURL,
+		Description:       strings.TrimSpace(req.Description),
+		Services:          models.StringSlice(req.Services),
+		WhatsApp:          strings.TrimSpace(req.WhatsApp),
+		Instagram:         strings.TrimSpace(req.Instagram),
+		Facebook:          strings.TrimSpace(req.Facebook),
+		TikTok:            strings.TrimSpace(req.TikTok),
+		YouTube:           strings.TrimSpace(req.YouTube),
+		Site:              strings.TrimSpace(req.Site),
+		YearsActive:       req.YearsActive,
+		JobsDone:          req.JobsDone,
+		PriceLabel:        strings.TrimSpace(req.PriceLabel),
+		ResponseTimeLabel: strings.TrimSpace(req.ResponseTimeLabel),
+		DistanceLabel:     strings.TrimSpace(req.DistanceLabel),
+		Coverage:          coverage,
+		RadiusKM:          radius,
+		Verified:          req.Verified,
+		Highlight:         req.Highlight,
+		Badge:             strings.TrimSpace(req.Badge),
+		DocumentType:      req.DocumentType,
+		Document:          doc,
+	}
+
+	if err := h.convert(c, p, "seller", "provider", id); err != nil {
+		return
+	}
+	c.JSON(http.StatusOK, p)
+}
+
+// ConvertProviderToSeller handles POST /admin/providers/:id/convert. It transforms
+// an afiliado/prestador (provider) into an empresa (seller), preserving the logo
+// and portfolio. Ratings and reviews do not carry over.
+func (h *AdminHandler) ConvertProviderToSeller(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "invalid provider id")
+		return
+	}
+	var req dto.AdminSellerRequest
+	if !BindJSON(c, &req) {
+		return
+	}
+	if !h.categoryExists(c, req.CategoryID) {
+		return
+	}
+	doc, ok := validateDocument(c, req.DocumentType, req.Document)
+	if !ok {
+		return
+	}
+
+	var provider models.Provider
+	if err := h.db.WithContext(c.Request.Context()).First(&provider, "id = ?", id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			JSONError(c, http.StatusNotFound, "provider not found")
+			return
+		}
+		JSONError(c, http.StatusInternalServerError, "failed to fetch provider")
+		return
+	}
+
+	name := strings.TrimSpace(req.Name)
+	s := &models.Seller{
+		Name:         name,
+		CategoryID:   req.CategoryID,
+		Avatar:       firstRune(name),
+		LogoURL:      provider.LogoURL,
+		Description:  strings.TrimSpace(req.Description),
+		WhatsApp:     strings.TrimSpace(req.WhatsApp),
+		Link:         strings.TrimSpace(req.Link),
+		Instagram:    strings.TrimSpace(req.Instagram),
+		Facebook:     strings.TrimSpace(req.Facebook),
+		TikTok:       strings.TrimSpace(req.TikTok),
+		YouTube:      strings.TrimSpace(req.YouTube),
+		Partner:      req.Partner,
+		Highlight:    req.Highlight,
+		DocumentType: req.DocumentType,
+		Document:     doc,
+	}
+
+	if err := h.convert(c, s, "provider", "seller", id); err != nil {
+		return
+	}
+	c.JSON(http.StatusOK, s)
+}
+
+// convert persists the new record, re-points the portfolio photos from the old
+// owner to it and hard-deletes the original — all in one transaction. The hard
+// delete frees the original's (unique) name and leaves no stale row behind. On
+// error it writes the HTTP response and returns the error so the caller stops.
+func (h *AdminHandler) convert(c *gin.Context, newRecord any, fromType, toType string, oldID uuid.UUID) error {
+	err := h.db.WithContext(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(newRecord).Error; err != nil {
+			return err
+		}
+		newID := idOf(newRecord)
+		if err := tx.Model(&models.PortfolioPhoto{}).
+			Where("owner_type = ? AND owner_id = ?", fromType, oldID).
+			Updates(map[string]any{"owner_type": toType, "owner_id": newID}).Error; err != nil {
+			return err
+		}
+		if fromType == "seller" {
+			return tx.Unscoped().Delete(&models.Seller{}, "id = ?", oldID).Error
+		}
+		return tx.Unscoped().Delete(&models.Provider{}, "id = ?", oldID).Error
+	})
+	if err != nil {
+		// O nome da empresa é único — uma colisão é o erro mais provável aqui.
+		JSONError(c, http.StatusConflict, "não foi possível converter o cadastro (o nome pode já existir)")
+		return err
+	}
+	return nil
+}
+
+// idOf returns the primary key of a *Seller or *Provider after creation.
+func idOf(record any) uuid.UUID {
+	switch r := record.(type) {
+	case *models.Seller:
+		return r.ID
+	case *models.Provider:
+		return r.ID
+	default:
+		return uuid.Nil
+	}
+}
+
 // ── Produtos ─────────────────────────────────────────────────────────────────
 
 // ListProducts handles GET /admin/products.

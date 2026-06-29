@@ -66,10 +66,6 @@ export function App({ initialRoute }: AppProps = {}) {
     }
   };
 
-  // FAB central: "Pedir orçamento" — abre a busca para o usuário escolher o
-  // serviço/afiliado que quer orçar (handoff M3).
-  const handleQuote = () => setSearchOpen(true);
-
   const navigate = (r: Route) => setRoute(r);
   // When the App was mounted on a deep-link page (e.g. /empresa/[id]) the
   // overlay's Back button should send the user back to the home URL instead
@@ -229,7 +225,7 @@ export function App({ initialRoute }: AppProps = {}) {
         <BottomNav
           active={activeNav}
           onSelect={onNavSelect}
-          onQuote={handleQuote}
+          onInstall={handleInstall}
           authed={isAuthenticated}
         />
 
