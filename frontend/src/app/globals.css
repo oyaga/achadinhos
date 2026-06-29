@@ -4182,7 +4182,10 @@ textarea.field-input {
   width: 100%;
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  /* Em PWA standalone (iOS) a status bar sobrepõe o topo; respeita a safe area
+     para não esconder a barra superior (botão Voltar / Cadastre-se). */
+  padding: calc(24px + env(safe-area-inset-top, 0px)) 24px
+    calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
 .auth-topbar {

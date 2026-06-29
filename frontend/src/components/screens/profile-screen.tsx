@@ -460,7 +460,7 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
 
             {!isEmpresa && (
               <div className="prof-field">
-                <label className="prof-label">Meu papel</label>
+                <label className="prof-label">Você é</label>
                 <div className="auth-seg-group">
                   {(
                     [
