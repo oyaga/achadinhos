@@ -5,8 +5,12 @@ import {
   adminApi,
   ApiError,
   type AdminSeller,
+  type ApiProvider,
   type ApiCertificate,
+  type CertTipo,
+  type CertTier,
 } from "@/lib/api";
+import { tierLabel } from "@/lib/utils";
 import { Icon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { SignaturePad } from "@/components/admin/signature-pad";
@@ -46,7 +50,9 @@ function statusOf(cert: ApiCertificate): CertStatus {
 }
 
 interface FormState {
-  seller_id: string;
+  tipo: CertTipo;
+  owner_id: string;
+  tier: CertTier;
   responsavel_nome: string;
   responsavel_cpf: string;
   issued_at: string;
@@ -55,7 +61,9 @@ interface FormState {
 
 function emptyForm(): FormState {
   return {
-    seller_id: "",
+    tipo: "empresa",
+    owner_id: "",
+    tier: "ouro",
     responsavel_nome: "",
     responsavel_cpf: "",
     issued_at: todayISO(),
@@ -63,9 +71,21 @@ function emptyForm(): FormState {
   };
 }
 
+const TIPO_OPTIONS: ReadonlyArray<{ v: CertTipo; l: string }> = [
+  { v: "empresa", l: "Empresa" },
+  { v: "afiliado", l: "Afiliado de serviço" },
+];
+
+const TIER_OPTIONS: ReadonlyArray<{ v: CertTier; l: string }> = [
+  { v: "prata", l: "Prata" },
+  { v: "ouro", l: "Ouro" },
+  { v: "black", l: "Black" },
+];
+
 export function CertificadosSection() {
   const [certs, setCerts] = useState<ApiCertificate[]>([]);
   const [sellers, setSellers] = useState<AdminSeller[]>([]);
+  const [providers, setProviders] = useState<ApiProvider[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -82,9 +102,14 @@ export function CertificadosSection() {
     setLoading(true);
     setLoadError(null);
     try {
-      const [c, s] = await Promise.all([adminApi.listCertificates(), adminApi.listSellers()]);
+      const [c, s, p] = await Promise.all([
+        adminApi.listCertificates(),
+        adminApi.listSellers(),
+        adminApi.listProviders(),
+      ]);
       setCerts(c);
       setSellers(s);
+      setProviders(p);
     } catch (err) {
       setLoadError(err instanceof ApiError ? err.message : "Erro ao carregar.");
     } finally {
@@ -96,11 +121,15 @@ export function CertificadosSection() {
     void refresh();
   }, [refresh]);
 
-  const sellersById = useMemo(() => {
-    const map = new Map<string, AdminSeller>();
-    for (const s of sellers) map.set(s.id, s);
+  // Lista de titulares (empresas ou afiliados) conforme o tipo selecionado, e
+  // um índice id -> {name, categoria} para o help da categoria.
+  const owners = form.tipo === "empresa" ? sellers : providers;
+  const ownersById = useMemo(() => {
+    const map = new Map<string, { name: string; categoria?: string }>();
+    for (const s of sellers) map.set(s.id, { name: s.name, categoria: s.category?.label });
+    for (const p of providers) map.set(p.id, { name: p.name, categoria: p.category?.label });
     return map;
-  }, [sellers]);
+  }, [sellers, providers]);
 
   function openCreate() {
     setForm(emptyForm());
@@ -109,15 +138,20 @@ export function CertificadosSection() {
     setFormOpen(true);
   }
 
-  function update<K extends keyof FormState>(key: K, value: string) {
+  function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  // Trocar o tipo limpa o titular selecionado (a lista de opções muda).
+  function selectTipo(t: CertTipo) {
+    setForm((prev) => ({ ...prev, tipo: t, owner_id: "" }));
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
-    if (!form.seller_id) {
-      setFormError("Selecione a empresa.");
+    if (!form.owner_id) {
+      setFormError(form.tipo === "empresa" ? "Selecione a empresa." : "Selecione o afiliado.");
       return;
     }
     if (form.responsavel_nome.trim().length < 2) {
@@ -135,7 +169,9 @@ export function CertificadosSection() {
     setSubmitting(true);
     try {
       const cert = await adminApi.createCertificate({
-        seller_id: form.seller_id,
+        tipo: form.tipo,
+        owner_id: form.owner_id,
+        tier: form.tier,
         responsavel_nome: form.responsavel_nome.trim(),
         responsavel_cpf: form.responsavel_cpf.trim() || undefined,
         issued_at: form.issued_at,
@@ -148,6 +184,8 @@ export function CertificadosSection() {
         "@/components/certificate/generate"
       );
       const blob = await buildCertificateBlob({
+        tipo: cert.tipo,
+        tier: cert.tier,
         empresaNome: cert.empresa_nome,
         categoria: cert.categoria,
         responsavelNome: cert.responsavel_nome,
@@ -172,6 +210,8 @@ export function CertificadosSection() {
         "@/components/certificate/generate"
       );
       const blob = await buildCertificateBlob({
+        tipo: cert.tipo,
+        tier: cert.tier,
         empresaNome: cert.empresa_nome,
         categoria: cert.categoria,
         responsavelNome: cert.responsavel_nome,
@@ -220,7 +260,7 @@ export function CertificadosSection() {
     }
   }
 
-  const selectedSeller = form.seller_id ? sellersById.get(form.seller_id) : undefined;
+  const selectedOwner = form.owner_id ? ownersById.get(form.owner_id) : undefined;
 
   return (
     <section className="admin-section">
@@ -239,26 +279,64 @@ export function CertificadosSection() {
 
       {formOpen && (
         <form className="admin-form" onSubmit={handleSubmit}>
-          <div className="admin-form-title">Emitir certificado de empresa qualificada</div>
+          <div className="admin-form-title">Emitir certificado</div>
           {formError && <div className="prof-alert error">{formError}</div>}
 
+          {/* Tipo de titular */}
           <div className="prof-field">
-            <label className="prof-label">Empresa</label>
+            <label className="prof-label">Tipo</label>
+            <div className="auth-seg-group">
+              {TIPO_OPTIONS.map(({ v, l }) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={cn("auth-seg-btn", form.tipo === v && "active")}
+                  onClick={() => selectTipo(v)}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Nível do certificado */}
+          <div className="prof-field">
+            <label className="prof-label">Nível</label>
+            <div className="auth-seg-group">
+              {TIER_OPTIONS.map(({ v, l }) => (
+                <button
+                  key={v}
+                  type="button"
+                  className={cn("auth-seg-btn", form.tier === v && "active")}
+                  onClick={() => update("tier", v)}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="prof-field">
+            <label className="prof-label">{form.tipo === "empresa" ? "Empresa" : "Afiliado"}</label>
             <select
-              className={cn("prof-input", form.seller_id && "filled")}
-              value={form.seller_id}
-              onChange={(e) => update("seller_id", e.target.value)}
+              className={cn("prof-input", form.owner_id && "filled")}
+              value={form.owner_id}
+              onChange={(e) => update("owner_id", e.target.value)}
             >
-              <option value="">Selecione a empresa cadastrada…</option>
-              {sellers.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                  {s.category?.label ? ` — ${s.category.label}` : ""}
+              <option value="">
+                {form.tipo === "empresa"
+                  ? "Selecione a empresa cadastrada…"
+                  : "Selecione o afiliado cadastrado…"}
+              </option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name}
+                  {o.category?.label ? ` — ${o.category.label}` : ""}
                 </option>
               ))}
             </select>
-            {selectedSeller?.category?.label && (
-              <span className="prof-help">Categoria/segmento: {selectedSeller.category.label}</span>
+            {selectedOwner?.categoria && (
+              <span className="prof-help">Categoria/segmento: {selectedOwner.categoria}</span>
             )}
           </div>
 
@@ -350,11 +428,12 @@ export function CertificadosSection() {
                 <div className="admin-row-main">
                   <div className="admin-row-name">
                     {cert.empresa_nome}
+                    <span className={cn("cert-seal", cert.tier)}>{tierLabel(cert.tier)}</span>
                     <span className={cn("cert-badge", st.tone)}>{st.label}</span>
                   </div>
                   <div className="admin-row-meta">
-                    {cert.code} · emissão {formatDateBR(cert.issued_at)} · válido até{" "}
-                    {formatDateBR(cert.valid_until)}
+                    {cert.tipo === "empresa" ? "Empresa" : "Afiliado"} · {cert.code} · emissão{" "}
+                    {formatDateBR(cert.issued_at)} · válido até {formatDateBR(cert.valid_until)}
                   </div>
                 </div>
                 <div className="admin-row-actions">

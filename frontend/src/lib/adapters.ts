@@ -15,6 +15,7 @@ export function adaptProvider(p: ApiProvider): Provider {
     rating: p.rating,
     reviews: p.reviews_count,
     badge: p.badge as Provider["badge"],
+    certTier: (p.cert_tier as Provider["certTier"]) || undefined,
     verified: p.verified,
     distance: p.distance_label,
     price: p.price_label,

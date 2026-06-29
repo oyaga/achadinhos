@@ -15,3 +15,17 @@ export function discountPct(price: number, oldPrice: number): number {
   if (!price || price <= 0) return 0;
   return Math.round((1 - price / oldPrice) * 100);
 }
+
+// Rótulo do nível do certificado (selo Prata/Ouro/Black).
+export function tierLabel(tier: string | null | undefined): string {
+  switch (tier) {
+    case "prata":
+      return "Prata";
+    case "ouro":
+      return "Ouro";
+    case "black":
+      return "Black";
+    default:
+      return "";
+  }
+}

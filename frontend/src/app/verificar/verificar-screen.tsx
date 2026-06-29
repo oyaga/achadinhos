@@ -5,6 +5,21 @@ import Link from "next/link";
 import { certificatesApi, ApiError, type CertificateVerification } from "@/lib/api";
 import { BrandLockup } from "@/components/auth/brand-lockup";
 import { Icon } from "@/components/icons";
+import { cn, tierLabel } from "@/lib/utils";
+
+// Titular genérico (empresa ou afiliado), com fallback ao campo seller antigo.
+function ownerOf(cert: CertificateVerification) {
+  if (cert.owner) return cert.owner;
+  if (cert.seller) return { ...cert.seller, type: "seller" as const };
+  return undefined;
+}
+
+// Link para o perfil do titular conforme o tipo.
+function ownerHref(cert: CertificateVerification): string | null {
+  const o = ownerOf(cert);
+  if (!o?.id) return null;
+  return o.type === "provider" ? `/prestador/${o.id}` : `/empresa/${o.id}`;
+}
 
 type Status = "loading" | "valid" | "invalid_state" | "not_found" | "no_code";
 
@@ -94,9 +109,9 @@ export function VerificarScreen() {
                 : `expirou em ${formatDateBR(cert.valid_until)}.`}
             </p>
             <div className="verify-code">{cert.code}</div>
-            {cert.seller?.id && (
-              <Link href={`/empresa/${cert.seller.id}`} className="verify-btn ghost">
-                Ver perfil da empresa
+            {ownerHref(cert) && (
+              <Link href={ownerHref(cert)!} className="verify-btn ghost">
+                {cert.tipo === "afiliado" ? "Ver perfil do afiliado" : "Ver perfil da empresa"}
                 <Icon.ChevRight size={15} />
               </Link>
             )}
@@ -110,16 +125,24 @@ export function VerificarScreen() {
             </div>
             <div className="verify-approved">
               <Icon.Check size={14} />
-              EMPRESA VERIFICADA E APROVADA
+              {cert.tipo === "afiliado" ? "AFILIADO VERIFICADO E APROVADO" : "EMPRESA VERIFICADA E APROVADA"}
             </div>
             <h1 className="verify-title">{cert.empresa_nome}</h1>
+            {tierLabel(cert.tier) && (
+              <span className={cn("cert-seal lg", cert.tier)}>Nível {tierLabel(cert.tier)}</span>
+            )}
             <p className="verify-text">
-              A empresa <strong>{cert.empresa_nome}</strong> foi verificada e{" "}
-              <strong>aprovada</strong> pelo Achadinhos do Condomínio, estando apta a prestar
-              serviços aos condomínios parceiros da plataforma.
+              {cert.tipo === "afiliado" ? "O afiliado" : "A empresa"}{" "}
+              <strong>{cert.empresa_nome}</strong> foi verificado(a) e <strong>aprovado(a)</strong>{" "}
+              pelo Achadinhos do Condomínio, estando apto(a) a prestar serviços aos condomínios
+              parceiros da plataforma.
             </p>
 
             <dl className="verify-details">
+              <div className="verify-detail">
+                <dt>Nível</dt>
+                <dd>{tierLabel(cert.tier) || "—"}</dd>
+              </div>
               {cert.categoria && (
                 <div className="verify-detail">
                   <dt>Categoria</dt>
@@ -140,9 +163,9 @@ export function VerificarScreen() {
               </div>
             </dl>
 
-            {cert.seller?.id ? (
-              <Link href={`/empresa/${cert.seller.id}`} className="verify-btn">
-                Ver perfil da empresa
+            {ownerHref(cert) ? (
+              <Link href={ownerHref(cert)!} className="verify-btn">
+                {cert.tipo === "afiliado" ? "Ver perfil do afiliado" : "Ver perfil da empresa"}
                 <Icon.ChevRight size={16} />
               </Link>
             ) : (

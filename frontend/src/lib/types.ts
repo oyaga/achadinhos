@@ -40,6 +40,7 @@ export interface Provider {
   rating: number;
   reviews: number;
   badge?: "Ouro" | "Verificado" | "Premium Black";
+  certTier?: "prata" | "ouro" | "black";
   verified: boolean;
   distance: string;
   price: string;

@@ -2,7 +2,7 @@
 
 import type { Provider } from "@/lib/types";
 import { getImageUrl, type AdminSeller } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, tierLabel } from "@/lib/utils";
 import { Icon } from "../icons";
 import { CompanyCard } from "./featured-companies";
 
@@ -132,6 +132,9 @@ export function ProviderCard({
       <div className="provider-info">
         <div className="provider-name">
           {provider.name}
+          {provider.certTier && (
+            <span className={cn("cert-seal", provider.certTier)}>{tierLabel(provider.certTier)}</span>
+          )}
           {provider.badge && (
             <span className="provider-badge">{provider.badge}</span>
           )}

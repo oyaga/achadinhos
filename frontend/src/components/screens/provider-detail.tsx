@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { providersApi, getImageUrl, isPdf, isVideo } from "@/lib/api";
 import { adaptReview } from "@/lib/adapters";
 import type { Provider, Review } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, tierLabel } from "@/lib/utils";
 import { Icon } from "../icons";
 import { PortfolioViewer } from "./portfolio-viewer";
 import { PdfThumbnail } from "./pdf-thumbnail";
@@ -109,7 +109,14 @@ export function ProviderDetail({
               )}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="pd-name">{provider.name}</div>
+              <div className="pd-name">
+                {provider.name}
+                {provider.certTier && (
+                  <span className={cn("cert-seal", provider.certTier)} style={{ marginLeft: 6 }}>
+                    {tierLabel(provider.certTier)}
+                  </span>
+                )}
+              </div>
               <div className="pd-cat">
                 {provider.distance} · responde em {provider.responseTime}
               </div>

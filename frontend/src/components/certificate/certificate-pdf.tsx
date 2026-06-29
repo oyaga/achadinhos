@@ -24,6 +24,8 @@ import {
 } from "@react-pdf/renderer";
 
 export interface CertificateDocData {
+  tipo?: "empresa" | "afiliado";
+  tier?: "prata" | "ouro" | "black";
   empresaNome: string;
   categoria?: string;
   responsavelNome: string;
@@ -33,6 +35,35 @@ export interface CertificateDocData {
   qrDataUrl: string; // PNG data URL do QR
   signatureDataUrl?: string | null; // PNG data URL da assinatura desenhada
 }
+
+// Paleta e textos por nível (tier) do certificado.
+const TIER = {
+  prata: {
+    label: "PRATA",
+    name: "Prata",
+    light: "#cfd5dc",
+    main: "#8a929c",
+    dark: "#5b6470",
+    sentence: "Atende aos requisitos mínimos do Achadinhos do Condomínio.",
+  },
+  ouro: {
+    label: "OURO",
+    name: "Ouro",
+    light: "#e6cf96",
+    main: "#c9a961",
+    dark: "#a8884a",
+    sentence: "Atende aos requisitos padrão do Achadinhos do Condomínio.",
+  },
+  black: {
+    label: "BLACK",
+    name: "Black",
+    light: "#c9a961",
+    main: "#3a3320",
+    dark: "#1a1410",
+    sentence:
+      "Aprovado em avaliação rigorosa, conduzida diretamente pela equipe especializada do Achadinhos do Condomínio.",
+  },
+} as const;
 
 const C = {
   bg: "#fbf8f2",
@@ -204,40 +235,39 @@ function Corner({ corner }: { corner: "tl" | "tr" | "bl" | "br" }) {
   );
 }
 
-// Selo circular dourado "APROVADO" com escudo + check (mesmo símbolo de
-// "verificado" da plataforma).
-function ApprovedSeal() {
+// Selo circular "APROVADO" com escudo + check, colorido conforme o nível.
+function ApprovedSeal({ tier }: { tier: (typeof TIER)[keyof typeof TIER] }) {
   return (
     <View style={s.sealWrap}>
       <Svg width={132} height={132} viewBox="0 0 132 132">
         <Defs>
-          <LinearGradient id="goldRing" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor={C.goldLight} />
-            <Stop offset="0.5" stopColor={C.gold} />
-            <Stop offset="1" stopColor="#a8884a" />
+          <LinearGradient id="tierRing" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0" stopColor={tier.light} />
+            <Stop offset="0.5" stopColor={tier.main} />
+            <Stop offset="1" stopColor={tier.dark} />
           </LinearGradient>
         </Defs>
-        <Circle cx="66" cy="66" r="62" fill="none" stroke="url(#goldRing)" strokeWidth={6} />
-        <Circle cx="66" cy="66" r="52" fill="none" stroke={C.gold} strokeWidth={1.2} />
+        <Circle cx="66" cy="66" r="62" fill="none" stroke="url(#tierRing)" strokeWidth={6} />
+        <Circle cx="66" cy="66" r="52" fill="none" stroke={tier.main} strokeWidth={1.2} />
         <Circle cx="66" cy="66" r="49" fill={C.bg} />
-        {/* Escudo dourado com check, na metade superior do selo */}
+        {/* Escudo com check, na metade superior do selo */}
         <Path
           d="M66 26 L83 32 L83 49 C83 60 75 67 66 71 C57 67 49 60 49 49 L49 32 Z"
-          fill="url(#goldRing)"
-          stroke="#a8884a"
+          fill="url(#tierRing)"
+          stroke={tier.dark}
           strokeWidth={1}
         />
         <Path
           d="M59 48 l5 5 l12 -13"
           fill="none"
-          stroke={C.navy}
+          stroke={C.bg}
           strokeWidth={3.4}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
       </Svg>
       <Text style={s.sealLabel}>APROVADO</Text>
-      <Text style={s.sealTop}>EMPRESA VERIFICADA</Text>
+      <Text style={[s.sealTop, { color: tier.dark }]}>NÍVEL {tier.label}</Text>
     </View>
   );
 }
@@ -271,11 +301,16 @@ function Guilloche() {
 
 export function CertificateDocument({ data }: { data: CertificateDocData }) {
   const categoria = (data.categoria ?? "").trim() || "—";
+  const isEmpresa = data.tipo !== "afiliado";
+  const tier = TIER[data.tier ?? "ouro"] ?? TIER.ouro;
+  const titulo = isEmpresa
+    ? "Certificado de Empresa Qualificada"
+    : "Certificado de Afiliado Qualificado";
   return (
     <Document
       title={`Certificado ${data.code}`}
       author="Achadinhos do Condomínio"
-      subject={`Certificado de Empresa Qualificada — ${data.empresaNome}`}
+      subject={`${titulo} — ${data.empresaNome}`}
     >
       <Page size="A4" style={s.page}>
         <Guilloche />
@@ -305,24 +340,28 @@ export function CertificateDocument({ data }: { data: CertificateDocData }) {
             </View>
           </View>
 
-          <Text style={s.kicker}>CERTIFICADO OFICIAL</Text>
-          <Text style={s.title}>Certificado de Empresa Qualificada</Text>
+          <Text style={s.kicker}>CERTIFICADO OFICIAL · NÍVEL {tier.label}</Text>
+          <Text style={s.title}>{titulo}</Text>
           <GoldDivider />
 
           <Text style={s.body}>
-            Certificamos que a empresa <Text style={s.empresa}>{data.empresaNome}</Text> foi
-            submetida a um rigoroso processo de avaliação e qualificação, atendendo a todos os
-            critérios de idoneidade, qualidade e confiabilidade exigidos, estando{" "}
-            <Text style={s.strong}>APROVADA e APTA</Text> a prestar serviços aos condomínios
-            parceiros da plataforma Achadinhos do Condomínio.
+            Certificamos que {isEmpresa ? "a empresa" : "o(a) afiliado(a)"}{" "}
+            <Text style={s.empresa}>{data.empresaNome}</Text> foi submetido(a) a processo de
+            avaliação e qualificação, estando <Text style={s.strong}>APROVADO(A) e APTO(A)</Text>{" "}
+            a prestar serviços aos condomínios parceiros da plataforma Achadinhos do Condomínio.{" "}
+            Nível <Text style={s.strong}>{tier.name}</Text>: {tier.sentence}
           </Text>
 
-          <ApprovedSeal />
+          <ApprovedSeal tier={tier} />
 
           <View style={s.infoGrid}>
             <View style={s.infoCell}>
-              <Text style={s.infoLabel}>EMPRESA</Text>
+              <Text style={s.infoLabel}>{isEmpresa ? "EMPRESA" : "AFILIADO"}</Text>
               <Text style={s.infoValue}>{data.empresaNome}</Text>
+            </View>
+            <View style={s.infoCell}>
+              <Text style={s.infoLabel}>NÍVEL</Text>
+              <Text style={s.infoValue}>{tier.name}</Text>
             </View>
             <View style={s.infoCell}>
               <Text style={s.infoLabel}>CATEGORIA / SEGMENTO</Text>
