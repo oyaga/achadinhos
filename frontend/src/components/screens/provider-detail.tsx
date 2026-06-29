@@ -7,6 +7,7 @@ import type { Provider, Review } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Icon } from "../icons";
 import { PortfolioViewer } from "./portfolio-viewer";
+import { PdfThumbnail } from "./pdf-thumbnail";
 import { SocialLinks } from "./social-links";
 
 interface ProviderDetailProps {
@@ -87,6 +88,8 @@ export function ProviderDetail({
           </div>
         </div>
 
+        <div className="pd-grid">
+        <div className="pd-main">
         <div className="pd-card">
           <div className="pd-top">
             <div
@@ -165,9 +168,7 @@ export function ProviderDetail({
                       <Icon.Play size={22} />
                     </span>
                   ) : isPdf(url) ? (
-                    <span className="upload-doc">
-                      <strong>PDF</strong>
-                    </span>
+                    <PdfThumbnail url={getImageUrl(url)} />
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={getImageUrl(url)} alt="Portfólio" loading="lazy" decoding="async" />
@@ -296,6 +297,40 @@ export function ProviderDetail({
             </div>
           )}
         </div>
+        </div>{/* /pd-main */}
+
+        <aside className="pd-contact">
+          <div className="pd-contact-card">
+            {provider.verified && (
+              <div className="pd-contact-verified">
+                <Icon.Check size={13} /> Verificado pelo Achadinhos
+              </div>
+            )}
+            <div className="pd-contact-title">Orçamento sob medida</div>
+            <div className="pd-contact-line">
+              <Icon.Star size={13} /> Responde em ~{provider.responseTime}
+            </div>
+            <div className="pd-contact-line">
+              Valor combinado direto com o afiliado
+            </div>
+            <button type="button" className="pd-contact-cta" onClick={onWhatsapp}>
+              <Icon.Whatsapp size={16} /> Pedir orçamento no WhatsApp
+            </button>
+            <div className="pd-contact-actions">
+              <button type="button" className="pd-contact-ghost" onClick={onRate}>
+                <Icon.Star size={14} /> Avaliar
+              </button>
+              <button
+                type="button"
+                className="pd-contact-ghost"
+                onClick={() => onToggleFav(provider.id)}
+              >
+                <Icon.Heart size={14} filled={isFav} /> Salvar
+              </button>
+            </div>
+          </div>
+        </aside>
+        </div>{/* /pd-grid */}
       </div>
 
       <div className="sticky-cta">

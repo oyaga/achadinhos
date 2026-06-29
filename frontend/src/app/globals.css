@@ -1960,7 +1960,7 @@ textarea.field-input {
 }
 .btn-whatsapp {
   flex: 2;
-  background: linear-gradient(140deg, #25d366, #1da851);
+  background: linear-gradient(140deg, #27c06a, #1faa59);
   color: white;
   padding: 14px;
   border-radius: 14px;
@@ -1970,7 +1970,7 @@ textarea.field-input {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+  box-shadow: 0 4px 14px rgba(39, 192, 106, 0.35);
 }
 .btn-secondary {
   flex: 1;
@@ -7228,6 +7228,95 @@ input[type="time"].prof-input {
   transform: translateY(-1px);
 }
 
+/* ── Perfil do afiliado: coluna de contato (TELA 2, desktop) ── */
+.pd-contact { display: none; } /* mobile usa o .sticky-cta */
+.pd-contact-card {
+  background: linear-gradient(160deg, var(--navy-800), var(--navy-900));
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-elev);
+}
+.pd-contact-verified {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold-300);
+  margin-bottom: 10px;
+}
+.pd-contact-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 22px;
+  color: #fff;
+  margin-bottom: 12px;
+}
+.pd-contact-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 6px;
+}
+.pd-contact-line svg { color: var(--gold-300); flex-shrink: 0; }
+.pd-contact-cta {
+  margin-top: 16px;
+  width: 100%;
+  height: 46px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(140deg, #27c06a, #1faa59);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(39, 192, 106, 0.4);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.pd-contact-cta:hover { filter: brightness(1.08); }
+.pd-contact-cta:active { transform: scale(0.98); }
+.pd-contact-actions { display: flex; gap: 8px; margin-top: 10px; }
+.pd-contact-ghost {
+  flex: 1;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(201, 169, 97, 0.3);
+  color: var(--gold-200);
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .pd-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+    align-items: start;
+  }
+  .pd-contact {
+    display: block;
+    position: sticky;
+    top: 24px;
+  }
+  /* Com a coluna de contato no desktop, a barra inferior fica redundante. */
+  .screen:has(.pd-contact) > .sticky-cta { display: none; }
+}
+
 /* Tile de vídeo na grade do admin */
 .admin-video-tile {
   flex-direction: column;
@@ -7490,6 +7579,56 @@ input[type="time"].prof-input {
   font-weight: 700;
   letter-spacing: 0.06em;
   color: #c0392b;
+}
+
+/* Miniatura com a capa (1ª página) do PDF no portfólio */
+.pdf-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--bone-50);
+  overflow: hidden;
+}
+.pdf-thumb-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+.pdf-thumb[data-status="loading"] .pdf-thumb-canvas,
+.pdf-thumb[data-status="error"] .pdf-thumb-canvas {
+  display: none;
+}
+/* Selo "PDF" central enquanto carrega / em erro (fallback) */
+.pdf-thumb-badge {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pdf-thumb-badge strong {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #c0392b;
+}
+/* Tag "PDF" no canto quando a capa está pronta */
+.pdf-thumb-tag {
+  position: absolute;
+  left: 6px;
+  bottom: 6px;
+  background: rgba(11, 27, 59, 0.85);
+  color: var(--gold-300);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  pointer-events: none;
 }
 
 /* Pedidos: logo da empresa no avatar do histórico de WhatsApp */

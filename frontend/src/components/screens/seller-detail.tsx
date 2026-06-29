@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/auth-context";
 import type { ContactInput } from "@/hooks/use-whatsapp-history";
 import { Icon } from "../icons";
 import { PortfolioViewer } from "./portfolio-viewer";
+import { PdfThumbnail } from "./pdf-thumbnail";
 import { SocialLinks } from "./social-links";
 
 interface SellerDetailProps {
@@ -242,9 +243,7 @@ export function SellerDetail({
                       <Icon.Play size={22} />
                     </span>
                   ) : isPdf(url) ? (
-                    <span className="upload-doc">
-                      <strong>PDF</strong>
-                    </span>
+                    <PdfThumbnail url={getImageUrl(url)} />
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={getImageUrl(url)} alt="Portfólio" loading="lazy" decoding="async" />

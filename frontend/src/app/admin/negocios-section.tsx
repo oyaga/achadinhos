@@ -25,6 +25,7 @@ import {
 import { formatPhone, stripPhone } from "@/lib/phone";
 import { Icon } from "@/components/icons";
 import { LogoCropper } from "@/components/admin/logo-cropper";
+import { PdfThumbnail } from "@/components/screens/pdf-thumbnail";
 import { cn } from "@/lib/utils";
 
 type Kind = "empresa" | "prestador";
@@ -813,14 +814,7 @@ export function NegociosSection() {
                       <strong>VÍDEO</strong>
                     </div>
                   ) : isPdf(ph.url) ? (
-                    <a
-                      href={getImageUrl(ph.url)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="upload-doc"
-                    >
-                      <strong>PDF</strong>
-                    </a>
+                    <PdfThumbnail url={getImageUrl(ph.url)} />
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={getImageUrl(ph.url)} alt="Portfólio" />

@@ -279,6 +279,7 @@ export function App({ initialRoute }: AppProps = {}) {
             onSeller={goSeller}
             onToggleFav={toggleProviderFav}
             onToggleSellerFav={toggleSellerFav}
+            onQuote={openWhatsapp}
           />
         )}
         {route.name === "allcats" && (
