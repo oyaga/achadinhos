@@ -100,6 +100,7 @@ func (h *CertificateHandler) List(c *gin.Context) {
 	var certs []models.Certificate
 	if err := h.db.WithContext(c.Request.Context()).
 		Preload("Seller").
+		Preload("Provider").
 		Order("created_at DESC").
 		Find(&certs).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to list certificates")
@@ -115,16 +116,48 @@ func (h *CertificateHandler) Create(c *gin.Context) {
 		return
 	}
 
-	sellerID, err := uuid.Parse(req.SellerID)
+	ownerID, err := uuid.Parse(req.OwnerID)
 	if err != nil {
-		JSONError(c, http.StatusBadRequest, "empresa inválida")
+		JSONError(c, http.StatusBadRequest, "titular inválido")
 		return
 	}
-	var seller models.Seller
-	if err := h.db.WithContext(c.Request.Context()).
-		Preload("Category").
-		First(&seller, "id = ?", sellerID).Error; err != nil {
-		JSONError(c, http.StatusNotFound, "empresa não encontrada")
+
+	// Resolve o titular conforme o tipo: empresa (Seller) ou afiliado (Provider).
+	// EmpresaNome/Categoria são snapshots tirados agora.
+	var (
+		sellerID, providerID *uuid.UUID
+		empresaNome          string
+		categoria            string
+	)
+	switch req.Tipo {
+	case models.CertTipoEmpresa:
+		var seller models.Seller
+		if err := h.db.WithContext(c.Request.Context()).
+			Preload("Category").
+			First(&seller, "id = ?", ownerID).Error; err != nil {
+			JSONError(c, http.StatusNotFound, "empresa não encontrada")
+			return
+		}
+		sellerID = &seller.ID
+		empresaNome = seller.Name
+		if seller.Category != nil {
+			categoria = seller.Category.Label
+		}
+	case models.CertTipoAfiliado:
+		var provider models.Provider
+		if err := h.db.WithContext(c.Request.Context()).
+			Preload("Category").
+			First(&provider, "id = ?", ownerID).Error; err != nil {
+			JSONError(c, http.StatusNotFound, "afiliado não encontrado")
+			return
+		}
+		providerID = &provider.ID
+		empresaNome = provider.Name
+		if provider.Category != nil {
+			categoria = provider.Category.Label
+		}
+	default:
+		JSONError(c, http.StatusBadRequest, "tipo inválido")
 		return
 	}
 
@@ -163,15 +196,13 @@ func (h *CertificateHandler) Create(c *gin.Context) {
 		return
 	}
 
-	categoria := ""
-	if seller.Category != nil {
-		categoria = seller.Category.Label
-	}
-
 	cert := &models.Certificate{
 		Code:            code,
-		SellerID:        seller.ID,
-		EmpresaNome:     seller.Name,
+		Tipo:            req.Tipo,
+		Tier:            req.Tier,
+		SellerID:        sellerID,
+		ProviderID:      providerID,
+		EmpresaNome:     empresaNome,
 		Categoria:       categoria,
 		ResponsavelNome: strings.TrimSpace(req.ResponsavelNome),
 		ResponsavelCPF:  strings.TrimSpace(req.ResponsavelCPF),
@@ -184,8 +215,24 @@ func (h *CertificateHandler) Create(c *gin.Context) {
 		JSONError(c, http.StatusInternalServerError, "failed to create certificate")
 		return
 	}
-	cert.Seller = &seller
+	h.syncOwnerCertTier(c, req.Tipo, ownerID)
 	c.JSON(http.StatusCreated, cert)
+}
+
+// syncOwnerCertTier recomputa o selo (cert_tier) do titular a partir do
+// certificado ativo mais recente (não revogado e dentro da validade). Grava ''
+// quando não há nenhum ativo. Best-effort: erros são ignorados (o selo é
+// cosmético; a verificação por código é a fonte da verdade).
+func (h *CertificateHandler) syncOwnerCertTier(c *gin.Context, tipo string, ownerID uuid.UUID) {
+	table, col := "sellers", "seller_id"
+	if tipo == models.CertTipoAfiliado {
+		table, col = "providers", "provider_id"
+	}
+	sql := "UPDATE " + table + " o SET cert_tier = COALESCE((" +
+		"SELECT c.tier FROM certificates c WHERE c." + col + " = o.id " +
+		"AND c.deleted_at IS NULL AND c.revoked = FALSE AND c.valid_until >= CURRENT_DATE " +
+		"ORDER BY c.issued_at DESC LIMIT 1), '') WHERE o.id = ?"
+	_ = h.db.WithContext(c.Request.Context()).Exec(sql, ownerID).Error
 }
 
 // Revoke handles PATCH /admin/certificates/:id — toggles the revoked flag.
@@ -209,6 +256,9 @@ func (h *CertificateHandler) Revoke(c *gin.Context) {
 		JSONError(c, http.StatusInternalServerError, "failed to update certificate")
 		return
 	}
+	if oid := cert.OwnerID(); oid != uuid.Nil {
+		h.syncOwnerCertTier(c, cert.Tipo, oid)
+	}
 	c.JSON(http.StatusOK, cert)
 }
 
@@ -229,6 +279,9 @@ func (h *CertificateHandler) Delete(c *gin.Context) {
 		return
 	}
 	removeUploadedFile(cert.SignatureURL)
+	if oid := cert.OwnerID(); oid != uuid.Nil {
+		h.syncOwnerCertTier(c, cert.Tipo, oid)
+	}
 	c.Status(http.StatusNoContent)
 }
 
@@ -241,7 +294,7 @@ func (h *CertificateHandler) GetByCode(c *gin.Context) {
 	code := strings.ToUpper(strings.TrimSpace(c.Param("code")))
 	var cert models.Certificate
 	if err := h.db.WithContext(c.Request.Context()).
-		Preload("Seller").Preload("Seller.Category").
+		Preload("Seller").Preload("Provider").
 		First(&cert, "code = ?", code).Error; err != nil {
 		JSONError(c, http.StatusNotFound, "certificado não encontrado")
 		return
@@ -252,6 +305,8 @@ func (h *CertificateHandler) GetByCode(c *gin.Context) {
 
 	resp := gin.H{
 		"code":             cert.Code,
+		"tipo":             cert.Tipo,
+		"tier":             cert.Tier,
 		"empresa_nome":     cert.EmpresaNome,
 		"categoria":        cert.Categoria,
 		"responsavel_nome": cert.ResponsavelNome,
@@ -260,11 +315,23 @@ func (h *CertificateHandler) GetByCode(c *gin.Context) {
 		"revoked":          cert.Revoked,
 		"valid":            valid,
 	}
+	// Bloco genérico do titular (empresa ou afiliado). Mantém "seller" por
+	// compatibilidade com clientes antigos quando o titular é uma empresa.
 	if cert.Seller != nil {
-		resp["seller"] = gin.H{
+		owner := gin.H{
 			"id":       cert.Seller.ID,
 			"name":     cert.Seller.Name,
 			"logo_url": cert.Seller.LogoURL,
+			"type":     "seller",
+		}
+		resp["owner"] = owner
+		resp["seller"] = owner
+	} else if cert.Provider != nil {
+		resp["owner"] = gin.H{
+			"id":       cert.Provider.ID,
+			"name":     cert.Provider.Name,
+			"logo_url": cert.Provider.LogoURL,
+			"type":     "provider",
 		}
 	}
 	c.JSON(http.StatusOK, resp)

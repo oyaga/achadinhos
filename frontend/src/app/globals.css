@@ -1138,6 +1138,41 @@ select {
   text-transform: uppercase;
 }
 
+/* Selo de nível do certificado (Prata/Ouro/Black), usado em cards/perfil,
+   admin e verificação. Coexiste com .provider-badge. */
+.cert-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.cert-seal.prata {
+  background: #eef1f4;
+  color: #5b6470;
+  border-color: #d4dae1;
+}
+.cert-seal.ouro {
+  background: var(--gold-100);
+  color: var(--navy-800);
+  border-color: var(--gold-400);
+}
+.cert-seal.black {
+  background: var(--navy-800, #11254e);
+  color: var(--gold-100);
+  border-color: var(--gold-500, #a8884a);
+}
+.cert-seal.lg {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
 /* ===== Bottom nav ===== */
 .bottom-nav {
   background: white;

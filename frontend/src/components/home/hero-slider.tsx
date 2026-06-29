@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { providersApi, productsApi, sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
 import { adaptProvider, adaptProduct } from "@/lib/adapters";
 import type { Provider, Product } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, tierLabel } from "@/lib/utils";
 import { Icon } from "../icons";
 
 type SlideProvider = { kind: "provider"; data: Provider };
@@ -194,7 +194,14 @@ function ProviderSlide({ provider: p, onClick, onWhatsapp }: { provider: Provide
         <div className="hero-tag">
           <Icon.Crown size={11} /> Destaque do dia
         </div>
-        <div className="hero-title">{p.name}</div>
+        <div className="hero-title">
+          {p.name}
+          {p.certTier && (
+            <span className={cn("cert-seal", p.certTier)} style={{ marginLeft: 8, verticalAlign: "middle" }}>
+              {tierLabel(p.certTier)}
+            </span>
+          )}
+        </div>
         {p.desc?.trim() && <div className="hero-meta hero-meta--desc">{p.desc}</div>}
         <div className="hero-meta">
           <div className="hero-rating"><Icon.Star size={11} /> {p.rating.toFixed(1).replace(".", ",")}</div>

@@ -27,6 +27,9 @@ type Seller struct {
 	ReviewsCount int       `gorm:"default:0" json:"reviews_count"`
 	DocumentType string    `gorm:"size:4" json:"document_type,omitempty"`
 	Document     string    `gorm:"size:18" json:"document,omitempty"`
+	// CertTier é o nível (prata/ouro/black) do certificado ativo mais recente,
+	// desnormalizado para alimentar o selo no marketplace. Vazio = sem selo.
+	CertTier string `gorm:"size:8;not null;default:''" json:"cert_tier,omitempty"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`

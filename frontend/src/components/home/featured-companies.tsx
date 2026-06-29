@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, tierLabel } from "@/lib/utils";
 import { Icon } from "../icons";
 
 interface FeaturedCompaniesProps {
@@ -86,6 +86,9 @@ export function CompanyCard({ company: c, onClick, isFav, onToggleFav }: Company
       <div className="provider-info">
         <div className="provider-name">
           {c.name}
+          {c.cert_tier && (
+            <span className={cn("cert-seal", c.cert_tier)}>{tierLabel(c.cert_tier)}</span>
+          )}
           {c.partner && <span className="provider-badge">Parceira</span>}
         </div>
         <div

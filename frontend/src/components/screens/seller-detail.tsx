@@ -11,6 +11,7 @@ import {
   type SellerReview,
 } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
+import { cn, tierLabel } from "@/lib/utils";
 import type { ContactInput } from "@/hooks/use-whatsapp-history";
 import { Icon } from "../icons";
 import { PortfolioViewer } from "./portfolio-viewer";
@@ -183,7 +184,14 @@ export function SellerDetail({
               )}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="pd-name">{full.name}</div>
+              <div className="pd-name">
+                {full.name}
+                {full.cert_tier && (
+                  <span className={cn("cert-seal", full.cert_tier)} style={{ marginLeft: 6 }}>
+                    {tierLabel(full.cert_tier)}
+                  </span>
+                )}
+              </div>
               <div className="pd-cat">
                 {categoryLabel}
                 {full.partner && " · Parceira homologada"}

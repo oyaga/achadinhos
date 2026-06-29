@@ -42,6 +42,12 @@ func main() {
 		slog.Warn("ensure-categories non-fatal error", "err", err)
 	}
 
+	// Ajusta o schema dos certificados (seller_id nullable) e ressincroniza o
+	// selo de nível em sellers/providers. Idempotente.
+	if err := db.EnsureCertificateSchema(context.Background(), gdb); err != nil {
+		slog.Warn("ensure-certificate-schema non-fatal error", "err", err)
+	}
+
 	r := router.New(cfg, gdb)
 
 	srv := &http.Server{

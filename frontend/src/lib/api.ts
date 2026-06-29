@@ -493,6 +493,7 @@ export interface ApiProvider {
   rating: number;
   reviews_count: number;
   badge?: string;
+  cert_tier?: string;
   verified: boolean;
   distance_label: string;
   price_label: string;
@@ -589,6 +590,7 @@ export interface AdminSeller {
   highlight?: boolean;
   rating?: number;
   reviews_count?: number;
+  cert_tier?: CertTier | "";
   document_type?: string;
   document?: string;
   portfolio_photos?: PortfolioPhoto[];
@@ -780,10 +782,16 @@ export interface AdminEventPayload {
 }
 
 // ── Certificados de empresa qualificada ──
+export type CertTipo = "empresa" | "afiliado";
+export type CertTier = "prata" | "ouro" | "black";
+
 export interface ApiCertificate {
   id: string;
   code: string;
-  seller_id: string;
+  tipo: CertTipo;
+  tier: CertTier;
+  seller_id?: string | null;
+  provider_id?: string | null;
   empresa_nome: string;
   categoria: string;
   responsavel_nome: string;
@@ -794,10 +802,13 @@ export interface ApiCertificate {
   revoked: boolean;
   created_at?: string;
   seller?: AdminSeller;
+  provider?: ApiProvider;
 }
 
 export interface AdminCertificatePayload {
-  seller_id: string;
+  tipo: CertTipo;
+  owner_id: string; // id do seller (empresa) ou provider (afiliado)
+  tier: CertTier;
   responsavel_nome: string;
   responsavel_cpf?: string;
   issued_at?: string; // "AAAA-MM-DD" (default: hoje)
@@ -808,6 +819,8 @@ export interface AdminCertificatePayload {
 // Resposta pública da verificação por código (GET /certificates/:code).
 export interface CertificateVerification {
   code: string;
+  tipo: CertTipo;
+  tier: CertTier;
   empresa_nome: string;
   categoria: string;
   responsavel_nome: string;
@@ -815,6 +828,8 @@ export interface CertificateVerification {
   valid_until: string;
   revoked: boolean;
   valid: boolean;
+  // owner é o titular genérico (empresa ou afiliado); seller mantido por compat.
+  owner?: { id: string; name: string; logo_url?: string; type: "seller" | "provider" };
   seller?: { id: string; name: string; logo_url?: string };
 }
 
