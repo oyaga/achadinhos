@@ -259,8 +259,8 @@ function SellerSlide({ seller: s, onClick }: { seller: AdminSeller; index: numbe
           <Icon.Crown size={11} /> Empresa em destaque
         </div>
         <div className="hero-title">{s.name}</div>
-        <div className="hero-meta">
-          <span>{s.description?.trim() || "Empresa parceira"}</span>
+        <div className="hero-meta hero-meta--desc">
+          {s.description?.trim() || "Empresa parceira"}
         </div>
         {s.partner && <div className="hero-badge">Parceira</div>}
       </div>
