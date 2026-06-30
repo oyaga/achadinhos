@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { certificatesApi, ApiError, type CertificateVerification } from "@/lib/api";
+import { certificatesApi, type CertificateVerification } from "@/lib/api";
 import { BrandLockup } from "@/components/auth/brand-lockup";
 import { Icon } from "@/components/icons";
 import { tierLabel } from "@/lib/utils";
 import { CertSeal } from "@/components/cert-seal";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { QrScanner } from "./qr-scanner";
 
 // Titular genérico (empresa ou afiliado), com fallback ao campo seller antigo.
 function ownerOf(cert: CertificateVerification) {
@@ -31,9 +33,55 @@ function formatDateBR(iso: string): string {
   return `${d}/${m}/${y}`;
 }
 
+// Extrai o código de verificação de um texto lido (QR ou digitado). O QR do
+// certificado contém o link /verificar/?c=CÓDIGO; aceitamos também o código puro.
+function extractCertCode(text: string): string {
+  const raw = (text ?? "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw, window.location.origin);
+    const c = url.searchParams.get("c");
+    if (c) return c.trim().toUpperCase();
+  } catch {
+    /* não é URL — usa o texto puro */
+  }
+  return raw.toUpperCase();
+}
+
 export function VerificarScreen() {
   const [status, setStatus] = useState<Status>("loading");
   const [cert, setCert] = useState<CertificateVerification | null>(null);
+  const [inputCode, setInputCode] = useState("");
+  const [scanning, setScanning] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  const runVerify = useCallback(async (code: string) => {
+    setStatus("loading");
+    try {
+      const v = await certificatesApi.verify(code);
+      setCert(v);
+      setStatus(v.valid ? "valid" : "invalid_state");
+    } catch {
+      setCert(null);
+      setStatus("not_found");
+    }
+  }, []);
+
+  // Verifica um código informado manualmente ou lido do QR: normaliza, atualiza
+  // a URL (compartilhável) e dispara a verificação.
+  const verifyCode = useCallback(
+    async (rawCode: string) => {
+      const code = extractCertCode(rawCode);
+      if (!code) return;
+      setScanError(null);
+      setChecking(true);
+      window.history.replaceState(null, "", `/verificar/?c=${encodeURIComponent(code)}`);
+      await runVerify(code);
+      setChecking(false);
+    },
+    [runVerify]
+  );
 
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get("c") ?? "";
@@ -41,22 +89,50 @@ export function VerificarScreen() {
       setStatus("no_code");
       return;
     }
-    let alive = true;
-    (async () => {
-      try {
-        const v = await certificatesApi.verify(code);
-        if (!alive) return;
-        setCert(v);
-        setStatus(v.valid ? "valid" : "invalid_state");
-      } catch (err) {
-        if (!alive) return;
-        setStatus(err instanceof ApiError && err.status === 404 ? "not_found" : "not_found");
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+    void runVerify(code);
+  }, [runVerify]);
+
+  // Câmera é recurso de mobile/PWA — no desktop fica só a consulta manual.
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
+  function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    void verifyCode(inputCode);
+  }
+
+  // Form de consulta manual (+ botão de escanear no mobile), reutilizado nos
+  // estados "sem código" e "não encontrado".
+  const consultaForm = (
+    <form className="verify-form" onSubmit={onSubmit}>
+      <input
+        className="verify-input"
+        type="text"
+        inputMode="text"
+        autoCapitalize="characters"
+        spellCheck={false}
+        placeholder="Ex: ACH-2026-XXXXXX"
+        aria-label="Código do certificado"
+        value={inputCode}
+        onChange={(e) => setInputCode(e.target.value)}
+      />
+      <button type="submit" className="verify-btn" disabled={checking || !inputCode.trim()}>
+        {checking ? "Verificando…" : "Verificar"}
+      </button>
+      {isMobile && (
+        <button
+          type="button"
+          className="verify-btn ghost verify-scan-btn"
+          onClick={() => {
+            setScanError(null);
+            setScanning(true);
+          }}
+        >
+          <Icon.QrCode size={16} /> Escanear QR code
+        </button>
+      )}
+      {scanError && <p className="verify-scan-error">{scanError}</p>}
+    </form>
+  );
 
   return (
     <main className="verify-shell">
@@ -75,10 +151,12 @@ export function VerificarScreen() {
             <div className="verify-icon neutral">
               <Icon.QrCode size={30} />
             </div>
-            <h1 className="verify-title">Código não informado</h1>
+            <h1 className="verify-title">Verificar certificado</h1>
             <p className="verify-text">
-              Escaneie o QR code do certificado ou abra o link completo de verificação.
+              Digite o código do certificado{isMobile ? " ou escaneie o QR code" : ""}. O código
+              fica impresso no certificado e no link do QR.
             </p>
+            {consultaForm}
           </div>
         )}
 
@@ -89,9 +167,9 @@ export function VerificarScreen() {
             </div>
             <h1 className="verify-title">Certificado não encontrado</h1>
             <p className="verify-text">
-              Não localizamos nenhum certificado com este código. Confira o código ou entre em
-              contato com o Achadinhos do Condomínio.
+              Não localizamos nenhum certificado com este código. Confira e tente de novo.
             </p>
+            {consultaForm}
           </div>
         )}
 
@@ -180,6 +258,20 @@ export function VerificarScreen() {
           </div>
         )}
       </div>
+
+      {scanning && (
+        <QrScanner
+          onResult={(text) => {
+            setScanning(false);
+            void verifyCode(text);
+          }}
+          onCancel={() => setScanning(false)}
+          onError={(msg) => {
+            setScanning(false);
+            setScanError(msg);
+          }}
+        />
+      )}
     </main>
   );
 }
