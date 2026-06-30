@@ -9,6 +9,7 @@ import { CertSeal } from "../cert-seal";
 import { Icon } from "../icons";
 import { PortfolioViewer } from "./portfolio-viewer";
 import { PdfThumbnail } from "./pdf-thumbnail";
+import { VideoThumbnail } from "./video-thumbnail";
 import { SocialLinks } from "./social-links";
 
 interface ProviderDetailProps {
@@ -168,9 +169,7 @@ export function ProviderDetail({
                   className="pd-portfolio-item"
                 >
                   {isVideo(url) ? (
-                    <span className="upload-doc pd-video-thumb">
-                      <Icon.Play size={22} />
-                    </span>
+                    <VideoThumbnail url={url} />
                   ) : isPdf(url) ? (
                     <PdfThumbnail url={getImageUrl(url)} />
                   ) : (
