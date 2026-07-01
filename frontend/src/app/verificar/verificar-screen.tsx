@@ -136,6 +136,9 @@ export function VerificarScreen() {
 
   return (
     <main className="verify-shell">
+      <Link href="/" className="verify-back" aria-label="Voltar para o início">
+        <Icon.ChevLeft size={16} /> Início
+      </Link>
       <div className="verify-card">
         <BrandLockup />
 
