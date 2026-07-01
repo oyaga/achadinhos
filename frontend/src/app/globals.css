@@ -7952,6 +7952,28 @@ input[type="time"].prof-input {
   justify-content: center;
   padding: 28px 18px;
   background: var(--bone-50);
+  position: relative;
+}
+.verify-back {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--bone-200);
+  color: var(--navy-900);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+}
+.verify-back:hover {
+  border-color: var(--gold-400);
+  background: var(--gold-100);
 }
 .verify-card {
   width: 100%;
