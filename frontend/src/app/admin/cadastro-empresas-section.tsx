@@ -311,7 +311,7 @@ function FichaDetail({ ficha, onBack }: { ficha: FichaCadastro; onBack: () => vo
   const resp: Array<[string, string]> = [
     ["Nome", ficha.responsavel_nome],
     ["CPF", ficha.resp_cpf],
-    ["Data de aniversário", ficha.resp_nascimento],
+    ["Data de nascimento", ficha.resp_nascimento],
     ["Endereço", ficha.resp_endereco],
     ["Telefone", ficha.resp_telefone],
     ["Cargo/Função", ficha.resp_cargo],
@@ -325,10 +325,6 @@ function FichaDetail({ ficha, onBack }: { ficha: FichaCadastro; onBack: () => vo
     ["Facebook", ficha.facebook],
     ["LinkedIn", ficha.linkedin],
     ["Site", ficha.site],
-    ["Início do contrato", ficha.contrato_inicio],
-    ["Vigência (meses)", ficha.contrato_vigencia_meses],
-    ["Valor total mensal", ficha.valor_mensal],
-    ["Valor total anual", ficha.valor_anual],
   ];
   return (
     <section className="admin-section">

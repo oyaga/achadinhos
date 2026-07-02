@@ -8,8 +8,9 @@ import {
   type FichaCadastro,
   type FichaFillPayload,
 } from "@/lib/api";
-import { BrandLockup } from "@/components/auth/brand-lockup";
 import { Icon } from "@/components/icons";
+import { useViaCEP } from "@/hooks/use-via-cep";
+import { formatCEP, stripCEP } from "@/lib/cep";
 
 type Status = "loading" | "ready" | "done" | "invalid";
 
@@ -26,10 +27,6 @@ const EMPTY: FichaFillPayload = {
   facebook: "",
   linkedin: "",
   site: "",
-  contrato_inicio: "",
-  contrato_vigencia_meses: "",
-  valor_mensal: "",
-  valor_anual: "",
   observacoes: "",
 };
 
@@ -40,6 +37,12 @@ export function FichaFormScreen() {
   const [form, setForm] = useState<FichaFillPayload>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // CEP: um lookup por endereço (responsável e empresa), cada um com seu spinner.
+  const respCepApi = useViaCEP();
+  const empresaCepApi = useViaCEP();
+  const [respCep, setRespCep] = useState("");
+  const [empresaCep, setEmpresaCep] = useState("");
 
   useEffect(() => {
     const t = new URLSearchParams(window.location.search).get("token") ?? "";
@@ -66,6 +69,20 @@ export function FichaFormScreen() {
 
   function update<K extends keyof FichaFillPayload>(key: K, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  // Consulta o CEP e preenche o campo de endereço correspondente com
+  // "rua, bairro, cidade - UF"; o usuário completa número/complemento.
+  async function lookupEndereco(kind: "resp" | "empresa", rawCep: string) {
+    if (stripCEP(rawCep).length !== 8) return;
+    const api = kind === "resp" ? respCepApi : empresaCepApi;
+    const res = await api.lookup(rawCep);
+    if (!res) return;
+    const cidadeUf = res.localidade
+      ? `${res.localidade}${res.uf ? ` - ${res.uf}` : ""}`
+      : res.uf;
+    const endereco = [res.logradouro, res.bairro, cidadeUf].filter(Boolean).join(", ");
+    if (endereco) update(kind === "resp" ? "resp_endereco" : "empresa_endereco", endereco);
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -96,7 +113,15 @@ export function FichaFormScreen() {
           </div>
         </div>
 
-        <BrandLockup sub="Ficha de cadastro" />
+        <div className="ficha-logo-wrap">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo-achadinhos-do-condominio.png"
+            alt="Achadinhos do Condomínio"
+            className="ficha-logo"
+          />
+          <span className="ficha-logo-cap">Ficha de cadastro</span>
+        </div>
 
         {status === "loading" && (
           <div className="auth-card">
@@ -172,7 +197,7 @@ export function FichaFormScreen() {
                 />
               </div>
               <div className="prof-field">
-                <label className="prof-label">Data de aniversário</label>
+                <label className="prof-label">Data de nascimento</label>
                 <input
                   className="prof-input"
                   type="text"
@@ -180,6 +205,26 @@ export function FichaFormScreen() {
                   onChange={(e) => update("resp_nascimento", e.target.value)}
                   placeholder="DD/MM/AAAA"
                 />
+              </div>
+              <div className="prof-field">
+                <label className="prof-label">CEP</label>
+                <div className="prof-input-row">
+                  <input
+                    className="prof-input"
+                    type="text"
+                    inputMode="numeric"
+                    value={respCep}
+                    onChange={(e) => {
+                      const v = formatCEP(e.target.value);
+                      setRespCep(v);
+                      if (stripCEP(v).length === 8) void lookupEndereco("resp", v);
+                    }}
+                    onBlur={() => void lookupEndereco("resp", respCep)}
+                    placeholder="00000-000"
+                    style={{ flex: 1 }}
+                  />
+                  {respCepApi.loading && <span className="prof-cep-spin" aria-hidden />}
+                </div>
               </div>
               <div className="prof-field">
                 <label className="prof-label">Endereço</label>
@@ -237,6 +282,26 @@ export function FichaFormScreen() {
                 />
               </div>
               <div className="prof-field">
+                <label className="prof-label">CEP</label>
+                <div className="prof-input-row">
+                  <input
+                    className="prof-input"
+                    type="text"
+                    inputMode="numeric"
+                    value={empresaCep}
+                    onChange={(e) => {
+                      const v = formatCEP(e.target.value);
+                      setEmpresaCep(v);
+                      if (stripCEP(v).length === 8) void lookupEndereco("empresa", v);
+                    }}
+                    onBlur={() => void lookupEndereco("empresa", empresaCep)}
+                    placeholder="00000-000"
+                    style={{ flex: 1 }}
+                  />
+                  {empresaCepApi.loading && <span className="prof-cep-spin" aria-hidden />}
+                </div>
+              </div>
+              <div className="prof-field">
                 <label className="prof-label">Endereço</label>
                 <input
                   className="prof-input"
@@ -286,54 +351,6 @@ export function FichaFormScreen() {
                   placeholder="www.suaempresa.com.br"
                 />
               </div>
-              <div className="prof-row-fields">
-                <div className="prof-field">
-                  <label className="prof-label">Início do contrato</label>
-                  <input
-                    className="prof-input"
-                    type="text"
-                    value={form.contrato_inicio}
-                    onChange={(e) => update("contrato_inicio", e.target.value)}
-                    placeholder="DD/MM/AAAA"
-                  />
-                </div>
-                <div className="prof-field">
-                  <label className="prof-label">Vigência (meses)</label>
-                  <input
-                    className="prof-input"
-                    type="text"
-                    inputMode="numeric"
-                    value={form.contrato_vigencia_meses}
-                    onChange={(e) => update("contrato_vigencia_meses", e.target.value)}
-                    placeholder="12"
-                  />
-                </div>
-              </div>
-              <div className="prof-row-fields">
-                <div className="prof-field">
-                  <label className="prof-label">Valor total mensal</label>
-                  <input
-                    className="prof-input"
-                    type="text"
-                    inputMode="numeric"
-                    value={form.valor_mensal}
-                    onChange={(e) => update("valor_mensal", e.target.value)}
-                    placeholder="R$ 0,00"
-                  />
-                </div>
-                <div className="prof-field">
-                  <label className="prof-label">Valor total anual</label>
-                  <input
-                    className="prof-input"
-                    type="text"
-                    inputMode="numeric"
-                    value={form.valor_anual}
-                    onChange={(e) => update("valor_anual", e.target.value)}
-                    placeholder="R$ 0,00"
-                  />
-                </div>
-              </div>
-
               <div className="ficha-form-section">Observações</div>
               <div className="prof-field">
                 <textarea
