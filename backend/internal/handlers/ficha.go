@@ -178,7 +178,7 @@ func (h *FichaHandler) Submit(c *gin.Context) {
 		"empresa_endereco":        strings.TrimSpace(req.EmpresaEndereco),
 		"instagram":               strings.TrimSpace(req.Instagram),
 		"facebook":                strings.TrimSpace(req.Facebook),
-		"linkedin":                strings.TrimSpace(req.LinkedIn),
+		"linked_in":               strings.TrimSpace(req.LinkedIn),
 		"site":                    strings.TrimSpace(req.Site),
 		"contrato_inicio":         strings.TrimSpace(req.ContratoInicio),
 		"contrato_vigencia_meses": strings.TrimSpace(req.ContratoVigenciaMeses),
