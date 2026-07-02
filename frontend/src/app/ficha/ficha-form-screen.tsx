@@ -11,8 +11,18 @@ import {
 import { Icon } from "@/components/icons";
 import { useViaCEP } from "@/hooks/use-via-cep";
 import { formatCEP, stripCEP } from "@/lib/cep";
+import { formatDocument } from "@/lib/document";
+import { formatPhone } from "@/lib/phone";
 
 type Status = "loading" | "ready" | "done" | "invalid";
+
+// Máscara de data DD/MM/AAAA a partir dos dígitos digitados.
+function maskDate(v: string): string {
+  const d = (v ?? "").replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+}
 
 const EMPTY: FichaFillPayload = {
   resp_cpf: "",
@@ -192,7 +202,8 @@ export function FichaFormScreen() {
                   type="text"
                   inputMode="numeric"
                   value={form.resp_cpf}
-                  onChange={(e) => update("resp_cpf", e.target.value)}
+                  maxLength={14}
+                  onChange={(e) => update("resp_cpf", formatDocument(e.target.value, "cpf"))}
                   placeholder="000.000.000-00"
                 />
               </div>
@@ -202,7 +213,9 @@ export function FichaFormScreen() {
                   className="prof-input"
                   type="text"
                   value={form.resp_nascimento}
-                  onChange={(e) => update("resp_nascimento", e.target.value)}
+                  inputMode="numeric"
+                  maxLength={10}
+                  onChange={(e) => update("resp_nascimento", maskDate(e.target.value))}
                   placeholder="DD/MM/AAAA"
                 />
               </div>
@@ -243,7 +256,8 @@ export function FichaFormScreen() {
                   type="text"
                   inputMode="tel"
                   value={form.resp_telefone}
-                  onChange={(e) => update("resp_telefone", e.target.value)}
+                  maxLength={16}
+                  onChange={(e) => update("resp_telefone", formatPhone(e.target.value))}
                   placeholder="(11) 99999-0000"
                 />
               </div>
@@ -277,7 +291,8 @@ export function FichaFormScreen() {
                   type="text"
                   inputMode="numeric"
                   value={form.cnpj}
-                  onChange={(e) => update("cnpj", e.target.value)}
+                  maxLength={18}
+                  onChange={(e) => update("cnpj", formatDocument(e.target.value, "cnpj"))}
                   placeholder="00.000.000/0001-00"
                 />
               </div>
