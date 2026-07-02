@@ -122,6 +122,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     void authApi.logout();
     reset();
+    // Navegação "dura" para a home: garante estado de visitante limpo em toda a
+    // app (o Perfil é overlay por estado interno, não muda com a URL), sem que o
+    // usuário precise dar refresh manual.
+    if (typeof window !== "undefined") window.location.assign("/");
   }, [reset]);
 
   const updateUser = useCallback((patch: Partial<User>) => {
