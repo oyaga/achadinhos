@@ -749,10 +749,6 @@ export type FichaFillPayload = Pick<
   | "facebook"
   | "linkedin"
   | "site"
-  | "contrato_inicio"
-  | "contrato_vigencia_meses"
-  | "valor_mensal"
-  | "valor_anual"
   | "observacoes"
 >;
 
