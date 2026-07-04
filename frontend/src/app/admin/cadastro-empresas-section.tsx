@@ -266,17 +266,21 @@ export function CadastroEmpresasSection() {
                       {done ? "Concluído" : "Pendente"}
                     </span>
                   </div>
-                  <div className="admin-row-meta">{f.responsavel_email}</div>
+                  <div className="admin-row-meta">
+                    {f.cnpj ? `CNPJ ${f.cnpj} · ` : ""}
+                    {f.responsavel_email}
+                  </div>
                 </div>
                 <div className="admin-row-actions">
                   {done ? (
                     <button
                       type="button"
-                      className="admin-icon-btn"
+                      className="admin-text-btn"
                       onClick={() => openView(f)}
                       aria-label={`Ver ficha de ${title}`}
                     >
                       <Icon.Eye size={15} />
+                      Ver ficha
                     </button>
                   ) : (
                     <button

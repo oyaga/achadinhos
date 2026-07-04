@@ -26,6 +26,21 @@ const ROLE_LABEL: Record<string, string> = {
   conselho: "Conselho",
 };
 
+const ROLE_CHIP: Record<string, string> = {
+  sindico: "role-sindico",
+  conselho: "role-conselho",
+  morador: "role-morador",
+};
+
+// "Marcos Oliveira" -> "MO" (primeiro + último nome)
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  const first = parts[0].charAt(0);
+  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : "";
+  return `${first}${last}`.toUpperCase();
+}
+
 export function SindicosSection() {
   const [items, setItems] = useState<AdminSindico[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +89,10 @@ export function SindicosSection() {
         </div>
       </div>
 
-      <div className="prof-field" style={{ marginBottom: 12 }}>
+      <div className="prof-field admin-search-wrap" style={{ marginBottom: 12 }}>
+        <span className="admin-search-icon" aria-hidden="true">
+          <Icon.Search size={18} />
+        </span>
         <input
           className="prof-input"
           type="search"
@@ -98,11 +116,18 @@ export function SindicosSection() {
         <div className="admin-list">
           {filtered.map((s) => (
             <div key={s.id} className="admin-sindico-card">
-              <div className="admin-row-avatar">
-                {(s.name || "?").charAt(0).toUpperCase()}
-              </div>
+              <div className="admin-sindico-avatar">{initials(s.name || "?")}</div>
               <div className="admin-sindico-info">
-                <div className="admin-row-name">{s.name}</div>
+                <div className="admin-row-name">
+                  {s.name}
+                  {s.condo_role && (
+                    <span
+                      className={`admin-chip ${ROLE_CHIP[s.condo_role] ?? "role-morador"}`}
+                    >
+                      {ROLE_LABEL[s.condo_role] ?? s.condo_role}
+                    </span>
+                  )}
+                </div>
                 <div className="admin-sindico-line">
                   <Icon.AtSign size={12} /> {s.email}
                 </div>
@@ -111,15 +136,9 @@ export function SindicosSection() {
                     <Icon.Bell size={12} /> {formatPhone(s.phone)}
                   </div>
                 )}
-                {(s.condo_name || s.condo_role) && (
+                {s.condo_name && (
                   <div className="admin-sindico-line">
-                    <Icon.BrandHouse size={12} />{" "}
-                    <span>
-                      {s.condo_name || "—"}
-                      {s.condo_role
-                        ? ` · ${ROLE_LABEL[s.condo_role] ?? s.condo_role}`
-                        : ""}
-                    </span>
+                    <Icon.BrandHouse size={12} /> <span>{s.condo_name}</span>
                   </div>
                 )}
                 <div className="admin-sindico-line">

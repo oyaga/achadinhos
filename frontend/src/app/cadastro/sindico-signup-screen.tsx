@@ -13,7 +13,7 @@ import { formatPhone, isValidPhone, stripPhone } from "@/lib/phone";
 import { formatCEP, isValidCEP, stripCEP } from "@/lib/cep";
 import { useViaCEP } from "@/hooks/use-via-cep";
 
-type AccountKind = "pessoa" | "empresa";
+export type AccountKind = "pessoa" | "empresa";
 
 interface FormState {
   accountType: AccountKind;
@@ -63,14 +63,24 @@ const CONDO_ROLES: Array<{ id: "morador" | "sindico" | "conselho"; label: string
   { id: "conselho", label: "Conselho" },
 ];
 
-export function SindicoSignupScreen() {
+interface SindicoSignupScreenProps {
+  /** Modo inicial vindo da tela de escolha (/cadastro). */
+  initialAccountType?: AccountKind;
+  /** Quando presente, o botão de voltar retorna à tela de escolha. */
+  onBack?: () => void;
+}
+
+export function SindicoSignupScreen({
+  initialAccountType,
+  onBack,
+}: SindicoSignupScreenProps = {}) {
   const router = useRouter();
   const { registerSindico, isAuthenticated, isLoading } = useAuth();
   const { lookup: lookupCEP, loading: cepLoading } = useViaCEP();
   const cepLookedRef = useRef<string>("");
 
   const [form, setForm] = useState<FormState>({
-    accountType: "pessoa",
+    accountType: initialAccountType ?? "pessoa",
     name: "",
     email: "",
     password: "",
@@ -220,9 +230,20 @@ export function SindicoSignupScreen() {
     <main className="auth-shell">
       <div className="auth-shell-inner">
         <div className="auth-topbar">
-          <Link href="/" className="auth-back" aria-label="Voltar para o início">
-            <Icon.ChevLeft size={16} />
-          </Link>
+          {onBack ? (
+            <button
+              type="button"
+              className="auth-back"
+              onClick={onBack}
+              aria-label="Voltar para a escolha do tipo de conta"
+            >
+              <Icon.ChevLeft size={16} />
+            </button>
+          ) : (
+            <Link href="/" className="auth-back" aria-label="Voltar para o início">
+              <Icon.ChevLeft size={16} />
+            </Link>
+          )}
           <div className="auth-topbar-right">
             <Link href="/" className="auth-tertiary-link">
               Início
@@ -277,6 +298,17 @@ export function SindicoSignupScreen() {
                 ))}
               </div>
             </div>
+
+            {/* Aviso da ficha de cadastro (handoff desktop, modo empresa) */}
+            {form.accountType === "empresa" && (
+              <div className="auth-note">
+                <Icon.Sparkle size={16} />
+                <span>
+                  Após criar a conta, você recebe uma <strong>ficha de cadastro</strong>{" "}
+                  para completar os dados da empresa e solicitar a certificação.
+                </span>
+              </div>
+            )}
 
             {/* Razão social (empresa) */}
             {form.accountType === "empresa" && (

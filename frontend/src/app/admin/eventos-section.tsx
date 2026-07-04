@@ -25,6 +25,18 @@ const EMPTY: FormState = {
   description: "",
 };
 
+const MONTH_ABBR = [
+  "JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
+  "JUL", "AGO", "SET", "OUT", "NOV", "DEZ",
+] as const;
+
+// "2026-07-03" -> { month: "JUL", day: "03" } para o tile de data.
+function eventDateParts(iso: string): { month: string; day: string } | null {
+  const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d || m < 1 || m > 12) return null;
+  return { month: MONTH_ABBR[m - 1], day: String(d).padStart(2, "0") };
+}
+
 // "2026-06-25" -> "25 jun 2026"
 function formatEventDate(iso: string): string {
   const ymd = iso.slice(0, 10);
@@ -227,10 +239,19 @@ export function EventosSection() {
         <div className="admin-empty">Nenhum evento cadastrado ainda.</div>
       ) : (
         <div className="admin-list">
-          {events.map((ev) => (
+          {events.map((ev) => {
+            const parts = eventDateParts(ev.event_date);
+            return (
             <div key={ev.id} className="admin-row">
-              <div className="admin-row-avatar">
-                <Icon.Calendar size={18} />
+              <div className="admin-event-date" aria-hidden="true">
+                {parts ? (
+                  <>
+                    <span className="admin-event-date-month">{parts.month}</span>
+                    <span className="admin-event-date-day">{parts.day}</span>
+                  </>
+                ) : (
+                  <Icon.Calendar size={18} />
+                )}
               </div>
               <div className="admin-row-main">
                 <div className="admin-row-name">{ev.title}</div>
@@ -259,7 +280,8 @@ export function EventosSection() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>

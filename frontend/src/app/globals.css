@@ -814,32 +814,69 @@ select {
     gap: 28px;
   }
   .hero-slide .hero-title {
-    font-size: 42px;
+    font-size: 40px;
     margin-bottom: 12px;
   }
   .hero-slide .hero-meta--desc {
     max-width: 460px;
     font-size: 13px;
   }
-  .hero-slider-nav { width: 36px; height: 36px; }
+  /* Setas agrupadas no canto inferior-direito (handoff desktop) */
+  .hero-slider-nav {
+    width: 40px;
+    height: 40px;
+    top: auto;
+    bottom: 16px;
+    transform: none;
+  }
+  .hero-slider-nav.prev {
+    left: auto;
+    right: 64px;
+  }
+  .hero-slider-nav.next {
+    right: 16px;
+  }
+  .hero-slider-nav:hover { transform: scale(1.08); }
+  .hero-slider-nav:active { transform: scale(0.94); }
+
+  /* Dots no canto inferior-esquerdo, ativo alongado (handoff desktop) */
+  .hero-progress {
+    left: 40px;
+    bottom: 20px;
+    transform: none;
+    width: auto;
+  }
+  .hero-progress-seg {
+    flex: 0 0 auto;
+    width: 6px;
+    height: 5px;
+  }
+  .hero-progress-seg.active {
+    flex: 0 0 auto;
+    width: 22px;
+  }
+
   .hero-slide-cta {
     display: flex;
     gap: 10px;
     margin-top: 16px;
   }
+  /* Mídia quadrada arredondada 240px (handoff desktop) */
   .hero-avatar-ring {
-    width: 188px;
-    height: 188px;
+    width: 240px;
+    height: 240px;
+    border-radius: 24px;
     box-shadow: 0 0 0 4px rgba(201, 169, 97, 0.3);
   }
-  .hero-avatar-letter { font-size: 64px; }
+  .hero-avatar-letter { font-size: 92px; }
   .hero-product-img,
   .hero-product-placeholder {
-    width: 188px;
-    height: 188px;
+    width: 240px;
+    height: 240px;
+    border-radius: 24px;
   }
   .hero-slide-cat {
-    max-width: 188px;
+    max-width: 240px;
     font-size: 11px;
   }
 }
@@ -2474,8 +2511,8 @@ textarea.field-input {
   border-color: var(--gold-400);
 }
 .all-cat-icon {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 11px;
   background: var(--bone-100);
   color: var(--navy-800);
@@ -2490,48 +2527,41 @@ textarea.field-input {
   line-height: 1.2;
 }
 .all-cat-count {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--ink-500);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
   margin-top: auto;
 }
 
-/* Highlight cards */
+/* Highlight cards — card branco, foto navy (handoff fase B) */
 .highlight-card {
-  background: linear-gradient(135deg, var(--navy-900), var(--navy-700));
+  background: white;
+  border: 1px solid var(--bone-200);
   border-radius: var(--radius);
   padding: 0;
   position: relative;
   overflow: hidden;
-  color: white;
-  box-shadow: var(--shadow-elev);
+  color: var(--ink-900);
+  box-shadow: var(--shadow-card);
   margin-bottom: 12px;
   cursor: pointer;
 }
 .highlight-pic {
-  height: 120px;
-  background: linear-gradient(135deg, var(--gold-200), var(--bone-200));
+  height: 140px;
+  background: linear-gradient(135deg, var(--navy-800), var(--navy-900));
   position: relative;
   overflow: hidden;
-}
-.highlight-pic::after {
-  content: "foto do afiliado";
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-500);
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 6px,
-    rgba(0, 0, 0, 0.04) 6px,
-    rgba(0, 0, 0, 0.04) 7px
-  );
+}
+.highlight-pic-letter {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 56px;
+  color: var(--gold-300);
+  opacity: 0.9;
+  line-height: 1;
 }
 .highlight-pic-tag {
   position: absolute;
@@ -2551,15 +2581,15 @@ textarea.field-input {
   padding: 16px;
 }
 .highlight-name {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-ui);
   font-weight: 600;
-  font-size: 18px;
+  font-size: 15px;
+  color: var(--navy-900);
   margin-bottom: 4px;
 }
 .highlight-meta {
-  font-size: 11px;
-  color: var(--gold-200);
+  font-size: 11.5px;
+  color: var(--ink-500);
   margin-bottom: 10px;
 }
 .highlight-row {
@@ -2571,9 +2601,17 @@ textarea.field-input {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  color: var(--gold-300);
-  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--ink-900);
+  font-weight: 700;
+}
+.highlight-rating svg {
+  color: var(--gold-500);
+}
+/* Pill "Ver perfil" — tom navy claro derivado do token navy-300 */
+.highlight-card .btn-mini {
+  background: rgba(138, 160, 204, 0.16);
+  color: var(--navy-900);
 }
 
 .btn-mini {
@@ -2883,7 +2921,7 @@ textarea.field-input {
 
 .product-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   padding-bottom: 24px;
 }
@@ -3858,7 +3896,7 @@ textarea.field-input {
     gap: 14px;
   }
   .product-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
   }
 
@@ -3963,7 +4001,7 @@ textarea.field-input {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .product-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .cat-picker {
     grid-template-columns: repeat(4, 1fr);
@@ -3978,7 +4016,8 @@ textarea.field-input {
 
 @media (min-width: 1280px) {
   .product-grid {
-    grid-template-columns: repeat(5, 1fr);
+    /* Protótipo (handoff fase B): 4 colunas no container de 1280px. */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -4744,6 +4783,29 @@ textarea.field-input {
 }
 .auth-choice-card.gold .auth-choice-card-cta {
   color: var(--gold-500);
+}
+.auth-choice-card.gold {
+  border-color: rgba(201, 169, 97, 0.5);
+  background: linear-gradient(160deg, #fffdf8, var(--gold-100));
+}
+
+/* Aviso informativo dentro do formulário de auth (ficha de cadastro) */
+.auth-note {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: var(--bone-50);
+  border: 1px solid var(--bone-200);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+.auth-note svg {
+  flex-shrink: 0;
+  color: var(--gold-500);
+  margin-top: 1px;
 }
 
 /* Desktop frame */
@@ -7113,6 +7175,22 @@ input[type="time"].prof-input {
   box-shadow: 0 -10px 40px rgba(6, 15, 42, 0.3);
   animation: install-slide 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+/* Desktop (handoff): card centralizado em vez de bottom-sheet */
+@media (min-width: 768px) {
+  .install-sheet-backdrop {
+    align-items: center;
+    padding: 24px;
+  }
+  .install-sheet {
+    max-width: 460px;
+    background: #fff;
+    border: 1px solid var(--bone-200);
+    border-radius: 16px;
+    padding: 28px 26px 26px;
+    box-shadow: 0 24px 60px rgba(11, 27, 59, 0.28);
+    animation: install-fade 0.18s ease;
+  }
+}
 
 @keyframes install-slide {
   from { transform: translateY(100%); }
@@ -7125,10 +7203,10 @@ input[type="time"].prof-input {
   right: 14px;
   width: 32px;
   height: 32px;
-  border-radius: 9px;
+  border-radius: 50%;
   border: none;
-  background: var(--bone-200);
-  color: var(--ink-700);
+  background: var(--bone-100);
+  color: var(--ink-500);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7138,26 +7216,67 @@ input[type="time"].prof-input {
 .install-sheet-icon {
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
+  margin: 6px 0 16px;
 }
 
-.install-sheet-icon img {
-  border-radius: 14px;
+/* Tile da marca: navy com "A" dourado em Fraunces (handoff desktop) */
+.install-sheet-icon-tile {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: linear-gradient(140deg, var(--navy-900), var(--navy-800));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 34px;
+  color: var(--gold-300);
+  box-shadow: 0 10px 24px rgba(11, 27, 59, 0.25);
 }
 
 .install-sheet-title {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 19px;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 24px;
   color: var(--navy-900);
   text-align: center;
 }
 
 .install-sheet-sub {
+  font-size: 13.5px;
+  color: var(--ink-700);
+  text-align: center;
+  margin-top: 8px;
+  line-height: 1.55;
+}
+
+.install-sheet-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  margin-top: 20px;
+}
+.install-sheet-benefit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--ink-700);
+}
+.install-sheet-benefit svg {
+  flex-shrink: 0;
+  color: var(--success);
+}
+
+.install-sheet-how {
   font-size: 13px;
   color: var(--ink-500);
   text-align: center;
-  margin-top: 6px;
+  margin-top: 18px;
   line-height: 1.5;
 }
 
@@ -7290,6 +7409,60 @@ input[type="time"].prof-input {
 }
 
 /* ── Provider portfolio gallery ── */
+/* Produtos & serviços no perfil da empresa (handoff desktop) */
+.pd-products {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.pd-product {
+  background: #fff;
+  border: 1px solid var(--bone-200);
+  border-radius: 14px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pd-product-thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--gold-200), var(--bone-200));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pd-product-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pd-product-letter {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--navy-900);
+}
+.pd-product-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-900);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pd-product-price {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
 .pd-portfolio {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -7791,13 +7964,13 @@ input[type="time"].prof-input {
   margin-bottom: 20px;
 }
 .cats-intro-eyebrow {
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-mono);
   font-weight: 600;
-  font-size: 20px;
-  color: var(--gold-400);
-  margin-bottom: 10px;
-  letter-spacing: 0.02em;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-500);
+  margin-bottom: 8px;
 }
 .cats-intro-text {
   font-size: 13.5px;
@@ -8702,5 +8875,613 @@ input[type="time"].prof-input {
 @media (prefers-reduced-motion: reduce) {
   .cert-anim [data-reveal] {
     opacity: 1;
+  }
+}
+
+/* ── Admin — handoff fase B ── */
+
+/* Tabela padrão do admin (produtos, certificados). No mobile o container
+   rola horizontalmente; a tabela mantém uma largura mínima legível. */
+.admin-table-wrap {
+  background: #fff;
+  border: 1px solid var(--bone-200);
+  border-radius: 16px;
+  overflow-x: auto;
+  box-shadow: 0 8px 20px rgba(11, 27, 59, 0.05);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+
+.admin-table th {
+  padding: 13px 16px;
+  background: var(--bone-50);
+  border-bottom: 1px solid var(--bone-200);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--bone-100);
+  font-size: 12.5px;
+  color: var(--ink-700);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table .admin-table-col-actions {
+  text-align: right;
+}
+
+.admin-table td.admin-table-col-actions .admin-row-actions {
+  justify-content: flex-end;
+}
+
+.admin-table-product {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+}
+
+.admin-table-product-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--navy-900);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.admin-table-product-sub {
+  font-size: 11.5px;
+  color: var(--ink-400);
+  margin-top: 1px;
+}
+
+/* Selo OFERTA como texto laranja pequeno junto ao vendedor */
+.admin-table-offer {
+  color: var(--orange-500);
+  font-weight: 600;
+}
+
+.admin-table-price {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy-900);
+  white-space: nowrap;
+}
+
+.admin-table-old-price {
+  font-size: 11px;
+  color: var(--ink-300);
+  text-decoration: line-through;
+  margin-left: 5px;
+  white-space: nowrap;
+}
+
+/* Código do certificado em mono, abaixo do titular */
+.admin-table-code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-400);
+  margin-top: 2px;
+}
+
+/* Certificados: tabela à esquerda + prévia do selo à direita (desktop) */
+.admin-cert-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 900px) {
+  .admin-cert-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+}
+
+.admin-cert-row {
+  cursor: pointer;
+}
+
+.admin-cert-row:hover td {
+  background: var(--bone-50);
+}
+
+.admin-cert-row.selected td {
+  background: var(--bone-100);
+}
+
+.admin-cert-preview {
+  position: relative;
+  overflow: hidden;
+  background: var(--navy-900);
+  border-radius: 18px;
+  padding: 22px;
+  text-align: center;
+  color: #fff;
+}
+
+.admin-cert-preview::before {
+  content: "";
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 169, 97, 0.18), transparent 70%);
+}
+
+.admin-cert-preview > * {
+  position: relative;
+}
+
+.admin-cert-preview-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-300);
+  margin-bottom: 14px;
+}
+
+.admin-cert-preview-seal {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(140deg, var(--gold-100), var(--gold-500));
+  color: var(--navy-900);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+  box-shadow: 0 0 0 5px rgba(201, 169, 97, 0.25);
+}
+
+.admin-cert-preview-tier {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 2px;
+}
+
+.admin-cert-preview-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.admin-cert-preview-sub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 6px;
+}
+
+.admin-cert-preview-code {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.admin-cert-preview-brand {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--gold-300);
+  margin-top: 10px;
+  border-top: 1px solid rgba(201, 169, 97, 0.25);
+  padding-top: 10px;
+}
+
+.admin-cert-preview-empty {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  padding: 14px 0 6px;
+}
+
+/* Empresas e afiliados: grid de cards (2 colunas no desktop) */
+.admin-biz-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .admin-biz-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.admin-biz-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  background: #fff;
+  border: 1px solid var(--bone-200);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 20px rgba(11, 27, 59, 0.05);
+}
+
+.admin-biz-avatar {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--gold-200), var(--bone-200));
+  border: 1.5px solid var(--gold-400);
+  color: var(--navy-900);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  overflow: hidden;
+}
+
+.admin-biz-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-chip.biz-empresa {
+  background: var(--gold-100);
+  color: var(--navy-900);
+}
+
+/* Fundo azul-acinzentado derivado do token navy-300 (#8aa0cc @ 16%) */
+.admin-chip.biz-afiliado {
+  background: rgba(138, 160, 204, 0.16);
+  color: var(--navy-700);
+}
+
+/* Eventos: tile de data (mês + dia) no lugar do avatar genérico */
+.admin-event-date {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--navy-900);
+  color: var(--gold-300);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-event-date-month {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-event-date-day {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Síndicos: busca com lupa dentro do input + avatar circular dourado */
+.admin-search-wrap {
+  position: relative;
+}
+
+.admin-search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: var(--ink-400);
+  pointer-events: none;
+}
+
+.admin-search-wrap .prof-input {
+  padding-left: 42px;
+}
+
+.admin-sindico-avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-300), var(--gold-500));
+  color: var(--navy-900);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+.admin-chip.role-sindico {
+  background: var(--gold-100);
+  color: var(--navy-900);
+}
+
+.admin-chip.role-conselho {
+  background: rgba(138, 160, 204, 0.16);
+  color: var(--navy-700);
+}
+
+.admin-chip.role-morador {
+  background: var(--bone-100);
+  color: var(--ink-500);
+}
+
+/* Cadastro de empresas: ação com texto (Ver ficha) */
+.admin-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 13px;
+  border-radius: 10px;
+  background: var(--bone-100);
+  border: 1px solid var(--bone-200);
+  color: var(--ink-700);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.admin-text-btn:hover {
+  background: var(--bone-200);
+  color: var(--navy-900);
+}
+
+/* O .cert-badge tem margin-left de 8px pensado p/ ficar após um texto;
+   dentro da célula da tabela ele fica sozinho, sem recuo. */
+.admin-table .cert-badge {
+  margin-left: 0;
+}
+
+/* ── Categoria/Loja/Destaques — handoff fase B ── */
+
+/* Banner navy da Loja: só existe visualmente no desktop. */
+.shop-hero {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  /* ===== Categoria e Loja viram PÁGINAS no desktop (não modais).
+     A troca é só de apresentação: o overlay .screen continua fixo,
+     mas ocupa a tela inteira com fundo claro e conteúdo centrado
+     num container de ~1280px (conteúdo útil 1216px, como no
+     protótipo: max-width 1280 + padding lateral 32). ===== */
+  .screen.category-screen,
+  .screen.shop-screen {
+    background: var(--bone-50);
+    backdrop-filter: none;
+    padding: 0;
+    justify-content: flex-start;
+    animation: fadeIn 0.2s ease;
+  }
+  .screen.category-screen > *,
+  .screen.shop-screen > * {
+    max-width: none;
+  }
+
+  /* Header com visual de página: fundo claro, título grande navy. */
+  .screen.category-screen > .screen-header,
+  .screen.shop-screen > .screen-header {
+    background: var(--bone-50);
+    color: var(--navy-900);
+    border-radius: 0;
+    border-bottom: 1px solid var(--bone-200);
+    padding: 20px max(32px, calc((100% - 1216px) / 2)) 16px;
+  }
+  .screen.category-screen > .screen-header.gold-tint::before,
+  .screen.shop-screen > .screen-header::before {
+    display: none;
+  }
+  .category-screen .screen-header .screen-back,
+  .shop-screen .screen-header .screen-back,
+  .category-screen .screen-header .icon-btn,
+  .shop-screen .screen-header .icon-btn {
+    background: #fff;
+    border-color: var(--bone-300);
+    color: var(--navy-900);
+  }
+  .category-screen .screen-header .screen-title {
+    font-size: 24px;
+    color: var(--navy-900);
+  }
+  .shop-screen .screen-header .screen-title-main {
+    color: var(--navy-900);
+    font-size: 24px;
+  }
+  /* O banner navy dentro do container já carrega o subtítulo. */
+  .shop-screen .screen-header .screen-title-sub {
+    display: none;
+  }
+
+  /* Corpo como página: sem borda/sombra de modal, rola a tela toda. */
+  .screen.category-screen > .screen-body,
+  .screen.shop-screen > .screen-body {
+    background: var(--bone-50);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .screen.category-screen > .screen-body {
+    padding: 24px max(32px, calc((100% - 1216px) / 2)) 48px;
+  }
+
+  /* ── Categoria: hero como cartão navy arredondado no container ── */
+  .category-screen .screen-body .cat-hero {
+    margin: 0 0 22px;
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 18px;
+    align-items: center;
+  }
+  .category-screen .cat-hero-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    grid-row: 1 / span 3;
+    margin-bottom: 0;
+  }
+  .category-screen .cat-hero h1 {
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0;
+  }
+  .category-screen .cat-hero p {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.78);
+    margin: 3px 0 0;
+  }
+  .category-screen .cat-stats {
+    margin-top: 10px;
+  }
+  /* Protótipo: cards de afiliado em 2 colunas na página de categoria
+     (mesmo ≥1024px, onde o grid genérico vira 3). */
+  .category-screen .providers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* ── Loja: busca e chips CLAROS sobre fundo claro ── */
+  .screen.shop-screen > .shop-search-wrap {
+    background: transparent;
+    padding: 18px max(32px, calc((100% - 1216px) / 2)) 4px;
+  }
+  .shop-screen .shop-search {
+    max-width: 640px;
+    border: 1px solid var(--bone-300);
+    box-shadow: var(--shadow-card);
+  }
+  .screen.shop-screen > .shop-cats-strip {
+    background: transparent;
+    padding: 10px max(32px, calc((100% - 1216px) / 2)) 6px;
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  .shop-screen .shop-cat-chip {
+    background: #fff;
+    border: 1px solid var(--bone-300);
+    color: var(--ink-700);
+    padding: 8px 14px;
+    font-size: 12.5px;
+  }
+  .shop-screen .shop-cat-chip.active {
+    background: var(--navy-900);
+    border-color: var(--navy-900);
+    color: #fff;
+  }
+
+  /* Banner navy "Produtos para o condomínio" como faixa no container. */
+  .shop-screen .shop-hero {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    width: min(1216px, calc(100% - 64px));
+    margin: 18px auto 0;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--navy-900), var(--navy-700));
+    color: #fff;
+    padding: 28px 32px;
+  }
+  .shop-screen .shop-hero::before {
+    content: "";
+    position: absolute;
+    top: -30px;
+    right: -20px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgba(201, 169, 97, 0.15),
+      transparent 70%
+    );
+  }
+  .shop-hero-eyebrow {
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold-300);
+    margin-bottom: 8px;
+  }
+  .shop-hero-title {
+    position: relative;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 600;
+    font-size: 32px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  .shop-hero-sub {
+    position: relative;
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.78);
+    margin: 0;
+  }
+
+  /* Seções da loja centradas no container (o body tem padding 0). */
+  .shop-screen .shop-section {
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px 32px 0;
+  }
+  .shop-screen .offers-row {
+    margin: 0;
+    padding: 0 0 12px;
+  }
+
+  /* Preço do produto em Fraunces no desktop (protótipo: 16px/600). */
+  .product-price {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
   }
 }

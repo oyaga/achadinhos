@@ -12,7 +12,7 @@ import {
 } from "@/lib/api";
 import { CertSeal } from "@/components/cert-seal";
 import { Icon } from "@/components/icons";
-import { cn } from "@/lib/utils";
+import { cn, tierLabel } from "@/lib/utils";
 import { SignaturePad } from "@/components/admin/signature-pad";
 import { CertificateViewer } from "@/components/certificate/certificate-viewer";
 
@@ -97,6 +97,8 @@ export function CertificadosSection() {
 
   const [busyId, setBusyId] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ blob: Blob; fileName: string } | null>(null);
+  // Certificado exibido no painel "Prévia do selo" (clicado na tabela).
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -262,6 +264,18 @@ export function CertificadosSection() {
 
   const selectedOwner = form.owner_id ? ownersById.get(form.owner_id) : undefined;
 
+  // Certificado da prévia: o selecionado na tabela ou o último emitido.
+  const previewCert = useMemo(() => {
+    if (certs.length === 0) return null;
+    if (selectedId) {
+      const found = certs.find((c) => c.id === selectedId);
+      if (found) return found;
+    }
+    return [...certs].sort((a, b) =>
+      (b.created_at ?? b.issued_at).localeCompare(a.created_at ?? a.issued_at),
+    )[0];
+  }, [certs, selectedId]);
+
   return (
     <section className="admin-section">
       <div className="admin-section-head">
@@ -416,70 +430,114 @@ export function CertificadosSection() {
       ) : certs.length === 0 ? (
         <div className="admin-empty">Nenhum certificado emitido ainda.</div>
       ) : (
-        <div className="admin-list">
-          {certs.map((cert) => {
-            const st = statusOf(cert);
-            const busy = busyId === cert.id;
-            return (
-              <div key={cert.id} className="admin-row">
-                <div className="admin-row-avatar">
-                  <Icon.Award size={18} />
+        <div className="admin-cert-layout">
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th scope="col">Titular</th>
+                  <th scope="col">Nível</th>
+                  <th scope="col">Validade</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" className="admin-table-col-actions">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {certs.map((cert) => {
+                  const st = statusOf(cert);
+                  const busy = busyId === cert.id;
+                  return (
+                    <tr
+                      key={cert.id}
+                      className={cn(
+                        "admin-cert-row",
+                        previewCert?.id === cert.id && "selected",
+                      )}
+                      onClick={() => setSelectedId(cert.id)}
+                    >
+                      <td>
+                        <div className="admin-table-product-name">{cert.empresa_nome}</div>
+                        <span className="admin-table-code">{cert.code}</span>
+                      </td>
+                      <td>
+                        <CertSeal tier={cert.tier} linked={false} />
+                      </td>
+                      <td>{formatDateBR(cert.valid_until)}</td>
+                      <td>
+                        <span className={cn("cert-badge", st.tone)}>{st.label}</span>
+                      </td>
+                      <td className="admin-table-col-actions">
+                        <div className="admin-row-actions">
+                          <button
+                            type="button"
+                            className="admin-icon-btn"
+                            onClick={() => handleView(cert)}
+                            disabled={busy}
+                            aria-label="Ver / baixar PDF"
+                            title="Ver / baixar PDF"
+                          >
+                            <Icon.Download size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-icon-btn"
+                            onClick={() => handleVerify(cert)}
+                            aria-label="Abrir verificação"
+                            title="Abrir página de verificação"
+                          >
+                            <Icon.QrCode size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-icon-btn"
+                            onClick={() => handleToggleRevoke(cert)}
+                            disabled={busy}
+                            aria-label={cert.revoked ? "Reativar" : "Revogar"}
+                            title={cert.revoked ? "Reativar certificado" : "Revogar certificado"}
+                          >
+                            {cert.revoked ? <Icon.Check size={15} /> : <Icon.Lock size={15} />}
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-icon-btn danger"
+                            onClick={() => handleDelete(cert)}
+                            disabled={busy}
+                            aria-label="Excluir"
+                            title="Excluir"
+                          >
+                            <Icon.Trash size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Prévia do selo — certificado selecionado ou o último emitido */}
+          <aside className="admin-cert-preview" aria-label="Prévia do selo">
+            <div className="admin-cert-preview-label">Prévia do selo</div>
+            {previewCert ? (
+              <>
+                <div className="admin-cert-preview-seal" aria-hidden="true">
+                  <Icon.Award size={38} />
+                  <span className="admin-cert-preview-tier">{tierLabel(previewCert.tier)}</span>
                 </div>
-                <div className="admin-row-main">
-                  <div className="admin-row-name">
-                    {cert.empresa_nome}
-                    <CertSeal tier={cert.tier} linked={false} />
-                    <span className={cn("cert-badge", st.tone)}>{st.label}</span>
-                  </div>
-                  <div className="admin-row-meta">
-                    {cert.tipo === "empresa" ? "Empresa" : "Afiliado"} · {cert.code} · emissão{" "}
-                    {formatDateBR(cert.issued_at)} · válido até {formatDateBR(cert.valid_until)}
-                  </div>
+                <div className="admin-cert-preview-name">{previewCert.empresa_nome}</div>
+                <div className="admin-cert-preview-sub">
+                  <CertSeal tier={previewCert.tier} linked={false} />
+                  <span className="admin-cert-preview-code">{previewCert.code}</span>
                 </div>
-                <div className="admin-row-actions">
-                  <button
-                    type="button"
-                    className="admin-icon-btn"
-                    onClick={() => handleView(cert)}
-                    disabled={busy}
-                    aria-label="Ver / baixar PDF"
-                    title="Ver / baixar PDF"
-                  >
-                    <Icon.Download size={15} />
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-icon-btn"
-                    onClick={() => handleVerify(cert)}
-                    aria-label="Abrir verificação"
-                    title="Abrir página de verificação"
-                  >
-                    <Icon.QrCode size={15} />
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-icon-btn"
-                    onClick={() => handleToggleRevoke(cert)}
-                    disabled={busy}
-                    aria-label={cert.revoked ? "Reativar" : "Revogar"}
-                    title={cert.revoked ? "Reativar certificado" : "Revogar certificado"}
-                  >
-                    {cert.revoked ? <Icon.Check size={15} /> : <Icon.Lock size={15} />}
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-icon-btn danger"
-                    onClick={() => handleDelete(cert)}
-                    disabled={busy}
-                    aria-label="Excluir"
-                    title="Excluir"
-                  >
-                    <Icon.Trash size={15} />
-                  </button>
-                </div>
+                <div className="admin-cert-preview-brand">Achadinhos</div>
+              </>
+            ) : (
+              <div className="admin-cert-preview-empty">
+                Emita um certificado para ver a prévia do selo.
               </div>
-            );
-          })}
+            )}
+          </aside>
         </div>
       )}
 

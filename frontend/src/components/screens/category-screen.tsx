@@ -97,7 +97,7 @@ export function CategoryScreen({
   const IconCmp = Icon[iconKey] as ((props: { size?: number }) => any) | undefined;
 
   return (
-    <div className="screen">
+    <div className="screen category-screen">
       <div className="screen-header gold-tint">
         <button
           type="button"

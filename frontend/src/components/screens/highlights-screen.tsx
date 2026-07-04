@@ -73,7 +73,7 @@ export function HighlightsScreen({
               style={{ width: "100%", textAlign: "left", display: "block" }}
             >
               <div className="highlight-pic">
-                {p.logoUrl && (
+                {p.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={getImageUrl(p.logoUrl)}
@@ -82,6 +82,10 @@ export function HighlightsScreen({
                     loading="lazy"
                     decoding="async"
                   />
+                ) : (
+                  <span className="highlight-pic-letter" aria-hidden="true">
+                    {p.name.charAt(0)}
+                  </span>
                 )}
                 <div className="highlight-pic-tag">★ Em destaque</div>
               </div>
@@ -92,7 +96,7 @@ export function HighlightsScreen({
                 </div>
                 <div className="highlight-row">
                   <div className="highlight-rating">
-                    <Icon.Star size={12} /> {p.rating.toFixed(1).replace(".", ",")} ·{" "}
+                    <Icon.Star size={12} filled /> {p.rating.toFixed(1).replace(".", ",")} ·{" "}
                     {p.reviews} avaliações
                   </div>
                   <div className="btn-mini">Ver perfil</div>

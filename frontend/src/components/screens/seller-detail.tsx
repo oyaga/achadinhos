@@ -225,6 +225,42 @@ export function SellerDetail({
           </div>
         )}
 
+        {products.length > 0 && (
+          <div className="pd-section">
+            <h3>Produtos &amp; serviços</h3>
+            <div className="pd-products">
+              {products.map((p) => (
+                <div key={p.id} className="pd-product">
+                  <div className="pd-product-thumb">
+                    {p.photos && p.photos.length > 0 ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={getImageUrl(p.photos[0].url)}
+                        alt={p.name}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <span className="pd-product-letter">
+                        {p.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="pd-product-name">{p.name}</div>
+                  <div className="pd-product-price">
+                    {p.price > 0
+                      ? p.price.toLocaleString("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        })
+                      : "Sob consulta"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {full.document && (
           <div className="pd-section">
             <h3>{full.document_type === "cpf" ? "CPF" : "CNPJ"}</h3>

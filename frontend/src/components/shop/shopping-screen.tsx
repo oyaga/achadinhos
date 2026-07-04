@@ -118,6 +118,15 @@ export function ShoppingScreen({
       </div>
 
       <div className="screen-body" style={{ padding: 0 }}>
+        {/* Banner navy — visível só no desktop (handoff fase B) */}
+        <div className="shop-hero">
+          <div className="shop-hero-eyebrow">Shopping do condomínio</div>
+          <h1 className="shop-hero-title">Produtos para o condomínio</h1>
+          <p className="shop-hero-sub">
+            Compre direto da revenda — limpeza, manutenção, EPI, jardim e mais.
+          </p>
+        </div>
+
         {!loading && activeCat === "all" && !q && offers.length > 0 && (
           <div className="shop-section">
             <div className="shop-section-head">

@@ -34,8 +34,7 @@ export function InstallSheet({ open, onClose, isIOS, isStandalone }: InstallShee
         </button>
 
         <div className="install-sheet-icon">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/icon.png" alt="Achadinhos" width={52} height={52} />
+          <span className="install-sheet-icon-tile" aria-hidden="true">A</span>
         </div>
 
         {isStandalone ? (
@@ -45,12 +44,30 @@ export function InstallSheet({ open, onClose, isIOS, isStandalone }: InstallShee
               Você já está usando o Achadinhos instalado na tela inicial.
             </div>
           </>
-        ) : isIOS ? (
+        ) : (
           <>
-            <div className="install-sheet-title">Instalar no iPhone / iPad</div>
+            <div className="install-sheet-title">Instale o Achadinhos</div>
             <div className="install-sheet-sub">
-              No iPhone a instalação é feita pelo Safari, em 3 passos:
+              Acesso em 1 toque, direto da tela inicial — sem ocupar memória e
+              funciona offline.
             </div>
+            <div className="install-sheet-benefits">
+              <div className="install-sheet-benefit">
+                <Icon.Check size={16} /> Abre como um app nativo
+              </div>
+              <div className="install-sheet-benefit">
+                <Icon.Check size={16} /> Notificações de orçamento e eventos
+              </div>
+              <div className="install-sheet-benefit">
+                <Icon.Check size={16} /> Funciona mesmo sem internet
+              </div>
+            </div>
+          </>
+        )}
+
+        {!isStandalone && isIOS && (
+          <>
+            <div className="install-sheet-how">No iPhone, instale pelo Safari em 3 passos:</div>
             <ol className="install-sheet-steps">
               <li>
                 <span className="install-sheet-step-n">1</span>
@@ -74,15 +91,13 @@ export function InstallSheet({ open, onClose, isIOS, isStandalone }: InstallShee
               </li>
             </ol>
           </>
-        ) : (
-          <>
-            <div className="install-sheet-title">Instalar o app</div>
-            <div className="install-sheet-sub">
-              Abra o menu do navegador e escolha{" "}
-              <strong>“Instalar app”</strong> ou{" "}
-              <strong>“Adicionar à tela inicial”</strong>.
-            </div>
-          </>
+        )}
+
+        {!isStandalone && !isIOS && (
+          <div className="install-sheet-how">
+            Abra o menu do navegador e escolha <strong>“Instalar app”</strong>{" "}
+            ou <strong>“Adicionar à tela inicial”</strong>.
+          </div>
         )}
 
         <button type="button" className="install-sheet-ok" onClick={onClose}>

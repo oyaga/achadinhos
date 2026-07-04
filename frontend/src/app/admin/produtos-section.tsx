@@ -494,58 +494,95 @@ export function ProdutosSection() {
       ) : items.length === 0 ? (
         <div className="admin-empty">Nenhum produto cadastrado ainda.</div>
       ) : (
-        <div className="admin-list">
-          {items.map((p) => (
-            <div key={p.id} className="admin-row">
-              <div className="admin-row-thumb">
-                {p.photos && p.photos.length > 0 ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={getImageUrl(p.photos[0].url)} alt={p.name} />
-                ) : (
-                  <Icon.CatShopping size={18} />
-                )}
-              </div>
-              <div className="admin-row-main">
-                <div className="admin-row-name">
-                  {p.name}
-                  {p.badge && <span className="admin-chip gold">{p.badge}</span>}
-                  {p.highlight && <span className="admin-chip gold">DESTAQUE</span>}
-                </div>
-                <div className="admin-row-meta">
-                  {formatPrice(p.price)} · {categoryLabel(p.category)} · {sellerName(p.seller_id)}
-                </div>
-              </div>
-              <div className="admin-row-actions">
-                <button
-                  type="button"
-                  className={cn("admin-icon-btn", p.highlight && "active")}
-                  onClick={() => toggleHighlight(p)}
-                  aria-label={
-                    p.highlight ? `Remover destaque de ${p.name}` : `Destacar ${p.name}`
-                  }
-                  title={p.highlight ? "Remover do carrossel" : "Adicionar ao carrossel"}
-                >
-                  <Icon.Star size={15} filled={p.highlight} />
-                </button>
-                <button
-                  type="button"
-                  className="admin-icon-btn"
-                  onClick={() => openEdit(p)}
-                  aria-label={`Editar ${p.name}`}
-                >
-                  <Icon.Pencil size={15} />
-                </button>
-                <button
-                  type="button"
-                  className={cn("admin-icon-btn", "danger")}
-                  onClick={() => handleDelete(p)}
-                  aria-label={`Excluir ${p.name}`}
-                >
-                  <Icon.Trash size={15} />
-                </button>
-              </div>
-            </div>
-          ))}
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th scope="col">Produto</th>
+                <th scope="col">Categoria</th>
+                <th scope="col">Preço</th>
+                <th scope="col">Estoque</th>
+                <th scope="col" className="admin-table-col-actions">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((p) => (
+                <tr key={p.id}>
+                  <td>
+                    <div className="admin-table-product">
+                      <div className="admin-row-thumb">
+                        {p.photos && p.photos.length > 0 ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={getImageUrl(p.photos[0].url)} alt={p.name} />
+                        ) : (
+                          <Icon.CatShopping size={18} />
+                        )}
+                      </div>
+                      <div>
+                        <div className="admin-table-product-name">
+                          {p.name}
+                          {p.highlight && <span className="admin-chip gold">DESTAQUE</span>}
+                        </div>
+                        <div className="admin-table-product-sub">
+                          {sellerName(p.seller_id)}
+                          {p.badge && (
+                            <>
+                              {" · "}
+                              <span className="admin-table-offer">{p.badge}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{categoryLabel(p.category)}</td>
+                  <td>
+                    <span className="admin-table-price">{formatPrice(p.price)}</span>
+                    {p.old_price != null && p.old_price > 0 && (
+                      <span className="admin-table-old-price">
+                        {p.old_price.toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    )}
+                  </td>
+                  <td>{p.stock || "—"}</td>
+                  <td className="admin-table-col-actions">
+                    <div className="admin-row-actions">
+                      <button
+                        type="button"
+                        className={cn("admin-icon-btn", p.highlight && "active")}
+                        onClick={() => toggleHighlight(p)}
+                        aria-label={
+                          p.highlight ? `Remover destaque de ${p.name}` : `Destacar ${p.name}`
+                        }
+                        title={p.highlight ? "Remover do carrossel" : "Adicionar ao carrossel"}
+                      >
+                        <Icon.Star size={15} filled={p.highlight} />
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-icon-btn"
+                        onClick={() => openEdit(p)}
+                        aria-label={`Editar ${p.name}`}
+                      >
+                        <Icon.Pencil size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className={cn("admin-icon-btn", "danger")}
+                        onClick={() => handleDelete(p)}
+                        aria-label={`Excluir ${p.name}`}
+                      >
+                        <Icon.Trash size={15} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </section>

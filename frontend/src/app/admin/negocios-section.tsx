@@ -443,12 +443,19 @@ export function NegociosSection() {
     5 - existingPortfolio.length - portfolioFiles.length - portfolioLinks.length;
   const isPrestador = form.kind === "prestador";
 
+  // Verificado = possui certificado emitido (cert_tier).
+  const verifiedCount = items.filter((b) =>
+    b.kind === "empresa" ? Boolean(b.seller.cert_tier) : Boolean(b.provider.cert_tier),
+  ).length;
+
   return (
     <section className="admin-section">
       <div className="admin-section-head">
         <div>
           <h2 className="admin-section-title">Empresas e afiliados</h2>
-          <p className="admin-section-sub">{items.length} cadastrado(s)</p>
+          <p className="admin-section-sub">
+            {items.length} cadastrado(s) · {verifiedCount} verificado(s)
+          </p>
         </div>
         {!formOpen && (
           <button type="button" className="admin-new-btn" onClick={openCreate}>
@@ -930,7 +937,7 @@ export function NegociosSection() {
       ) : items.length === 0 ? (
         <div className="admin-empty">Nenhuma empresa ou afiliado cadastrado ainda.</div>
       ) : (
-        <div className="admin-list">
+        <div className="admin-biz-grid">
           {items.map((b) => {
             const logo = b.kind === "empresa" ? b.seller.logo_url : b.provider.logo_url;
             const id = b.kind === "empresa" ? b.seller.id : b.provider.id;
@@ -940,8 +947,8 @@ export function NegociosSection() {
                 ? `${categoryLabel(b.seller.category_id ?? "")} · ${b.seller.whatsapp ? formatPhone(b.seller.whatsapp) : "sem WhatsApp"}`
                 : `${categoryLabel(b.provider.category_id)} · ${b.provider.whatsapp ? formatPhone(b.provider.whatsapp) : "sem WhatsApp"}`;
             return (
-              <div key={`${b.kind}-${id}`} className="admin-row">
-                <div className="admin-row-avatar">
+              <div key={`${b.kind}-${id}`} className="admin-biz-card">
+                <div className="admin-biz-avatar">
                   {logo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={getImageUrl(logo)} alt={name} />
@@ -952,7 +959,12 @@ export function NegociosSection() {
                 <div className="admin-row-main">
                   <div className="admin-row-name">
                     {name}
-                    <span className={cn("admin-chip", b.kind === "prestador" && "gold")}>
+                    <span
+                      className={cn(
+                        "admin-chip",
+                        b.kind === "empresa" ? "biz-empresa" : "biz-afiliado",
+                      )}
+                    >
                       {b.kind === "empresa" ? "Empresa" : "Afiliado"}
                     </span>
                   </div>
