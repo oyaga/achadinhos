@@ -232,7 +232,6 @@ export function App({ initialRoute }: AppProps = {}) {
             authed={isAuthenticated}
             onShopping={() => navigate({ name: "shopping" })}
             onHighlights={() => navigate({ name: "highlights" })}
-            onEvents={() => navigate({ name: "events" })}
           />
         </div>
 

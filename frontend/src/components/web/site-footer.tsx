@@ -8,14 +8,12 @@ interface SiteFooterProps {
   onShopping?: () => void;
   /** Abre a tela de Destaques do dia. */
   onHighlights?: () => void;
-  /** Abre a tela de Eventos. */
-  onEvents?: () => void;
   authed?: boolean;
 }
 
 // Rodapé institucional da home: marca + navegação real do app. Colunas no
 // desktop, empilhado no mobile (com respiro pra bottom nav).
-export function SiteFooter({ onShopping, onHighlights, onEvents, authed }: SiteFooterProps) {
+export function SiteFooter({ onShopping, onHighlights, authed }: SiteFooterProps) {
   const year = new Date().getFullYear();
 
   return (
@@ -49,11 +47,9 @@ export function SiteFooter({ onShopping, onHighlights, onEvents, authed }: SiteF
                 Shopping do condomínio
               </button>
             )}
-            {onEvents && (
-              <button type="button" className="site-footer-link" onClick={onEvents}>
-                Eventos e assembleias
-              </button>
-            )}
+            <Link href="/eventos" className="site-footer-link">
+              Eventos e assembleias
+            </Link>
           </nav>
 
           <nav className="site-footer-col" aria-label="Certificação">
