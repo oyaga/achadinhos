@@ -35,6 +35,7 @@ import { ProductDetail } from "./shop/product-detail";
 import { ProfileScreen } from "./screens/profile-screen";
 import { TopNav } from "./web/top-nav";
 import { CategorySidebar, type FilterId } from "./web/category-sidebar";
+import { SiteFooter } from "./web/site-footer";
 import { cn } from "@/lib/utils";
 
 interface AppProps {
@@ -227,6 +228,12 @@ export function App({ initialRoute }: AppProps = {}) {
               </div>
             </div>
           </div>
+          <SiteFooter
+            authed={isAuthenticated}
+            onShopping={() => navigate({ name: "shopping" })}
+            onHighlights={() => navigate({ name: "highlights" })}
+            onEvents={() => navigate({ name: "events" })}
+          />
         </div>
 
         <BottomNav
