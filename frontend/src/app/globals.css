@@ -4221,6 +4221,9 @@ textarea.field-input {
     font-size: 12.5px;
     font-weight: 700;
     letter-spacing: 0.02em;
+    /* O rótulo não pode quebrar em duas linhas nem o botão ser espremido. */
+    white-space: nowrap;
+    flex-shrink: 0;
     border: 1px solid rgba(11, 27, 59, 0.16);
     box-shadow: 0 4px 14px rgba(201, 169, 97, 0.32);
     cursor: pointer;
@@ -9636,6 +9639,35 @@ input[type="time"].prof-input {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+  }
+}
+
+/* ── Telas largas (≥1600px): container sobe de 1280 para 1440 ─────────
+   Em monitores grandes o miolo de 1280px deixava vãos laterais enormes;
+   1440px de container (1376px úteis) aproveita melhor sem esticar texto. */
+@media (min-width: 1600px) {
+  .top-nav-inner,
+  .web-container,
+  .site-footer-inner {
+    max-width: 1440px;
+  }
+  /* Páginas cheias (categoria/loja) centram por padding calculado. */
+  .screen.category-screen > .screen-header,
+  .screen.shop-screen > .screen-header {
+    padding-left: max(32px, calc((100% - 1376px) / 2));
+    padding-right: max(32px, calc((100% - 1376px) / 2));
+  }
+  .screen.category-screen > .screen-body {
+    padding-left: max(32px, calc((100% - 1376px) / 2));
+    padding-right: max(32px, calc((100% - 1376px) / 2));
+  }
+  .screen.shop-screen > .shop-search-wrap,
+  .screen.shop-screen > .shop-cats-strip {
+    padding-left: max(32px, calc((100% - 1376px) / 2));
+    padding-right: max(32px, calc((100% - 1376px) / 2));
+  }
+  .shop-screen .shop-section {
+    max-width: 1440px;
   }
 }
 
