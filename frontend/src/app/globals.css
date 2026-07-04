@@ -9485,3 +9485,65 @@ input[type="time"].prof-input {
     font-size: 16px;
   }
 }
+
+/* ── Rotas promovidas a página (/perfil) ─────────────────────────────
+   O .screen foi desenhado como overlay (absolute/fixed). Dentro de um
+   .route-page ele vira o conteúdo da própria rota: flui no documento,
+   ocupa a viewport inteira e, no desktop, perde a cara de modal. */
+.route-page {
+  min-height: 100dvh;
+  background: var(--bone-50);
+}
+.route-page .screen {
+  position: relative;
+  inset: auto;
+  min-height: 100dvh;
+  animation: none;
+}
+
+@media (min-width: 768px) {
+  .route-page .screen {
+    position: relative;
+    background: var(--bone-50);
+    backdrop-filter: none;
+    padding: 0;
+    justify-content: flex-start;
+    animation: fadeIn 0.2s ease;
+  }
+  .route-page .screen > * {
+    max-width: none;
+  }
+  /* Header com visual de página, alinhado ao container do conteúdo. */
+  .route-page .screen > .screen-header {
+    background: var(--bone-50);
+    color: var(--navy-900);
+    border-radius: 0;
+    border-bottom: 1px solid var(--bone-200);
+    padding: 20px max(32px, calc((100% - 880px) / 2)) 16px;
+  }
+  .route-page .screen > .screen-header.gold-tint::before,
+  .route-page .screen > .screen-header::before {
+    display: none;
+  }
+  .route-page .screen-header .screen-back,
+  .route-page .screen-header .icon-btn {
+    background: #fff;
+    border-color: var(--bone-300);
+    color: var(--navy-900);
+  }
+  .route-page .screen-header .screen-title {
+    font-size: 24px;
+    color: var(--navy-900);
+  }
+  /* Corpo como página: sem moldura de modal, formulário centrado. */
+  .route-page .screen > .screen-body {
+    background: var(--bone-50);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 24px max(32px, calc((100% - 880px) / 2)) 48px;
+  }
+}

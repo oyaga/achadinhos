@@ -170,10 +170,9 @@ export function App({ initialRoute }: AppProps = {}) {
     <div className="device-frame">
       <TopNav
         onSearchClick={() => setSearchOpen(true)}
-        onProfile={() => {
-          setActiveNav("profile");
-          navigate({ name: "profile" });
-        }}
+        // No desktop o perfil agora é página real (/perfil), com URL própria
+        // e refresh/voltar do navegador funcionando.
+        onProfile={() => router.push("/perfil")}
       />
       <div className="app">
         <div className="app-scroll">
