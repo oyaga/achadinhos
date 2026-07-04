@@ -9613,6 +9613,10 @@ input[type="time"].prof-input {
   .app-scroll {
     min-height: calc(100dvh - 72px);
   }
+  /* Respiro entre o fim do conteúdo (sidebar/cards) e o footer. */
+  .web-container {
+    padding-bottom: 72px;
+  }
   .site-footer {
     padding-bottom: 0;
   }
