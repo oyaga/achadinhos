@@ -39,16 +39,16 @@ export interface CertificateDocData {
 // Paleta e textos por nível (tier) do certificado.
 const TIER = {
   prata: {
-    label: "PRATA",
-    name: "Prata",
+    label: "VERIFICADO",
+    name: "Verificado",
     light: "#cfd5dc",
     main: "#8a929c",
     dark: "#5b6470",
     sentence: "Atende aos requisitos mínimos do Achadinhos do Condomínio.",
   },
   ouro: {
-    label: "OURO",
-    name: "Ouro",
+    label: "AFILIADOS",
+    name: "Afiliados",
     light: "#e6cf96",
     main: "#c9a961",
     dark: "#a8884a",

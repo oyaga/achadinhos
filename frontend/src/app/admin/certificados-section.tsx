@@ -77,8 +77,8 @@ const TIPO_OPTIONS: ReadonlyArray<{ v: CertTipo; l: string }> = [
 ];
 
 const TIER_OPTIONS: ReadonlyArray<{ v: CertTier; l: string }> = [
-  { v: "prata", l: "Prata" },
-  { v: "ouro", l: "Ouro" },
+  { v: "prata", l: "Verificado" },
+  { v: "ouro", l: "Afiliados" },
   { v: "black", l: "Black" },
 ];
 

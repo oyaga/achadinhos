@@ -16,13 +16,15 @@ export function discountPct(price: number, oldPrice: number): number {
   return Math.round((1 - price / oldPrice) * 100);
 }
 
-// Rótulo do nível do certificado (selo Prata/Ouro/Black).
+// Rótulo do nível do certificado. Os IDs internos (prata/ouro/black) são
+// mantidos no banco e na API; só o nome exibido mudou:
+// prata -> Verificado · ouro -> Afiliados · black -> Black.
 export function tierLabel(tier: string | null | undefined): string {
   switch (tier) {
     case "prata":
-      return "Prata";
+      return "Verificado";
     case "ouro":
-      return "Ouro";
+      return "Afiliados";
     case "black":
       return "Black";
     default:
