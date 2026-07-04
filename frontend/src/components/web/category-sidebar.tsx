@@ -35,9 +35,13 @@ export function CategorySidebar({
     void categoriesApi.list().then(setCats).catch(() => {});
   }, []);
 
+  // O backend também lista "destaque" como categoria; filtramos para não
+  // duplicar o item fixo do topo.
   const items: Array<{ id: string; label: string; count?: number }> = [
     { id: "destaque", label: "Destaque do dia" },
-    ...cats.map((c) => ({ id: c.id, label: c.label, count: c.count })),
+    ...cats
+      .filter((c) => c.id !== "destaque")
+      .map((c) => ({ id: c.id, label: c.label, count: c.count })),
   ];
 
   return (

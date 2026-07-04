@@ -1006,6 +1006,10 @@ select {
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
+  /* Como item de grid (.providers no desktop), o min-width automático deixaria
+     a descrição nowrap forçar o card além da coluna; 0 permite encolher e
+     ativar o ellipsis do .provider-cat. */
+  min-width: 0;
 }
 /* Card com CTA "Pedir orçamento" (handoff M5) */
 .provider--cta { flex-wrap: wrap; }
@@ -3615,7 +3619,10 @@ textarea.field-input {
   /* Two-column web layout: sticky category rail + main column (handoff M1). */
   .web-shell {
     display: grid;
-    grid-template-columns: 264px 1fr;
+    /* minmax(0, 1fr) — não 1fr: 1fr = minmax(auto, 1fr), e o mínimo "auto"
+       deixa conteúdo de min-content largo (ex.: descrição nowrap num card)
+       inflar a coluna e alargar a página inteira além da viewport. */
+    grid-template-columns: 264px minmax(0, 1fr);
     gap: 28px;
     align-items: start;
   }
@@ -3713,7 +3720,9 @@ textarea.field-input {
   /* Providers grid. */
   .providers {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    /* minmax(0, 1fr): impede que a descrição nowrap dos cards dite a largura
+       das colunas (e estoure a página); o texto trunca com ellipsis. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
   }
   .provider {
@@ -3948,7 +3957,7 @@ textarea.field-input {
     grid-template-columns: repeat(8, 1fr);
   }
   .providers {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .product-grid {
     grid-template-columns: repeat(4, 1fr);
