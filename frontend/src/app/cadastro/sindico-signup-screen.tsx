@@ -293,7 +293,7 @@ export function SindicoSignupScreen() {
                     disabled={submitting}
                   />
                 </div>
-                {errors.companyName && <div className="auth-field-error">{errors.companyName}</div>}
+                {errors.companyName && <div className="auth-field-error" role="alert">{errors.companyName}</div>}
               </div>
             )}
 
@@ -314,7 +314,7 @@ export function SindicoSignupScreen() {
                   disabled={submitting}
                 />
               </div>
-              {errors.name && <div className="auth-field-error">{errors.name}</div>}
+              {errors.name && <div className="auth-field-error" role="alert">{errors.name}</div>}
             </div>
 
             {/* Email */}
@@ -333,7 +333,7 @@ export function SindicoSignupScreen() {
                   disabled={submitting}
                 />
               </div>
-              {errors.email && <div className="auth-field-error">{errors.email}</div>}
+              {errors.email && <div className="auth-field-error" role="alert">{errors.email}</div>}
             </div>
 
             {/* Password */}
@@ -359,7 +359,7 @@ export function SindicoSignupScreen() {
                   {showPwd ? <Icon.EyeOff size={18} /> : <Icon.Eye size={18} />}
                 </button>
               </div>
-              {errors.password && <div className="auth-field-error">{errors.password}</div>}
+              {errors.password && <div className="auth-field-error" role="alert">{errors.password}</div>}
             </div>
 
             {/* Password confirm */}
@@ -377,7 +377,7 @@ export function SindicoSignupScreen() {
                   disabled={submitting}
                 />
               </div>
-              {errors.passwordConfirm && <div className="auth-field-error">{errors.passwordConfirm}</div>}
+              {errors.passwordConfirm && <div className="auth-field-error" role="alert">{errors.passwordConfirm}</div>}
             </div>
 
             {/* CPF (pessoa) / CNPJ (empresa) */}
@@ -397,7 +397,7 @@ export function SindicoSignupScreen() {
                     maxLength={18}
                   />
                 </div>
-                {errors.cnpj && <div className="auth-field-error">{errors.cnpj}</div>}
+                {errors.cnpj && <div className="auth-field-error" role="alert">{errors.cnpj}</div>}
               </div>
             ) : (
               <div>
@@ -415,7 +415,7 @@ export function SindicoSignupScreen() {
                     maxLength={14}
                   />
                 </div>
-                {errors.cpf && <div className="auth-field-error">{errors.cpf}</div>}
+                {errors.cpf && <div className="auth-field-error" role="alert">{errors.cpf}</div>}
               </div>
             )}
 
@@ -436,7 +436,7 @@ export function SindicoSignupScreen() {
                   maxLength={16}
                 />
               </div>
-              {errors.phone && <div className="auth-field-error">{errors.phone}</div>}
+              {errors.phone && <div className="auth-field-error" role="alert">{errors.phone}</div>}
             </div>
 
             {/* Condo name */}
@@ -457,7 +457,7 @@ export function SindicoSignupScreen() {
                   disabled={submitting}
                 />
               </div>
-              {errors.condoName && <div className="auth-field-error">{errors.condoName}</div>}
+              {errors.condoName && <div className="auth-field-error" role="alert">{errors.condoName}</div>}
             </div>
 
             {/* Condo role (pessoa apenas — empresa entra como administradora) */}
@@ -477,7 +477,7 @@ export function SindicoSignupScreen() {
                     </button>
                   ))}
                 </div>
-                {errors.condoRole && <div className="auth-field-error">{errors.condoRole}</div>}
+                {errors.condoRole && <div className="auth-field-error" role="alert">{errors.condoRole}</div>}
               </div>
             )}
 
@@ -503,7 +503,7 @@ export function SindicoSignupScreen() {
                   </span>
                 )}
               </div>
-              {errors.cep && <div className="auth-field-error">{errors.cep}</div>}
+              {errors.cep && <div className="auth-field-error" role="alert">{errors.cep}</div>}
             </div>
 
             {/* Street + Number */}
@@ -520,7 +520,7 @@ export function SindicoSignupScreen() {
                     disabled={submitting}
                   />
                 </div>
-                {errors.street && <div className="auth-field-error">{errors.street}</div>}
+                {errors.street && <div className="auth-field-error" role="alert">{errors.street}</div>}
               </div>
               <div style={{ flex: 1 }}>
                 <div className="auth-input-wrap">
@@ -534,7 +534,7 @@ export function SindicoSignupScreen() {
                     disabled={submitting}
                   />
                 </div>
-                {errors.number && <div className="auth-field-error">{errors.number}</div>}
+                {errors.number && <div className="auth-field-error" role="alert">{errors.number}</div>}
               </div>
             </div>
 
@@ -566,7 +566,7 @@ export function SindicoSignupScreen() {
                   disabled={submitting}
                 />
               </div>
-              {errors.neighborhood && <div className="auth-field-error">{errors.neighborhood}</div>}
+              {errors.neighborhood && <div className="auth-field-error" role="alert">{errors.neighborhood}</div>}
             </div>
 
             {/* City + State */}
@@ -583,7 +583,7 @@ export function SindicoSignupScreen() {
                     disabled={submitting}
                   />
                 </div>
-                {errors.city && <div className="auth-field-error">{errors.city}</div>}
+                {errors.city && <div className="auth-field-error" role="alert">{errors.city}</div>}
               </div>
               <div style={{ flex: 1 }}>
                 <div className="auth-input-wrap">
@@ -598,7 +598,7 @@ export function SindicoSignupScreen() {
                     maxLength={2}
                   />
                 </div>
-                {errors.state && <div className="auth-field-error">{errors.state}</div>}
+                {errors.state && <div className="auth-field-error" role="alert">{errors.state}</div>}
               </div>
             </div>
 
@@ -617,7 +617,7 @@ export function SindicoSignupScreen() {
                 <strong>política de privacidade</strong>.
               </span>
             </label>
-            {errors.accepted && <div className="auth-field-error">{errors.accepted}</div>}
+            {errors.accepted && <div className="auth-field-error" role="alert">{errors.accepted}</div>}
 
             <button
               type="submit"

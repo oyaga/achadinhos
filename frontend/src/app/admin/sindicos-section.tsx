@@ -87,7 +87,7 @@ export function SindicosSection() {
       {loading ? (
         <div className="admin-empty">Carregando…</div>
       ) : loadError ? (
-        <div className="prof-alert error">{loadError}</div>
+        <div className="prof-alert error" role="alert">{loadError}</div>
       ) : filtered.length === 0 ? (
         <div className="admin-empty">
           {query

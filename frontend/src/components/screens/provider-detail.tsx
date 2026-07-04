@@ -345,7 +345,7 @@ export function ProviderDetail({
           className="btn-whatsapp"
           onClick={onWhatsapp}
         >
-          <Icon.Whatsapp size={16} /> Falar no WhatsApp
+          <Icon.Whatsapp size={16} /> Pedir orçamento no WhatsApp
         </button>
       </div>
 

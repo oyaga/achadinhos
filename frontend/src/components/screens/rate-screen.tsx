@@ -194,6 +194,7 @@ export function RateScreen({ provider, onBack, onSent }: RateScreenProps) {
 
         {error && (
           <div
+            role="alert"
             style={{
               marginTop: 12,
               padding: "10px 14px",

@@ -345,7 +345,7 @@ export function SellerDetail({
               >
                 {sending ? "Enviando…" : "Enviar avaliação"}
               </button>
-              {reviewMsg && <div className="sr-msg">{reviewMsg}</div>}
+              {reviewMsg && <div className="sr-msg" role="status">{reviewMsg}</div>}
             </div>
           ) : (
             <div className="sr-login">

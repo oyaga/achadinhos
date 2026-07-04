@@ -280,7 +280,7 @@ export function CertificadosSection() {
       {formOpen && (
         <form className="admin-form" onSubmit={handleSubmit}>
           <div className="admin-form-title">Emitir certificado</div>
-          {formError && <div className="prof-alert error">{formError}</div>}
+          {formError && <div className="prof-alert error" role="alert">{formError}</div>}
 
           {/* Tipo de titular */}
           <div className="prof-field">
@@ -412,7 +412,7 @@ export function CertificadosSection() {
       {loading ? (
         <div className="admin-empty">Carregando…</div>
       ) : loadError ? (
-        <div className="prof-alert error">{loadError}</div>
+        <div className="prof-alert error" role="alert">{loadError}</div>
       ) : certs.length === 0 ? (
         <div className="admin-empty">Nenhum certificado emitido ainda.</div>
       ) : (

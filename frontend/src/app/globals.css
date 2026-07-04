@@ -1391,21 +1391,22 @@ textarea.field-input {
   font-family: inherit;
 }
 
+/* CTA dourado (handoff desktop: "Publicar avaliação") */
 .btn-primary {
   width: 100%;
-  background: linear-gradient(140deg, var(--navy-800), var(--navy-900));
-  color: white;
+  background: linear-gradient(140deg, var(--gold-300), var(--gold-500));
+  color: var(--navy-900);
   padding: 15px;
   border-radius: 14px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid var(--gold-500);
-  box-shadow: 0 4px 14px rgba(11, 27, 59, 0.25);
+  border: 1px solid rgba(11, 27, 59, 0.18);
+  box-shadow: 0 8px 22px rgba(201, 169, 97, 0.34);
   transition: transform 0.15s;
   margin-top: 6px;
 }
@@ -1416,7 +1417,7 @@ textarea.field-input {
   cursor: not-allowed;
 }
 .btn-primary svg {
-  color: var(--gold-400);
+  color: var(--navy-800);
 }
 
 /* ===== Search overlay ===== */
@@ -1468,11 +1469,12 @@ textarea.field-input {
   overflow-y: auto;
 }
 .search-section-label {
+  font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--ink-500);
+  color: var(--gold-500);
   margin-bottom: 10px;
 }
 .tag-cloud {
@@ -1704,8 +1706,8 @@ textarea.field-input {
   margin-bottom: 14px;
 }
 .pd-avatar {
-  width: 64px;
-  height: 64px;
+  width: 76px;
+  height: 76px;
   border-radius: 18px;
   background: linear-gradient(135deg, var(--gold-300), var(--gold-500));
   flex-shrink: 0;
@@ -2398,10 +2400,10 @@ textarea.field-input {
   color: var(--navy-900);
 }
 
-/* Favorites */
+/* Favorites — track bone com pílula ativa branca (handoff desktop) */
 .tabs {
   display: flex;
-  background: white;
+  background: var(--bone-100);
   border-radius: 14px;
   padding: 4px;
   gap: 4px;
@@ -2422,8 +2424,9 @@ textarea.field-input {
   background: transparent;
 }
 .tab.active {
-  background: var(--navy-900);
-  color: var(--gold-300);
+  background: #fff;
+  color: var(--navy-900);
+  box-shadow: var(--shadow-card);
 }
 
 .empty-state {
@@ -3265,7 +3268,7 @@ textarea.field-input {
 }
 .pd-price {
   font-family: var(--font-display);
-  font-size: 30px;
+  font-size: 36px;
   font-weight: 700;
   color: var(--navy-900);
   line-height: 1;
@@ -3534,7 +3537,7 @@ textarea.field-input {
   transition: background 0.15s ease;
 }
 .side-nav-label { font-size: 13.5px; font-weight: 600; color: var(--navy-700); }
-.side-nav-count { font-size: 11px; color: var(--ink-300); flex-shrink: 0; }
+.side-nav-count { font-size: 11px; color: var(--ink-500); flex-shrink: 0; }
 .side-nav-item:hover { background: var(--bone-100); }
 .side-nav-item.active { background: var(--navy-900); }
 .side-nav-item.active .side-nav-label { color: #fff; }
@@ -4364,7 +4367,7 @@ textarea.field-input {
   font-family: var(--font-ui);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--gold-500);
   margin-bottom: 10px;
@@ -4372,7 +4375,7 @@ textarea.field-input {
 
 .auth-title {
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 500;
   font-size: 32px;
   line-height: 1.1;
   color: var(--navy-900);
@@ -4500,8 +4503,9 @@ textarea.field-input {
   transition: border-color 0.15s, background 0.15s;
 }
 .auth-checkbox input:checked + .auth-checkbox-box {
-  background: var(--navy-900);
-  border-color: var(--navy-900);
+  background: var(--gold-500);
+  border-color: var(--gold-500);
+  color: #fff;
 }
 .auth-checkbox-text strong {
   color: var(--navy-900);
@@ -4871,33 +4875,38 @@ textarea.field-input {
 .auth-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--ink-600);
+  color: var(--ink-700); /* --ink-600 não existe no :root */
   margin-bottom: 6px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
+/* Segmentado em track bone com pílula ativa branca (handoff desktop) */
 .auth-seg-group {
   display: flex;
-  gap: 6px;
+  gap: 4px;
+  background: var(--bone-100);
+  border: 1px solid var(--bone-200);
+  border-radius: 12px;
+  padding: 4px;
 }
 
 .auth-seg-btn {
   flex: 1;
   padding: 9px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--bone-300);
-  background: white;
-  color: var(--navy-900);
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--ink-500);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
 }
 .auth-seg-btn.active {
-  background: var(--navy-900);
-  color: white;
-  border-color: var(--gold-500);
+  background: #fff;
+  color: var(--navy-900);
+  box-shadow: var(--shadow-card);
 }
 .auth-seg-btn:disabled {
   opacity: 0.5;
@@ -5089,7 +5098,7 @@ textarea.field-input {
 .prof-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--ink-600);
+  color: var(--ink-700); /* --ink-600 não existe no :root */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -5227,7 +5236,7 @@ input[type="time"].prof-input {
   padding: 8px 14px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--ink-600);
+  color: var(--ink-700); /* --ink-600 não existe no :root */
 }
 
 /* Tag chips */
@@ -5299,7 +5308,7 @@ input[type="time"].prof-input {
   font-weight: 600;
   background: white;
   border: 1.5px solid var(--bone-300);
-  color: var(--ink-600);
+  color: var(--ink-700); /* --ink-600 não existe no :root */
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
@@ -6010,7 +6019,7 @@ input[type="time"].prof-input {
 }
 .confirm-body {
   font-size: 14px;
-  color: var(--ink-600);
+  color: var(--ink-700); /* --ink-600 não existe no :root */
   line-height: 1.5;
 }
 .confirm-actions {
@@ -6300,8 +6309,9 @@ input[type="time"].prof-input {
 
 .admin-header-title {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 18px;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 19px;
   line-height: 1.1;
 }
 
@@ -6341,14 +6351,15 @@ input[type="time"].prof-input {
   background: rgba(255, 255, 255, 0.16);
 }
 
-/* ── Tabs ── */
+/* ── Tabs — barra com sublinhado dourado na aba ativa (handoff desktop) ── */
 .admin-tabs {
   display: flex;
   gap: 6px;
-  padding: 12px 12px 0;
+  padding: 8px 12px 0;
   max-width: 880px;
   margin: 0 auto;
   flex-wrap: wrap;
+  border-bottom: 1px solid var(--bone-200);
 }
 
 .admin-tab {
@@ -6357,13 +6368,13 @@ input[type="time"].prof-input {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 8px;
-  border: 1px solid transparent;
-  border-bottom: none;
-  border-radius: 12px 12px 0 0;
+  padding: 13px 8px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
   background: transparent;
   color: var(--ink-500);
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -6375,9 +6386,9 @@ input[type="time"].prof-input {
 }
 
 .admin-tab.active {
-  background: #fff;
+  background: transparent;
   color: var(--navy-900);
-  border-color: var(--bone-200);
+  border-bottom-color: var(--gold-500);
 }
 
 /* ── Content ── */
@@ -6398,8 +6409,9 @@ input[type="time"].prof-input {
 
 .admin-section-title {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 20px;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 22px;
   color: var(--navy-900);
 }
 
@@ -6426,6 +6438,14 @@ input[type="time"].prof-input {
 
 .admin-new-btn:hover {
   opacity: 0.9;
+}
+
+/* Ícone dourado nos botões primários do admin (handoff desktop) */
+.admin-new-btn svg {
+  color: var(--gold-300);
+}
+.admin-new-btn.ghost svg {
+  color: var(--gold-500);
 }
 
 .admin-new-btn:disabled {
@@ -6601,8 +6621,14 @@ input[type="time"].prof-input {
   color: var(--navy-900);
 }
 
+/* Excluir com estado vermelho fixo, não só no hover (handoff desktop) */
+.admin-icon-btn.danger {
+  background: rgba(194, 69, 58, 0.09);
+  border-color: rgba(194, 69, 58, 0.22);
+  color: var(--danger);
+}
 .admin-icon-btn.danger:hover {
-  background: rgba(194, 69, 58, 0.1);
+  background: rgba(194, 69, 58, 0.16);
   border-color: rgba(194, 69, 58, 0.4);
   color: var(--danger);
 }
@@ -6824,8 +6850,9 @@ input[type="time"].prof-input {
 }
 .cal-nav-label {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16px;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 17px;
   color: var(--navy-900);
 }
 .cal-grid {
@@ -6882,8 +6909,9 @@ input[type="time"].prof-input {
 }
 .cal-day-title {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 17px;
   color: var(--navy-900);
   text-transform: capitalize;
   margin: 4px 2px 12px;
@@ -8033,9 +8061,8 @@ input[type="time"].prof-input {
   margin-bottom: 6px;
 }
 .verify-icon.ok {
-  color: var(--navy-900);
-  background: linear-gradient(140deg, var(--gold-300), var(--gold-500));
-  box-shadow: 0 8px 22px rgba(201, 169, 97, 0.4);
+  color: var(--success);
+  background: #e7f0ea;
 }
 .verify-icon.warn {
   color: #b85c12;
@@ -8065,7 +8092,7 @@ input[type="time"].prof-input {
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 600;
-  font-size: 24px;
+  font-size: 26px;
   color: var(--navy-900);
   margin: 8px 0 0;
 }
@@ -8091,7 +8118,7 @@ input[type="time"].prof-input {
   font-size: 11px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ink-400);
+  color: var(--ink-500);
 }
 .verify-detail dd {
   margin: 0;
@@ -8113,13 +8140,13 @@ input[type="time"].prof-input {
   gap: 6px;
   margin-top: 18px;
   padding: 12px 22px;
-  border-radius: 999px;
+  border-radius: 13px;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
-  background: linear-gradient(140deg, var(--gold-400), var(--gold-500));
-  color: var(--navy-900);
-  box-shadow: 0 8px 22px rgba(201, 169, 97, 0.34);
+  background: var(--navy-900);
+  color: #fff;
+  box-shadow: var(--shadow-card);
 }
 .verify-btn.ghost {
   background: transparent;

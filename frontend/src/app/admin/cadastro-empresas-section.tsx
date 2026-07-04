@@ -188,7 +188,7 @@ export function CadastroEmpresasSection() {
         ) : (
           <form className="admin-form" onSubmit={handleCreate}>
             <div className="admin-form-title">Dados do responsável</div>
-            {formError && <div className="prof-alert error">{formError}</div>}
+            {formError && <div className="prof-alert error" role="alert">{formError}</div>}
             <div className="prof-field">
               <label className="prof-label">Nome do responsável</label>
               <input
@@ -246,7 +246,7 @@ export function CadastroEmpresasSection() {
       {loading ? (
         <div className="admin-empty">Carregando…</div>
       ) : loadError ? (
-        <div className="prof-alert error">{loadError}</div>
+        <div className="prof-alert error" role="alert">{loadError}</div>
       ) : fichas.length === 0 ? (
         <div className="admin-empty">Nenhuma ficha criada ainda.</div>
       ) : (

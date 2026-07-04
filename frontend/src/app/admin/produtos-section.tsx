@@ -32,6 +32,8 @@ function categoryLabel(id: string): string {
 }
 
 function formatPrice(v: number): string {
+  // Produto sem preço (0) é vendido "sob consulta" — nunca mostrar R$ 0,00.
+  if (!v) return "Sob consulta";
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
@@ -274,7 +276,7 @@ export function ProdutosSection() {
           <div className="admin-form-title">
             {editingId ? "Editar produto" : "Novo produto"}
           </div>
-          {formError && <div className="prof-alert error">{formError}</div>}
+          {formError && <div className="prof-alert error" role="alert">{formError}</div>}
 
           <div className="prof-field">
             <label className="prof-label">Nome do produto</label>
@@ -488,7 +490,7 @@ export function ProdutosSection() {
       {loading ? (
         <div className="admin-empty">Carregando…</div>
       ) : loadError ? (
-        <div className="prof-alert error">{loadError}</div>
+        <div className="prof-alert error" role="alert">{loadError}</div>
       ) : items.length === 0 ? (
         <div className="admin-empty">Nenhum produto cadastrado ainda.</div>
       ) : (

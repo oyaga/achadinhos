@@ -496,7 +496,7 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
 
             {pwdOpen && (
               <div className="prof-pwd-form">
-                {pwdError && <div className="prof-alert error">{pwdError}</div>}
+                {pwdError && <div className="prof-alert error" role="alert">{pwdError}</div>}
                 {pwdSuccess && <div className="prof-alert success">Senha alterada com sucesso!</div>}
 
                 <div className="prof-field">
@@ -511,7 +511,12 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
                       autoComplete="current-password"
                       style={{ flex: 1 }}
                     />
-                    <button type="button" className="prof-eye-btn" onClick={() => setShowCurrentPwd((v) => !v)}>
+                    <button
+                      type="button"
+                      className="prof-eye-btn"
+                      onClick={() => setShowCurrentPwd((v) => !v)}
+                      aria-label={showCurrentPwd ? "Ocultar senha atual" : "Mostrar senha atual"}
+                    >
                       {showCurrentPwd ? <Icon.EyeOff size={16} /> : <Icon.Eye size={16} />}
                     </button>
                   </div>
@@ -529,7 +534,12 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
                       autoComplete="new-password"
                       style={{ flex: 1 }}
                     />
-                    <button type="button" className="prof-eye-btn" onClick={() => setShowNewPwd((v) => !v)}>
+                    <button
+                      type="button"
+                      className="prof-eye-btn"
+                      onClick={() => setShowNewPwd((v) => !v)}
+                      aria-label={showNewPwd ? "Ocultar nova senha" : "Mostrar nova senha"}
+                    >
                       {showNewPwd ? <Icon.EyeOff size={16} /> : <Icon.Eye size={16} />}
                     </button>
                   </div>

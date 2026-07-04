@@ -144,7 +144,7 @@ export function EventosSection() {
       {formOpen && (
         <form className="admin-form" onSubmit={handleSubmit}>
           <div className="admin-form-title">{editingId ? "Editar evento" : "Novo evento"}</div>
-          {formError && <div className="prof-alert error">{formError}</div>}
+          {formError && <div className="prof-alert error" role="alert">{formError}</div>}
 
           <div className="prof-field">
             <label className="prof-label">Título</label>
@@ -222,7 +222,7 @@ export function EventosSection() {
       {loading ? (
         <div className="admin-empty">Carregando…</div>
       ) : loadError ? (
-        <div className="prof-alert error">{loadError}</div>
+        <div className="prof-alert error" role="alert">{loadError}</div>
       ) : events.length === 0 ? (
         <div className="admin-empty">Nenhum evento cadastrado ainda.</div>
       ) : (

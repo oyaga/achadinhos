@@ -125,7 +125,7 @@ export function LoginScreen() {
                   disabled={submitting}
                 />
               </div>
-              {emailError && <div className="auth-field-error">{emailError}</div>}
+              {emailError && <div className="auth-field-error" role="alert">{emailError}</div>}
             </div>
 
             <div>
@@ -152,7 +152,7 @@ export function LoginScreen() {
                   {showPwd ? <Icon.EyeOff size={18} /> : <Icon.Eye size={18} />}
                 </button>
               </div>
-              {pwdError && <div className="auth-field-error">{pwdError}</div>}
+              {pwdError && <div className="auth-field-error" role="alert">{pwdError}</div>}
             </div>
 
             <div className="auth-row">

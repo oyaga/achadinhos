@@ -463,7 +463,7 @@ export function NegociosSection() {
           <div className="admin-form-title">
             {editing ? "Editar cadastro" : "Novo cadastro"}
           </div>
-          {formError && <div className="prof-alert error">{formError}</div>}
+          {formError && <div className="prof-alert error" role="alert">{formError}</div>}
 
           {/* Tipo de negócio */}
           <div className="prof-field">
@@ -706,7 +706,7 @@ export function NegociosSection() {
                     placeholder="Ex: Manutenção preventiva"
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addService(); } }}
                   />
-                  <button type="button" className="prof-tag-add-btn" onClick={addService}>
+                  <button type="button" className="prof-tag-add-btn" onClick={addService} aria-label="Adicionar serviço">
                     <Icon.Plus size={16} />
                   </button>
                 </div>
@@ -926,7 +926,7 @@ export function NegociosSection() {
       {loading ? (
         <div className="admin-empty">Carregando…</div>
       ) : loadError ? (
-        <div className="prof-alert error">{loadError}</div>
+        <div className="prof-alert error" role="alert">{loadError}</div>
       ) : items.length === 0 ? (
         <div className="admin-empty">Nenhuma empresa ou afiliado cadastrado ainda.</div>
       ) : (
