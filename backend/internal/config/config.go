@@ -36,6 +36,12 @@ type Config struct {
 	// email is silently skipped — the app still works.
 	ResendAPIKey string
 	MailFrom     string
+
+	// Google OAuth client used by the agenda (booking) feature. When empty the
+	// agenda endpoints answer with "google_not_configured". The OAuth redirect
+	// URI is {AppBaseURL}/api/v1/agenda/google/callback.
+	GoogleOAuthClientID     string
+	GoogleOAuthClientSecret string
 }
 
 // Load reads .env (if present) and environment variables, returning a Config.
@@ -60,6 +66,9 @@ func Load() (*Config, error) {
 
 		ResendAPIKey: getEnv("RESEND_API_KEY", ""),
 		MailFrom:     getEnv("MAIL_FROM", ""),
+
+		GoogleOAuthClientID:     getEnv("GOOGLE_OAUTH_CLIENT_ID", ""),
+		GoogleOAuthClientSecret: getEnv("GOOGLE_OAUTH_CLIENT_SECRET", ""),
 	}
 
 	accessTTL, err := time.ParseDuration(getEnv("JWT_ACCESS_TTL", "15m"))

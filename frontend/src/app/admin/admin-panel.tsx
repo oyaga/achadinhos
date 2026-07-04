@@ -11,8 +11,16 @@ import { SindicosSection } from "./sindicos-section";
 import { CadastroEmpresasSection } from "./cadastro-empresas-section";
 import { EventosSection } from "./eventos-section";
 import { CertificadosSection } from "./certificados-section";
+import { AgendaSection } from "./agenda-section";
 
-type AdminTab = "produtos" | "negocios" | "cadastro" | "certificados" | "eventos" | "sindicos";
+type AdminTab =
+  | "produtos"
+  | "negocios"
+  | "cadastro"
+  | "certificados"
+  | "eventos"
+  | "agenda"
+  | "sindicos";
 
 const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "produtos", label: "Produtos", icon: "CatShopping" },
@@ -20,6 +28,7 @@ const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "cadastro", label: "Cadastro de empresas", icon: "Building" },
   { id: "certificados", label: "Certificados", icon: "Award" },
   { id: "eventos", label: "Eventos", icon: "Calendar" },
+  { id: "agenda", label: "Agenda", icon: "Clock" },
   { id: "sindicos", label: "Síndicos", icon: "User" },
 ];
 
@@ -29,6 +38,13 @@ export function AdminPanel() {
   const [tab, setTab] = useState<AdminTab>("produtos");
 
   const isAdmin = isAuthenticated && user?.role === "admin";
+
+  // O callback do OAuth do Google redireciona para /admin?agenda=conectada —
+  // abre direto a aba Agenda (a section mostra o aviso de sucesso).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("agenda")) setTab("agenda");
+  }, []);
 
   // Bounce non-admins once the auth bootstrap has settled.
   useEffect(() => {
@@ -107,6 +123,7 @@ export function AdminPanel() {
         {tab === "cadastro" && <CadastroEmpresasSection />}
         {tab === "certificados" && <CertificadosSection />}
         {tab === "eventos" && <EventosSection />}
+        {tab === "agenda" && <AgendaSection />}
         {tab === "sindicos" && <SindicosSection />}
       </div>
     </main>

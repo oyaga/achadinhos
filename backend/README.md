@@ -33,6 +33,15 @@ Confirma com:
 curl http://localhost:8080/api/v1/categories | jq
 ```
 
+As env vars estão documentadas em [.env.example](.env.example). Destaques:
+
+- `APP_BASE_URL` — URL pública do app; monta links de e-mail e o redirect OAuth.
+- `RESEND_API_KEY` / `MAIL_FROM` — e-mail transacional (vazio = no-op).
+- `GOOGLE_OAUTH_CLIENT_ID` / `GOOGLE_OAUTH_CLIENT_SECRET` — feature de
+  agendamento (Google Calendar + Meet). Redirect URI a cadastrar no console do
+  Google: `{APP_BASE_URL}/api/v1/agenda/google/callback`. Vazio = endpoints da
+  agenda respondem `google_not_configured`.
+
 ## Endpoints
 
 Prefix: `/api/v1`
@@ -59,6 +68,13 @@ Prefix: `/api/v1`
 | GET     | `/products`                         | público      | lista produtos (category, q, sort)                     |
 | GET     | `/products/:id`                     | público      | produto + 4 relacionados                               |
 | GET     | `/sellers/:id`                      | público      | seller + produtos                                      |
+| GET     | `/agenda/:slug`                     | público      | info da página de agendamento (Calendly-like)          |
+| GET     | `/agenda/:slug/slots`               | público      | horários livres (`?from=YYYY-MM-DD&to=YYYY-MM-DD`)     |
+| POST    | `/agenda/:slug/book`                | público      | agenda: cria evento no Google Calendar + link do Meet  |
+| GET     | `/agenda/google/callback`           | público      | callback OAuth do Google (redirect p/ /admin)          |
+| GET/PUT | `/admin/agenda`                     | role=admin   | lê/atualiza settings da agenda                         |
+| GET     | `/admin/agenda/google/url`          | role=admin   | URL de consentimento OAuth                             |
+| DELETE  | `/admin/agenda/google`              | role=admin   | desconecta a conta Google                              |
 | GET     | `/health`                           | público      | healthcheck                                            |
 
 ## Auth flow (curl)

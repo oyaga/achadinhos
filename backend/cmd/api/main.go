@@ -48,6 +48,11 @@ func main() {
 		slog.Warn("ensure-certificate-schema non-fatal error", "err", err)
 	}
 
+	// Semeia a agenda padrão ("ligia") quando não existe. Idempotente.
+	if err := db.EnsureAgendaSettings(context.Background(), gdb); err != nil {
+		slog.Warn("ensure-agenda-settings non-fatal error", "err", err)
+	}
+
 	r := router.New(cfg, gdb)
 
 	srv := &http.Server{

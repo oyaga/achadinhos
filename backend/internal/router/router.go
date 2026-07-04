@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/achadinhos/backend/internal/agenda"
 	"github.com/achadinhos/backend/internal/auth"
 	"github.com/achadinhos/backend/internal/config"
 	"github.com/achadinhos/backend/internal/email"
@@ -47,6 +48,14 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	fichaH := handlers.NewFichaHandler(db, mailer, cfg.AppBaseURL)
 	evH := handlers.NewEventHandler(db)
 	certH := handlers.NewCertificateHandler(db)
+	agendaSvc := agenda.NewService(
+		db,
+		cfg.GoogleOAuthClientID,
+		cfg.GoogleOAuthClientSecret,
+		cfg.AppBaseURL+"/api/v1/agenda/google/callback",
+		cfg.JWTSecret,
+	)
+	agendaH := handlers.NewAgendaHandler(db, agendaSvc, cfg.AppBaseURL)
 
 	v1 := r.Group("/api/v1")
 
@@ -83,6 +92,13 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 
 	// Public certificate verification (acessada pelo QR code).
 	v1.GET("/certificates/:code", certH.GetByCode)
+
+	// Public agenda (booking estilo Calendly). O callback OAuth é público por
+	// natureza (redirect do Google) e valida um state assinado.
+	v1.GET("/agenda/google/callback", agendaH.GoogleCallback)
+	v1.GET("/agenda/:slug", agendaH.GetPublic)
+	v1.GET("/agenda/:slug/slots", agendaH.Slots)
+	v1.POST("/agenda/:slug/book", agendaH.Book)
 
 	// Authenticated (any logged-in user: síndico or admin).
 	authed := v1.Group("")
@@ -137,6 +153,11 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.POST("/events", evH.Create)
 		admin.PATCH("/events/:id", evH.Update)
 		admin.DELETE("/events/:id", evH.Delete)
+
+		admin.GET("/agenda", agendaH.AdminGet)
+		admin.PUT("/agenda", agendaH.AdminUpdate)
+		admin.GET("/agenda/google/url", agendaH.GoogleAuthURL)
+		admin.DELETE("/agenda/google", agendaH.GoogleDisconnect)
 
 		admin.GET("/certificates", certH.List)
 		admin.POST("/certificates", certH.Create)

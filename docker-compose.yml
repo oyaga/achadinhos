@@ -42,6 +42,9 @@ services:
       # E-mail transacional (Resend). Vazios desligam o envio de boas-vindas.
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       MAIL_FROM: ${MAIL_FROM:-}
+      # Agendamento (Google Calendar + Meet). Vazios desligam a agenda.
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
     volumes:
       - achadinhos_uploads:/app/uploads
     networks:
@@ -51,7 +54,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-public"
-      - "traefik.http.routers.achadinhos.rule=Host(`achadinhoscondominio.com.br`)"
+      # O host agenda.* serve a página de agendamento (rewrite no binário Go).
+      - "traefik.http.routers.achadinhos.rule=Host(`achadinhoscondominio.com.br`) || Host(`agenda.achadinhoscondominio.com.br`)"
       - "traefik.http.routers.achadinhos.entrypoints=websecure"
       - "traefik.http.routers.achadinhos.tls=true"
       - "traefik.http.routers.achadinhos.tls.certresolver=cloudflare"

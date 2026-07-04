@@ -50,10 +50,29 @@ func Mount(r *gin.Engine) error {
 			serveFile(c, sub, clean+".html")
 			return
 		}
+		// Subdomínio agenda.*: a raiz (e qualquer rota não resolvida) serve a
+		// página estática de agendamento /agendar/ligia/ mantendo a URL — os
+		// assets /_next/* são absolutos e já resolveram acima como arquivos.
+		if isAgendaHost(c.Request.Host) && isFile(sub, agendaPage) {
+			serveFile(c, sub, agendaPage)
+			return
+		}
 		serveFile(c, sub, "index.html")
 	})
 
 	return nil
+}
+
+// agendaPage is the static export path served on the agenda.* subdomain.
+const agendaPage = "agendar/ligia/index.html"
+
+// isAgendaHost reports whether the request host (possibly with port) is the
+// booking subdomain, e.g. agenda.achadinhoscondominio.com.br.
+func isAgendaHost(host string) bool {
+	if i := strings.IndexByte(host, ':'); i >= 0 {
+		host = host[:i]
+	}
+	return strings.HasPrefix(strings.ToLower(host), "agenda.")
 }
 
 func isFile(sub fs.FS, p string) bool {
