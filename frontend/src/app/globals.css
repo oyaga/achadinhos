@@ -177,6 +177,11 @@ select {
   display: flex;
   flex-direction: column;
 }
+/* Sem isso, no mobile (altura fixa via .app) os filhos encolhem para
+   caber e o header navy da home era comprimido até sumir. */
+.app-scroll > * {
+  flex-shrink: 0;
+}
 .app-scroll::-webkit-scrollbar {
   display: none;
 }
