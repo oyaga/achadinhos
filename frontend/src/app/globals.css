@@ -9642,6 +9642,78 @@ input[type="time"].prof-input {
   }
 }
 
+/* ── CTA de agendamento no calendário de eventos ─────────────────── */
+.cal-agenda-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  background: linear-gradient(120deg, var(--navy-900), var(--navy-800));
+  border: 1px solid rgba(201, 169, 97, 0.35);
+  box-shadow: var(--shadow-card);
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.cal-agenda-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-elev);
+}
+.cal-agenda-cta-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(201, 169, 97, 0.18);
+  color: var(--gold-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cal-agenda-cta-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.72);
+}
+.cal-agenda-cta-text strong {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 16px;
+  color: #fff;
+}
+.cal-agenda-cta-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 11px;
+  background: linear-gradient(140deg, var(--gold-400), var(--gold-500));
+  color: var(--navy-900);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+/* Mobile: empilha e o botão vira full-width. */
+@media (max-width: 480px) {
+  .cal-agenda-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cal-agenda-cta-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* ── Telas largas (≥1600px): container sobe de 1280 para 1440 ─────────
    Em monitores grandes o miolo de 1280px deixava vãos laterais enormes;
    1440px de container (1376px úteis) aproveita melhor sem esticar texto. */
