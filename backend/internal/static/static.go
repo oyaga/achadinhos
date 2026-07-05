@@ -50,11 +50,14 @@ func Mount(r *gin.Engine) error {
 			serveFile(c, sub, clean+".html")
 			return
 		}
-		// Subdomínio agenda.*: a raiz (e qualquer rota não resolvida) serve a
-		// página estática de agendamento /agendar/ligia/ mantendo a URL — os
-		// assets /_next/* são absolutos e já resolveram acima como arquivos.
-		if isAgendaHost(c.Request.Host) && isFile(sub, agendaPage) {
-			serveFile(c, sub, agendaPage)
+		// Subdomínio de agendamento (ex.: ligia.achadinhoscondominio.com.br):
+		// quando o primeiro rótulo do host corresponde a um slug de agenda
+		// exportado, a raiz (e qualquer rota não resolvida) serve a página
+		// /agendar/<slug>/ mantendo a URL — os assets /_next/* são absolutos
+		// e já resolveram acima como arquivos. Novos slugs funcionam sem
+		// mudança aqui: basta existir agendar/<slug>/index.html no export.
+		if page := agendaPageForHost(sub, c.Request.Host); page != "" {
+			serveFile(c, sub, page)
 			return
 		}
 		serveFile(c, sub, "index.html")
@@ -63,16 +66,24 @@ func Mount(r *gin.Engine) error {
 	return nil
 }
 
-// agendaPage is the static export path served on the agenda.* subdomain.
-const agendaPage = "agendar/ligia/index.html"
-
-// isAgendaHost reports whether the request host (possibly with port) is the
-// booking subdomain, e.g. agenda.achadinhoscondominio.com.br.
-func isAgendaHost(host string) bool {
+// agendaPageForHost maps a booking subdomain to its static page. Returns ""
+// when the host's first label doesn't correspond to an exported agenda slug.
+func agendaPageForHost(sub fs.FS, host string) string {
 	if i := strings.IndexByte(host, ':'); i >= 0 {
 		host = host[:i]
 	}
-	return strings.HasPrefix(strings.ToLower(host), "agenda.")
+	host = strings.ToLower(host)
+	label, rest, ok := strings.Cut(host, ".")
+	// Precisa ser um subdomínio real (rest ainda contém o domínio base) e o
+	// rótulo não pode ser vazio nem conter algo estranho.
+	if !ok || label == "" || rest == "" || strings.ContainsAny(label, "/\\") {
+		return ""
+	}
+	page := "agendar/" + label + "/index.html"
+	if isFile(sub, page) {
+		return page
+	}
+	return ""
 }
 
 func isFile(sub fs.FS, p string) bool {

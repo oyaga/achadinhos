@@ -54,8 +54,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-public"
-      # O host agenda.* serve a página de agendamento (rewrite no binário Go).
-      - "traefik.http.routers.achadinhos.rule=Host(`achadinhoscondominio.com.br`) || Host(`agenda.achadinhoscondominio.com.br`)"
+      # O host ligia.* serve a página de agendamento (rewrite no binário Go;
+      # qualquer subdomínio cujo rótulo seja um slug de agenda funciona).
+      - "traefik.http.routers.achadinhos.rule=Host(`achadinhoscondominio.com.br`) || Host(`ligia.achadinhoscondominio.com.br`)"
       - "traefik.http.routers.achadinhos.entrypoints=websecure"
       - "traefik.http.routers.achadinhos.tls=true"
       - "traefik.http.routers.achadinhos.tls.certresolver=cloudflare"
