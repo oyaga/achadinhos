@@ -87,5 +87,29 @@ func EnsureCategories(ctx context.Context, gdb *gorm.DB) error {
 			return err
 		}
 	}
+	return cleanupRemovedCategories(ctx, gdb)
+}
+
+// cleanupRemovedCategories aplica em produção o mesmo fixup da migration
+// 0019_category_cleanup (o container roda AutoMigrate, que só sincroniza o
+// schema — data-fixes precisam viver aqui). Idempotente: depois da primeira
+// execução todos os statements viram no-ops.
+func cleanupRemovedCategories(ctx context.Context, gdb *gorm.DB) error {
+	steps := []struct{ sql string }{
+		// Lojas: empresas penduradas na categoria da vitrine migram p/ "loja".
+		{`UPDATE sellers SET category_id = 'loja' WHERE category_id = 'shopping'`},
+		// "administradora" duplicava "administracao-condominios".
+		{`UPDATE sellers SET category_id = 'administracao-condominios' WHERE category_id = 'administradora'`},
+		{`UPDATE providers SET category_id = 'administracao-condominios' WHERE category_id = 'administradora'`},
+		// "parceiros" saiu da lista (sem vínculos conhecidos; solta por segurança).
+		{`UPDATE sellers SET category_id = NULL WHERE category_id = 'parceiros'`},
+		{`UPDATE providers SET category_id = 'administracao-condominios' WHERE category_id = 'parceiros'`},
+		{`DELETE FROM categories WHERE id IN ('administradora', 'parceiros')`},
+	}
+	for _, s := range steps {
+		if err := gdb.WithContext(ctx).Exec(s.sql).Error; err != nil {
+			return err
+		}
+	}
 	return nil
 }
