@@ -19,6 +19,12 @@ RUN bun install --frozen-lockfile
 COPY frontend/ ./
 RUN bun run build
 
+# generateStaticParams engole erros e cai num placeholder `_unavailable` — se
+# a API de produção estiver fora/bloqueando o build, o export sai sem nenhuma
+# página de empresa/produto e sem URLs no sitemap, silenciosamente. Falha alto.
+RUN grep -q "/empresa/" out/sitemap.xml || \
+    (echo "ERRO: export sem paginas de entidade — API inacessivel no build?" && exit 1)
+
 # After `output: "export"`, the bundle lives in /app/out
 
 # ============================================================

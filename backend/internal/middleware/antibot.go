@@ -42,10 +42,12 @@ var blockedUAFragments = []string{
 }
 
 // rate limit: token bucket per client IP. Generous enough for a real user
-// loading asset-heavy pages, restrictive for a crawler mirroring the site.
+// loading asset-heavy pages E para o build do Next no CI, que faz ~2 fetches
+// por página de entidade contra a produção (generateStaticParams/Metadata) de
+// um único IP. Ainda restritivo para um crawler espelhando o site inteiro.
 const (
-	rlBurst      = 150
-	rlPerSecond  = 3
+	rlBurst      = 400
+	rlPerSecond  = 6
 	rlJanitorGap = 5 * time.Minute
 )
 
