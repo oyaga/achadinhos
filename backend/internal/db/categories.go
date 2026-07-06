@@ -16,7 +16,8 @@ var CanonicalCategories = []models.Category{
 	// ── Originais ──────────────────────────────────────────────
 	{ID: "destaque", Label: "Destaque do dia", Short: "Destaque\ndo dia", Icon: "CatHighlight", Badge: "TOP", Description: "Os melhores prestadores em destaque hoje", SortOrder: 1},
 	{ID: "shopping", Label: "Shopping condomínio", Short: "Shopping\ncondomínio", Icon: "CatShopping", Badge: "NOVO", Description: "Produtos para o condomínio com link direto da revenda", SortOrder: 2},
-	{ID: "parceiros", Label: "Parceiros homologados", Short: "Parceiros\nhomologados", Icon: "CatPartners", Description: "Empresas auditadas e aprovadas pela administração", SortOrder: 3},
+	// "parceiros" (Parceiros homologados) foi removida — migration 0019.
+	{ID: "loja", Label: "Loja", Short: "Loja", Icon: "CatShopping", Description: "Lojas parceiras com produtos e ofertas para o condomínio", SortOrder: 3},
 	{ID: "seguranca", Label: "Segurança eletrônica", Short: "Segurança\neletrônica", Icon: "CatSecurity", Description: "CFTV, alarmes, controle de acesso e monitoramento", SortOrder: 4},
 	{ID: "terceirizacao", Label: "Terceirização", Short: "Tercei-\nrização", Icon: "CatOutsource", Description: "Equipes terceirizadas: portaria, limpeza, manutenção", SortOrder: 5},
 	{ID: "portaria", Label: "Portaria virtual", Short: "Portaria\nvirtual", Icon: "CatPortaria", Description: "Portaria remota 24h com economia de até 60%", SortOrder: 6},

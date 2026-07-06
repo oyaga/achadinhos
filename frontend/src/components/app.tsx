@@ -341,6 +341,8 @@ export function App({ initialRoute }: AppProps = {}) {
             onBack={back}
             onProduct={onProductOpen}
             onToggleFav={toggleProductFav}
+            onSeller={goSeller}
+            onToggleSellerFav={toggleSellerFav}
           />
         )}
         {route.name === "product" && (

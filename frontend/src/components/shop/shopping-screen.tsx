@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { productsApi, getImageUrl } from "@/lib/api";
+import { productsApi, sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
 import { adaptProduct } from "@/lib/adapters";
 import type { Product, ShopCategory, ShopCategoryId } from "@/lib/types";
 import { cn, discountPct, formatBRL } from "@/lib/utils";
 import { Icon } from "../icons";
+import { CompanyCard } from "../home/featured-companies";
 
 interface ShoppingScreenProps {
   isFav: (id: number | string) => boolean;
   onBack: () => void;
   onProduct: (p: Product) => void;
   onToggleFav: (id: string) => void;
+  /** Abre o perfil de uma loja (empresa da categoria "loja"). */
+  onSeller?: (s: AdminSeller) => void;
+  onToggleSellerFav?: (id: string) => void;
 }
 
 type Sort = "relevance" | "price-asc" | "price-desc" | "rating";
@@ -33,12 +37,23 @@ export function ShoppingScreen({
   onBack,
   onProduct,
   onToggleFav,
+  onSeller,
+  onToggleSellerFav,
 }: ShoppingScreenProps) {
   const [activeCat, setActiveCat] = useState<ShopCategoryId>("all");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<Sort>("relevance");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  // Lojas parceiras: empresas cadastradas na categoria "loja".
+  const [lojas, setLojas] = useState<AdminSeller[]>([]);
+
+  useEffect(() => {
+    void sellersApi
+      .list()
+      .then((s) => setLojas(s.filter((x) => x.category_id === "loja")))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -126,6 +141,29 @@ export function ShoppingScreen({
             Compre direto da revenda — limpeza, manutenção, EPI, jardim e mais.
           </p>
         </div>
+
+        {/* Lojas parceiras (empresas da categoria "loja") */}
+        {activeCat === "all" && !q && lojas.length > 0 && onSeller && (
+          <div className="shop-section">
+            <div className="shop-section-head">
+              <div>
+                <div className="shop-section-eyebrow">Lojas parceiras</div>
+                <div className="shop-section-title">Compre de quem atende condomínios</div>
+              </div>
+            </div>
+            <div className="providers shop-lojas">
+              {lojas.map((s) => (
+                <CompanyCard
+                  key={s.id}
+                  company={s}
+                  onClick={() => onSeller(s)}
+                  isFav={isFav(s.id)}
+                  onToggleFav={() => onToggleSellerFav?.(s.id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {!loading && activeCat === "all" && !q && offers.length > 0 && (
           <div className="shop-section">
