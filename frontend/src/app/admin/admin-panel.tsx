@@ -10,6 +10,7 @@ import { NegociosSection } from "./negocios-section";
 import { SindicosSection } from "./sindicos-section";
 import { CadastroEmpresasSection } from "./cadastro-empresas-section";
 import { EventosSection } from "./eventos-section";
+import { BannersSection } from "./banners-section";
 import { CertificadosSection } from "./certificados-section";
 import { AgendaSection } from "./agenda-section";
 
@@ -19,6 +20,7 @@ type AdminTab =
   | "cadastro"
   | "certificados"
   | "eventos"
+  | "anuncios"
   | "agenda"
   | "sindicos";
 
@@ -28,6 +30,7 @@ const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "cadastro", label: "Cadastro de empresas", icon: "Building" },
   { id: "certificados", label: "Certificados", icon: "Award" },
   { id: "eventos", label: "Eventos", icon: "Calendar" },
+  { id: "anuncios", label: "Anúncios", icon: "Tag" },
   { id: "agenda", label: "Agenda", icon: "Clock" },
   { id: "sindicos", label: "Síndicos", icon: "User" },
 ];
@@ -123,6 +126,7 @@ export function AdminPanel() {
         {tab === "cadastro" && <CadastroEmpresasSection />}
         {tab === "certificados" && <CertificadosSection />}
         {tab === "eventos" && <EventosSection />}
+        {tab === "anuncios" && <BannersSection />}
         {tab === "agenda" && <AgendaSection />}
         {tab === "sindicos" && <SindicosSection />}
       </div>

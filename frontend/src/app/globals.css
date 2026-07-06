@@ -10516,3 +10516,284 @@ input[type="time"].prof-input {
     max-width: 260px;
   }
 }
+
+/* ===== Anúncio no slide principal (hero) ===== */
+.hero-slide--ad {
+  position: relative;
+  padding: 0;
+  min-height: 190px;
+  overflow: hidden;
+}
+.hero-slide--ad.clickable { cursor: pointer; }
+.hero-ad-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hero-ad-tag {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(6, 15, 42, 0.55);
+  color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+.hero-ad-overlay {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 28px 16px 14px;
+  background: linear-gradient(180deg, transparent, rgba(6, 15, 42, 0.82));
+  z-index: 1;
+}
+.hero-ad-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+}
+.hero-ad-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* ===== Widget de agenda/eventos da home ===== */
+.events-widget {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--navy-900), var(--navy-800));
+  box-shadow: var(--shadow-card);
+}
+.events-widget-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.events-widget-track::-webkit-scrollbar { display: none; }
+.events-widget-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+  min-height: 196px;
+}
+
+/* Slide 1: calendário + próximos eventos */
+.events-widget-cal {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  padding: 14px 16px 24px;
+  cursor: pointer;
+}
+.ew-cal-month {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: capitalize;
+  color: var(--gold-300);
+  margin-bottom: 6px;
+}
+.ew-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 22px);
+  gap: 2px 3px;
+}
+.ew-cal-wd {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+}
+.ew-cal-day {
+  width: 22px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  color: rgba(255, 255, 255, 0.72);
+  border-radius: 6px;
+  position: relative;
+}
+.ew-cal-day.today {
+  box-shadow: inset 0 0 0 1px var(--gold-400);
+  color: var(--gold-200);
+  font-weight: 700;
+}
+.ew-cal-day.has-event {
+  background: rgba(201, 169, 97, 0.28);
+  color: var(--gold-100);
+  font-weight: 700;
+}
+.ew-next { min-width: 0; }
+.ew-next-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.ew-next-empty {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+.ew-next-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+  min-width: 0;
+}
+.ew-next-item:last-child { border-bottom: none; }
+.ew-next-date {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gold-300);
+}
+.ew-next-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ew-next-time {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Slides de banner (evento ou anúncio) */
+.events-widget-banner {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+.ew-banner-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ew-banner-overlay {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 30px 16px 20px;
+  background: linear-gradient(180deg, transparent, rgba(6, 15, 42, 0.85));
+}
+.ew-banner-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold-300);
+}
+.ew-banner-title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.25;
+}
+.ew-banner-sub {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.ew-ad-tag {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(6, 15, 42, 0.55);
+  color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+/* Dots */
+.events-widget-dots {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  z-index: 2;
+}
+.events-widget-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.events-widget-dot.active {
+  width: 16px;
+  border-radius: 3px;
+  background: var(--gold-400);
+}
+
+/* Admin: lista de anúncios */
+.admin-banner-thumb {
+  width: 64px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--bone-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-400);
+}
+.admin-banner-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.admin-row.inactive .admin-row-main { opacity: 0.5; }
+
+@media (min-width: 768px) {
+  .events-widget-slide { min-height: 220px; }
+  .events-widget-cal { gap: 24px; padding: 18px 22px 28px; }
+  .ew-cal-grid { grid-template-columns: repeat(7, 26px); gap: 3px 4px; }
+  .ew-cal-day { width: 26px; height: 23px; font-size: 10.5px; }
+  .ew-next-title { font-size: 16px; }
+  .ew-next-name { font-size: 13px; }
+  .hero-slide--ad { min-height: 220px; }
+}

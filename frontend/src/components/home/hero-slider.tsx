@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { providersApi, productsApi, sellersApi, eventsApi, getImageUrl, type AdminSeller, type ApiEvent } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import { providersApi, productsApi, sellersApi, eventsApi, bannersApi, getImageUrl, type AdminSeller, type ApiEvent, type ApiBanner } from "@/lib/api";
 import { adaptProvider, adaptProduct } from "@/lib/adapters";
 import type { Provider, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,20 @@ type SlideProvider = { kind: "provider"; data: Provider };
 type SlideSeller   = { kind: "seller";   data: AdminSeller };
 type SlideProduct  = { kind: "product";  data: Product  };
 type SlideEvent    = { kind: "event";    data: ApiEvent };
-type Slide = SlideProvider | SlideSeller | SlideProduct | SlideEvent;
+type SlideAd       = { kind: "ad";       data: ApiBanner };
+type Slide = SlideProvider | SlideSeller | SlideProduct | SlideEvent | SlideAd;
+
+// Abre o destino de um anúncio: URL absoluta em nova aba, caminho do site na
+// própria aba (SPA). Sem link, o clique não faz nada.
+export function openBannerLink(router: { push: (p: string) => void }, b: ApiBanner) {
+  const link = b.link_url.trim();
+  if (!link) return;
+  if (/^https?:\/\//i.test(link)) {
+    window.open(link, "_blank", "noopener");
+  } else if (link.startsWith("/")) {
+    router.push(link);
+  }
+}
 
 interface HeroSliderProps {
   onProvider: (p: Provider) => void;
@@ -31,6 +45,7 @@ function todayYmd(): string {
 }
 
 export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp, onEvent }: HeroSliderProps) {
+  const router = useRouter();
   const [slides, setSlides] = useState<Slide[]>([]);
   const [active, setActive] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -43,7 +58,8 @@ export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp, onEven
       sellersApi.list({ highlight: true }),
       productsApi.list({ highlight: true, limit: 3 }),
       eventsApi.list(),
-    ]).then(([provRes, sellRes, prodRes, evRes]) => {
+      bannersApi.list("hero"),
+    ]).then(([provRes, sellRes, prodRes, evRes, adRes]) => {
       const provSlides: SlideProvider[] =
         provRes.status === "fulfilled"
           ? provRes.value.data.map((p) => ({ kind: "provider", data: adaptProvider(p) }))
@@ -70,7 +86,12 @@ export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp, onEven
               .slice(0, 3)
               .map((ev) => ({ kind: "event", data: ev }))
           : [];
-      setSlides([...sellSlides, ...provSlides, ...prodSlides, ...evSlides]);
+      // Anúncios do admin abrem o carrossel, na ordem definida no painel.
+      const adSlides: SlideAd[] =
+        adRes.status === "fulfilled"
+          ? adRes.value.map((b) => ({ kind: "ad", data: b }))
+          : [];
+      setSlides([...adSlides, ...sellSlides, ...provSlides, ...prodSlides, ...evSlides]);
     });
   }, []);
 
@@ -163,6 +184,13 @@ export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp, onEven
                 event={slide.data}
                 index={i}
                 onClick={() => onEvent?.()}
+              />
+            ) : slide.kind === "ad" ? (
+              <AdSlide
+                key={slide.data.id}
+                banner={slide.data}
+                index={i}
+                onClick={() => openBannerLink(router, slide.data)}
               />
             ) : (
               <ProductSlide
@@ -374,6 +402,37 @@ function EventSlide({ event: ev, onClick }: { event: ApiEvent; index: number; on
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Ad slide (anúncio gerenciado pelo admin) ──────────────────────────────────
+
+function AdSlide({ banner: b, onClick }: { banner: ApiBanner; index: number; onClick: () => void }) {
+  const clickable = b.link_url.trim() !== "";
+  return (
+    <div
+      className={cn("hero hero-slide hero-slide--ad", clickable && "clickable")}
+      onClick={onClick}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={(e) => { if (clickable && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onClick(); } }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={getImageUrl(b.image_url)}
+        alt={b.title || "Anúncio"}
+        className="hero-ad-img"
+        loading="lazy"
+        decoding="async"
+      />
+      <span className="hero-ad-tag">Publicidade</span>
+      {(b.title.trim() || b.subtitle.trim()) && (
+        <div className="hero-ad-overlay">
+          {b.title.trim() && <div className="hero-ad-title">{b.title}</div>}
+          {b.subtitle.trim() && <div className="hero-ad-sub">{b.subtitle}</div>}
+        </div>
+      )}
     </div>
   );
 }

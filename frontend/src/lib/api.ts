@@ -772,6 +772,30 @@ export interface ApiEvent {
   created_at?: string;
 }
 
+// ── Anúncios (banners gerenciados pelo admin) ──
+export type BannerPlacement = "hero" | "eventos";
+
+export interface ApiBanner {
+  id: string;
+  title: string;
+  subtitle: string;
+  link_url: string;
+  image_url: string;
+  placement: BannerPlacement;
+  position: number;
+  active: boolean;
+  created_at?: string;
+}
+
+export interface AdminBannerPayload {
+  title?: string;
+  subtitle?: string;
+  link_url?: string;
+  placement: BannerPlacement;
+  position?: number;
+  active?: boolean;
+}
+
 export interface AdminEventPayload {
   title: string;
   description: string;
@@ -1014,6 +1038,24 @@ export const adminApi = {
     return request<void>(`/admin/events/${id}/banner`, { method: "DELETE", parseAs: "none" });
   },
 
+  // ── Anúncios (banners do slide principal e do widget de eventos) ──
+  async listBanners(): Promise<ApiBanner[]> {
+    const res = await request<{ data: ApiBanner[] }>("/admin/banners");
+    return res.data ?? [];
+  },
+  async createBanner(payload: AdminBannerPayload): Promise<ApiBanner> {
+    return request<ApiBanner>("/admin/banners", { method: "POST", body: payload });
+  },
+  async updateBanner(id: string, payload: Partial<AdminBannerPayload>): Promise<ApiBanner> {
+    return request<ApiBanner>(`/admin/banners/${id}`, { method: "PATCH", body: payload });
+  },
+  async deleteBanner(id: string): Promise<void> {
+    return request<void>(`/admin/banners/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+  async uploadBannerImage(id: string, file: File): Promise<{ image_url: string }> {
+    return uploadImage(`/admin/banners/${id}/image`, file);
+  },
+
   // ── Certificados ──
   async listCertificates(): Promise<ApiCertificate[]> {
     const res = await request<{ data: ApiCertificate[] }>("/admin/certificates");
@@ -1099,6 +1141,15 @@ export const fichasApi = {
 export const eventsApi = {
   async list(): Promise<ApiEvent[]> {
     const res = await request<{ data: ApiEvent[] }>("/events");
+    return res.data ?? [];
+  },
+};
+
+// Anúncios ativos (slide principal e widget de eventos) — público, sem login.
+export const bannersApi = {
+  async list(placement?: BannerPlacement): Promise<ApiBanner[]> {
+    const qs = placement ? `?placement=${placement}` : "";
+    const res = await request<{ data: ApiBanner[] }>(`/banners${qs}`, { skipAuth: true });
     return res.data ?? [];
   },
 };

@@ -71,6 +71,7 @@ func AutoMigrate(gdb *gorm.DB) error {
 		&models.RefreshToken{},
 		&models.FichaCadastro{},
 		&models.Event{},
+		&models.Banner{},
 		&models.Certificate{},
 		&models.AgendaSettings{},
 		&models.GoogleOAuthToken{},

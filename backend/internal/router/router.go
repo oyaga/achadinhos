@@ -53,6 +53,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	mailer := email.NewClient(cfg.ResendAPIKey, cfg.MailFrom)
 	fichaH := handlers.NewFichaHandler(db, mailer, cfg.AppBaseURL)
 	evH := handlers.NewEventHandler(db)
+	bnH := handlers.NewBannerHandler(db)
 	certH := handlers.NewCertificateHandler(db)
 	agendaSvc := agenda.NewService(
 		db,
@@ -95,6 +96,9 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	// Public events (calendário do condomínio).
 	v1.GET("/events", evH.List)
 	v1.GET("/events/:id", evH.Get)
+
+	// Public banners/anúncios (slide principal e widget de eventos).
+	v1.GET("/banners", bnH.List)
 
 	// Public certificate verification (acessada pelo QR code).
 	v1.GET("/certificates/:code", certH.GetByCode)
@@ -161,6 +165,12 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.DELETE("/events/:id", evH.Delete)
 		admin.POST("/events/:id/banner", evH.UploadBanner)
 		admin.DELETE("/events/:id/banner", evH.DeleteBanner)
+
+		admin.GET("/banners", bnH.AdminList)
+		admin.POST("/banners", bnH.Create)
+		admin.PATCH("/banners/:id", bnH.Update)
+		admin.DELETE("/banners/:id", bnH.Delete)
+		admin.POST("/banners/:id/image", bnH.UploadImage)
 
 		admin.GET("/agenda", agendaH.AdminGet)
 		admin.PUT("/agenda", agendaH.AdminUpdate)

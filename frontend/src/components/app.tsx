@@ -15,6 +15,7 @@ import { Icon } from "./icons";
 import { Header } from "./home/header";
 import { LocationBar } from "./home/location-bar";
 import { HeroSlider } from "./home/hero-slider";
+import { EventsWidget } from "./home/events-widget";
 import { CategoriesSection } from "./home/categories-section";
 import { ProvidersSection } from "./home/providers-section";
 import { FeaturedCompanies } from "./home/featured-companies";
@@ -202,6 +203,7 @@ export function App({ initialRoute }: AppProps = {}) {
                   onSelect={goCategory}
                   onSeeAll={() => navigate({ name: "allcats" })}
                 />
+                <EventsWidget onSeeAll={() => navigate({ name: "events" })} />
                 <InstallBanner onInstall={handleInstall} />
                 <ProvidersSection
                   providers={filteredProviders}
