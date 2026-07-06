@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { categoriesApi, type ApiCategory } from "@/lib/api";
 import type { CategoryId } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, isPublicCategory } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Icon } from "../icons";
 
@@ -27,7 +27,10 @@ export function CategoriesSection({
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    void categoriesApi.list().then(setCats).catch(() => {});
+    void categoriesApi
+      .list()
+      .then((cats) => setCats(cats.filter(isPublicCategory)))
+      .catch(() => {});
   }, []);
 
   const showAll = mounted && isDesktop;

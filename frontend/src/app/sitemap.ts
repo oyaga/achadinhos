@@ -5,6 +5,7 @@ import {
   providersApi,
   sellersApi,
 } from "@/lib/api";
+import { isPublicCategory } from "@/lib/utils";
 
 export const dynamic = "force-static";
 
@@ -43,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   if (cats) {
-    for (const c of cats) {
+    for (const c of cats.filter(isPublicCategory)) {
       entries.push({
         url: `${BASE_URL}/categoria/${c.id}`,
         lastModified: now,

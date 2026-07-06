@@ -9,6 +9,7 @@ import {
   type AdminSeller,
 } from "@/lib/api";
 import type { CategoryId } from "@/lib/types";
+import { isPublicCategory } from "@/lib/utils";
 import { Icon } from "../icons";
 
 interface AllCategoriesScreenProps {
@@ -26,7 +27,10 @@ export function AllCategoriesScreen({
   const [sellers, setSellers] = useState<AdminSeller[]>([]);
 
   useEffect(() => {
-    void categoriesApi.list().then(setCats).catch(() => {});
+    void categoriesApi
+      .list()
+      .then((cats) => setCats(cats.filter(isPublicCategory)))
+      .catch(() => {});
     void sellersApi.list().then(setSellers).catch(() => {});
   }, []);
 

@@ -16,6 +16,13 @@ export function discountPct(price: number, oldPrice: number): number {
   return Math.round((1 - price / oldPrice) * 100);
 }
 
+// Categorias de uso interno do admin que não aparecem nas listagens públicas
+// (grid da home, sidebar, "ver todas", sitemap). "loja" classifica os
+// fornecedores do Shopping — a vitrine pública deles é a seção Lojas parceiras.
+export function isPublicCategory(c: { id: string }): boolean {
+  return c.id !== "loja";
+}
+
 // Rótulo do nível do certificado. Os IDs internos (prata/ouro/black) são
 // mantidos no banco e na API; só o nome exibido mudou:
 // prata -> Verificado · ouro -> Afiliados · black -> Black.

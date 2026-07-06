@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { categoriesApi, type ApiCategory } from "@/lib/api";
 import type { CategoryId } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, isPublicCategory } from "@/lib/utils";
 
 export type FilterId = "verified" | "rating45" | "now" | "homologado";
 
@@ -32,7 +32,10 @@ export function CategorySidebar({
   const [cats, setCats] = useState<ApiCategory[]>([]);
 
   useEffect(() => {
-    void categoriesApi.list().then(setCats).catch(() => {});
+    void categoriesApi
+      .list()
+      .then((cats) => setCats(cats.filter(isPublicCategory)))
+      .catch(() => {});
   }, []);
 
   // O backend também lista "destaque" como categoria; filtramos para não

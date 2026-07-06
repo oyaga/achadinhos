@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { categoriesApi } from "@/lib/api";
+import { isPublicCategory } from "@/lib/utils";
 import { App } from "@/components/app";
 import { JsonLd, categoryCollectionSchema } from "@/components/seo/json-ld";
 
@@ -11,7 +12,7 @@ const FALLBACK_ID = "_unavailable";
 
 export async function generateStaticParams() {
   try {
-    const cats = await categoriesApi.list();
+    const cats = (await categoriesApi.list()).filter(isPublicCategory);
     if (cats.length > 0) return cats.map((c) => ({ id: c.id }));
   } catch {
     /* swallow — fall through to placeholder */
