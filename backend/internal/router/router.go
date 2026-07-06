@@ -24,6 +24,12 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	r := gin.New()
 	r.Use(middleware.Recover())
 	r.Use(middleware.Logger())
+	// Anti-clonagem: bloqueia user-agents de agentes de IA/scrapers e aplica
+	// rate limit por IP. Só em produção para não atrapalhar dev/testes.
+	r.Use(middleware.AntiBot(middleware.AntiBotConfig{
+		Enabled:     cfg.AppEnv == "production",
+		BypassToken: cfg.AntibotBypassToken,
+	}))
 	r.Use(middleware.CORS(cfg.CORSOrigins))
 
 	// Serve uploaded product photos as static files.
@@ -32,6 +38,12 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	// Health.
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	// Sinaliza a bots "educados" (inclui os crawlers de IA) que o conteúdo não
+	// pode ser copiado nem usado para treinamento. Buscadores continuam livres.
+	r.GET("/robots.txt", func(c *gin.Context) {
+		c.Data(http.StatusOK, "text/plain; charset=utf-8", []byte(robotsTxt))
 	})
 
 	authSvc := auth.New(db, cfg)
@@ -180,3 +192,39 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 
 	return r
 }
+
+// robotsTxt proíbe crawlers de IA (treinamento e agentes) e mantém os
+// buscadores tradicionais liberados. É só um sinal — bots mal-comportados são
+// barrados pelo middleware AntiBot.
+const robotsTxt = `# Achadinhos do Condominio — conteudo protegido por direitos autorais.
+# Uso para treinamento de IA ou copia/clonagem do site NAO e autorizado.
+
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+User-agent: ClaudeBot
+User-agent: Claude-Web
+User-agent: anthropic-ai
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: CCBot
+User-agent: Bytespider
+User-agent: cohere-ai
+User-agent: meta-externalagent
+User-agent: FacebookBot
+User-agent: Amazonbot
+User-agent: AI2Bot
+User-agent: Diffbot
+User-agent: omgilibot
+User-agent: YouBot
+User-agent: MistralAI-User
+User-agent: FirecrawlAgent
+Disallow: /
+
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Allow: /
+`

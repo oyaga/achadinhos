@@ -42,6 +42,10 @@ type Config struct {
 	// URI is {AppBaseURL}/api/v1/agenda/google/callback.
 	GoogleOAuthClientID     string
 	GoogleOAuthClientSecret string
+
+	// Secret that lets a request skip the anti-bot checks via the header
+	// "X-Antibot-Bypass" (used for our own headless inspection of production).
+	AntibotBypassToken string
 }
 
 // Load reads .env (if present) and environment variables, returning a Config.
@@ -69,6 +73,8 @@ func Load() (*Config, error) {
 
 		GoogleOAuthClientID:     getEnv("GOOGLE_OAUTH_CLIENT_ID", ""),
 		GoogleOAuthClientSecret: getEnv("GOOGLE_OAUTH_CLIENT_SECRET", ""),
+
+		AntibotBypassToken: getEnv("ANTIBOT_BYPASS_TOKEN", ""),
 	}
 
 	accessTTL, err := time.ParseDuration(getEnv("JWT_ACCESS_TTL", "15m"))

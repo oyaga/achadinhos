@@ -45,6 +45,9 @@ services:
       # Agendamento (Google Calendar + Meet). Vazios desligam a agenda.
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
       GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
+      # Anti-bot: header "X-Antibot-Bypass: <token>" pula o bloqueio de UA e o
+      # rate limit (para inspeção headless própria). Vazio = sem bypass.
+      ANTIBOT_BYPASS_TOKEN: ${ANTIBOT_BYPASS_TOKEN:-}
     volumes:
       - achadinhos_uploads:/app/uploads
     networks:
