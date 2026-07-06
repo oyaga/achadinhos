@@ -9606,6 +9606,15 @@ input[type="time"].prof-input {
   align-items: center;
   gap: 5px;
 }
+.site-footer-legal {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.site-footer-legal .site-footer-link {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+}
 .site-footer-made svg {
   color: var(--gold-400);
 }
@@ -9640,6 +9649,102 @@ input[type="time"].prof-input {
     align-items: center;
     justify-content: space-between;
   }
+}
+
+/* Consentimento sob o CTA do agendamento */
+.agd-consent {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-500);
+  text-align: center;
+}
+.agd-consent a {
+  color: var(--navy-700);
+  font-weight: 600;
+}
+
+/* ── Páginas legais (/privacidade, /termos) ──────────────────────── */
+.legal-page {
+  min-height: 100dvh;
+  background: var(--bone-50);
+  padding: 40px 22px 64px;
+}
+.legal-container {
+  max-width: 780px;
+  margin: 0 auto;
+  color: var(--ink-800);
+  font-size: 14.5px;
+  line-height: 1.7;
+}
+.legal-back {
+  display: inline-block;
+  margin-bottom: 26px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy-700);
+  text-decoration: none;
+}
+.legal-back:hover {
+  color: var(--gold-500);
+}
+.legal-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-500);
+  margin-bottom: 8px;
+}
+.legal-container h1 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 34px;
+  color: var(--navy-900);
+  margin: 0 0 4px;
+  line-height: 1.1;
+}
+.legal-updated {
+  font-size: 12px;
+  color: var(--ink-500);
+  margin: 0 0 24px;
+}
+.legal-container h2 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 20px;
+  color: var(--navy-900);
+  margin: 30px 0 8px;
+}
+.legal-container p {
+  margin: 0 0 12px;
+}
+.legal-container ul {
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+.legal-container li {
+  margin-bottom: 6px;
+}
+.legal-container a {
+  color: var(--navy-700);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(201, 169, 97, 0.55);
+  text-underline-offset: 2px;
+}
+.legal-container a:hover {
+  color: var(--gold-500);
+}
+.legal-footer-links {
+  display: flex;
+  gap: 18px;
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid var(--bone-200);
 }
 
 /* ── CTA de agendamento no calendário de eventos ─────────────────── */

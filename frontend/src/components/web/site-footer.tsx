@@ -83,6 +83,15 @@ export function SiteFooter({ onShopping, onHighlights, authed }: SiteFooterProps
 
         <div className="site-footer-bottom">
           <span>© {year} Achadinhos do Condomínio. Todos os direitos reservados.</span>
+          <span className="site-footer-legal">
+            <Link href="/privacidade" className="site-footer-link">
+              Privacidade
+            </Link>
+            <span aria-hidden="true">·</span>
+            <Link href="/termos" className="site-footer-link">
+              Termos
+            </Link>
+          </span>
           <span className="site-footer-made">
             Feito para condomínios <Icon.Sparkle size={12} />
           </span>

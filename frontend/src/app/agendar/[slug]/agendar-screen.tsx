@@ -513,6 +513,12 @@ export function AgendarScreen({ slug }: AgendarScreenProps) {
               <Icon.Check size={16} />
               {submitting ? "Confirmando…" : "Confirmar agendamento"}
             </button>
+            <p className="agd-consent">
+              Ao confirmar, você concorda com os{" "}
+              <Link href="/termos">Termos de Uso</Link> e a{" "}
+              <Link href="/privacidade">Política de Privacidade</Link>; usamos
+              seus dados só para criar a reunião e enviar o convite.
+            </p>
           </form>
         )}
 
