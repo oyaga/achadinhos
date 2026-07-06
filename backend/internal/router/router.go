@@ -153,6 +153,8 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.POST("/events", evH.Create)
 		admin.PATCH("/events/:id", evH.Update)
 		admin.DELETE("/events/:id", evH.Delete)
+		admin.POST("/events/:id/banner", evH.UploadBanner)
+		admin.DELETE("/events/:id/banner", evH.DeleteBanner)
 
 		admin.GET("/agenda", agendaH.AdminGet)
 		admin.PUT("/agenda", agendaH.AdminUpdate)

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { providersApi, productsApi, sellersApi, getImageUrl, type AdminSeller } from "@/lib/api";
+import { providersApi, productsApi, sellersApi, eventsApi, getImageUrl, type AdminSeller, type ApiEvent } from "@/lib/api";
 import { adaptProvider, adaptProduct } from "@/lib/adapters";
 import type { Provider, Product } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -11,16 +11,26 @@ import { Icon } from "../icons";
 type SlideProvider = { kind: "provider"; data: Provider };
 type SlideSeller   = { kind: "seller";   data: AdminSeller };
 type SlideProduct  = { kind: "product";  data: Product  };
-type Slide = SlideProvider | SlideSeller | SlideProduct;
+type SlideEvent    = { kind: "event";    data: ApiEvent };
+type Slide = SlideProvider | SlideSeller | SlideProduct | SlideEvent;
 
 interface HeroSliderProps {
   onProvider: (p: Provider) => void;
   onProduct:  (p: Product)  => void;
   onSeller:   (s: AdminSeller) => void;
   onWhatsapp?: (p: Provider) => void;
+  onEvent?:   () => void;
 }
 
-export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp }: HeroSliderProps) {
+// "AAAA-MM-DD" local de hoje, para comparar com event_date sem fuso.
+function todayYmd(): string {
+  const now = new Date();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${m}-${d}`;
+}
+
+export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp, onEvent }: HeroSliderProps) {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [active, setActive] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -32,7 +42,8 @@ export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp }: Hero
       providersApi.list({ highlight: true, sort: "rating", limit: 3 }),
       sellersApi.list({ highlight: true }),
       productsApi.list({ highlight: true, limit: 3 }),
-    ]).then(([provRes, sellRes, prodRes]) => {
+      eventsApi.list(),
+    ]).then(([provRes, sellRes, prodRes, evRes]) => {
       const provSlides: SlideProvider[] =
         provRes.status === "fulfilled"
           ? provRes.value.data.map((p) => ({ kind: "provider", data: adaptProvider(p) }))
@@ -45,7 +56,21 @@ export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp }: Hero
         prodRes.status === "fulfilled"
           ? prodRes.value.data.map((p) => ({ kind: "product", data: adaptProduct(p) }))
           : [];
-      setSlides([...sellSlides, ...provSlides, ...prodSlides]);
+      // Eventos: só destacados e futuros (hoje inclusive), os 3 mais próximos.
+      const today = todayYmd();
+      const evSlides: SlideEvent[] =
+        evRes.status === "fulfilled"
+          ? evRes.value
+              .filter((ev) => ev.highlight && ev.event_date.slice(0, 10) >= today)
+              .sort((a, b) =>
+                `${a.event_date.slice(0, 10)} ${a.event_time}`.localeCompare(
+                  `${b.event_date.slice(0, 10)} ${b.event_time}`,
+                ),
+              )
+              .slice(0, 3)
+              .map((ev) => ({ kind: "event", data: ev }))
+          : [];
+      setSlides([...sellSlides, ...provSlides, ...prodSlides, ...evSlides]);
     });
   }, []);
 
@@ -131,6 +156,13 @@ export function HeroSlider({ onProvider, onProduct, onSeller, onWhatsapp }: Hero
                 seller={slide.data}
                 index={i}
                 onClick={() => onSeller(slide.data)}
+              />
+            ) : slide.kind === "event" ? (
+              <EventSlide
+                key={slide.data.id}
+                event={slide.data}
+                index={i}
+                onClick={() => onEvent?.()}
               />
             ) : (
               <ProductSlide
@@ -271,6 +303,74 @@ function SellerSlide({ seller: s, onClick }: { seller: AdminSeller; index: numbe
         ) : (
           <div className="hero-avatar-ring">
             <span className="hero-avatar-letter">{s.name.charAt(0).toUpperCase()}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Event slide ───────────────────────────────────────────────────────────────
+
+// "2026-07-20" -> "domingo, 20 de julho" (data por extenso, sem fuso).
+function formatEventLongDate(iso: string): string {
+  const ymd = iso.slice(0, 10);
+  const [y, m, d] = ymd.split("-").map(Number);
+  if (!y || !m || !d) return ymd;
+  return new Date(y, m - 1, d).toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
+function EventSlide({ event: ev, onClick }: { event: ApiEvent; index: number; onClick: () => void }) {
+  return (
+    <div className="hero hero-slide" onClick={onClick} role="button" tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}>
+      <div className="hero-slide-content">
+        <div className="hero-tag">
+          <Icon.Calendar size={11} /> Evento
+        </div>
+        <div className="hero-title">{ev.title}</div>
+        <div className="hero-meta hero-event-meta">
+          <span className="hero-event-date">{formatEventLongDate(ev.event_date)}</span>
+          {ev.event_time && (
+            <>
+              <span className="hero-divider" />
+              <span>{ev.event_time}</span>
+            </>
+          )}
+          {ev.location && (
+            <>
+              <span className="hero-divider" />
+              <span className="hero-event-place">{ev.location}</span>
+            </>
+          )}
+        </div>
+        <div className="hero-slide-cta">
+          <button
+            type="button"
+            className="hero-cta-btn primary"
+            onClick={(e) => { e.stopPropagation(); onClick(); }}
+          >
+            Ver agenda
+          </button>
+        </div>
+      </div>
+      <div className="hero-slide-media">
+        {ev.banner_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={getImageUrl(ev.banner_url)}
+            alt={ev.title}
+            className="hero-event-banner"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div className="hero-event-placeholder">
+            <Icon.Calendar size={28} />
           </div>
         )}
       </div>

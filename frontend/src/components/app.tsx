@@ -195,6 +195,7 @@ export function App({ initialRoute }: AppProps = {}) {
                   onProduct={onProductOpen}
                   onSeller={goSeller}
                   onWhatsapp={openWhatsapp}
+                  onEvent={() => navigate({ name: "events" })}
                 />
                 <CategoriesSection
                   active={activeCat}

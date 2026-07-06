@@ -99,6 +99,7 @@ func (h *EventHandler) Create(c *gin.Context) {
 		Location:    strings.TrimSpace(req.Location),
 		EventDate:   date,
 		EventTime:   tm,
+		Highlight:   req.Highlight,
 	}
 	if err := h.db.WithContext(c.Request.Context()).Create(ev).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to create event")
@@ -148,6 +149,9 @@ func (h *EventHandler) Update(c *gin.Context) {
 		}
 		updates["event_time"] = tm
 	}
+	if req.Highlight != nil {
+		updates["highlight"] = *req.Highlight
+	}
 	if len(updates) > 0 {
 		if err := h.db.WithContext(c.Request.Context()).Model(&ev).Updates(updates).Error; err != nil {
 			JSONError(c, http.StatusInternalServerError, "failed to update event")
@@ -173,5 +177,53 @@ func (h *EventHandler) Delete(c *gin.Context) {
 		JSONError(c, http.StatusNotFound, "evento não encontrado")
 		return
 	}
+	c.Status(http.StatusNoContent)
+}
+
+// UploadBanner handles POST /admin/events/:id/banner (multipart, campo "file").
+// Salva a imagem em /uploads/event-banners/ e grava banner_url no evento.
+func (h *EventHandler) UploadBanner(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+	var ev models.Event
+	if err := h.db.WithContext(c.Request.Context()).First(&ev, "id = ?", id).Error; err != nil {
+		JSONError(c, http.StatusNotFound, "evento não encontrado")
+		return
+	}
+	url, ok := saveUploadedFile(c, "event-banners", false, false)
+	if !ok {
+		return
+	}
+	if err := h.db.WithContext(c.Request.Context()).Model(&ev).
+		Update("banner_url", url).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to save banner")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"banner_url": url})
+}
+
+// DeleteBanner handles DELETE /admin/events/:id/banner — limpa banner_url e
+// remove o arquivo do disco (best-effort).
+func (h *EventHandler) DeleteBanner(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+	var ev models.Event
+	if err := h.db.WithContext(c.Request.Context()).First(&ev, "id = ?", id).Error; err != nil {
+		JSONError(c, http.StatusNotFound, "evento não encontrado")
+		return
+	}
+	old := ev.BannerURL
+	if err := h.db.WithContext(c.Request.Context()).Model(&ev).
+		Update("banner_url", "").Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to clear banner")
+		return
+	}
+	removeUploadedFile(old)
 	c.Status(http.StatusNoContent)
 }

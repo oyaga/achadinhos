@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   adminApi,
   ApiError,
+  getImageUrl,
   type ApiEvent,
 } from "@/lib/api";
 import { Icon } from "@/components/icons";
@@ -15,6 +16,7 @@ interface FormState {
   event_time: string; // "HH:MM"
   location: string;
   description: string;
+  highlight: boolean;
 }
 
 const EMPTY: FormState = {
@@ -23,7 +25,11 @@ const EMPTY: FormState = {
   event_time: "",
   location: "",
   description: "",
+  highlight: false,
 };
+
+// Formatos aceitos para o banner do evento.
+const BANNER_ACCEPT = "image/jpeg,image/png,image/webp";
 
 const MONTH_ABBR = [
   "JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
@@ -54,6 +60,9 @@ export function EventosSection() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
+  // Banner: URL já salva no backend (edição) e arquivo pendente de envio.
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [pendingBanner, setPendingBanner] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -76,6 +85,8 @@ export function EventosSection() {
   function openCreate() {
     setEditingId(null);
     setForm(EMPTY);
+    setBannerUrl("");
+    setPendingBanner(null);
     setFormError(null);
     setFormOpen(true);
   }
@@ -88,13 +99,33 @@ export function EventosSection() {
       event_time: ev.event_time,
       location: ev.location,
       description: ev.description,
+      highlight: ev.highlight ?? false,
     });
+    setBannerUrl(ev.banner_url ?? "");
+    setPendingBanner(null);
     setFormError(null);
     setFormOpen(true);
   }
 
-  function update<K extends keyof FormState>(key: K, value: string) {
+  function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function pickBanner(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    setPendingBanner(file);
+  }
+
+  // Remove o banner já salvo no backend (só existe em modo edição).
+  async function removeExistingBanner() {
+    if (!editingId) return;
+    try {
+      await adminApi.deleteEventBanner(editingId);
+      setBannerUrl("");
+    } catch (err) {
+      window.alert(err instanceof ApiError ? err.message : "Não foi possível remover o banner.");
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -114,17 +145,38 @@ export function EventosSection() {
       event_time: form.event_time,
       location: form.location.trim(),
       description: form.description.trim(),
+      highlight: form.highlight,
     };
     setSubmitting(true);
     try {
-      if (editingId) await adminApi.updateEvent(editingId, payload);
-      else await adminApi.createEvent(payload);
+      // O upload do banner exige o id — no CREATE sobe após criar o evento.
+      let eventId = editingId;
+      if (editingId) {
+        await adminApi.updateEvent(editingId, payload);
+      } else {
+        const created = await adminApi.createEvent(payload);
+        eventId = created.id;
+      }
+      if (eventId && pendingBanner) {
+        await adminApi.uploadEventBanner(eventId, pendingBanner);
+      }
       setFormOpen(false);
+      setPendingBanner(null);
+      setBannerUrl("");
       await refresh();
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : "Não foi possível salvar o evento.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function toggleHighlight(ev: ApiEvent) {
+    try {
+      await adminApi.updateEvent(ev.id, { highlight: !ev.highlight });
+      await refresh();
+    } catch (err) {
+      window.alert(err instanceof ApiError ? err.message : "Não foi possível atualizar o destaque.");
     }
   }
 
@@ -219,6 +271,68 @@ export function EventosSection() {
             />
           </div>
 
+          <div className="admin-check-row">
+            <label className="auth-checkbox">
+              <input
+                type="checkbox"
+                checked={form.highlight}
+                onChange={(e) => update("highlight", e.target.checked)}
+              />
+              <span className="auth-checkbox-box">
+                {form.highlight && <Icon.Check size={12} />}
+              </span>
+              <span className="auth-checkbox-text">
+                Em destaque (aparece no carrossel da home)
+              </span>
+            </label>
+          </div>
+
+          <div className="prof-field">
+            <label className="prof-label">Banner</label>
+            <div className="admin-photos">
+              {pendingBanner ? (
+                <div className="admin-photo" style={{ width: 128, height: 72 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={URL.createObjectURL(pendingBanner)} alt="Pré-visualização do banner" />
+                  <button
+                    type="button"
+                    className="admin-photo-remove"
+                    onClick={() => setPendingBanner(null)}
+                    aria-label="Remover banner"
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : bannerUrl ? (
+                <div className="admin-photo" style={{ width: 128, height: 72 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={getImageUrl(bannerUrl)} alt="Banner do evento" />
+                  <button
+                    type="button"
+                    className="admin-photo-remove"
+                    onClick={() => void removeExistingBanner()}
+                    aria-label="Remover banner"
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : (
+                <label className="admin-photo-add" style={{ width: 128, height: 72 }}>
+                  <Icon.Plus size={20} />
+                  <input
+                    type="file"
+                    accept={BANNER_ACCEPT}
+                    className="file-overlay"
+                    onChange={(e) => { pickBanner(e.target.files); e.target.value = ""; }}
+                  />
+                </label>
+              )}
+            </div>
+            <div className="admin-hint">
+              O banner aparece no destaque da home (recomendado 1200×675, 16:9).
+            </div>
+          </div>
+
           <div className="admin-form-actions">
             <button type="button" className="admin-new-btn ghost" onClick={() => setFormOpen(false)}>
               Cancelar
@@ -262,6 +376,17 @@ export function EventosSection() {
                 </div>
               </div>
               <div className="admin-row-actions">
+                <button
+                  type="button"
+                  className={cn("admin-icon-btn", ev.highlight && "active")}
+                  onClick={() => toggleHighlight(ev)}
+                  aria-label={
+                    ev.highlight ? `Remover destaque de ${ev.title}` : `Destacar ${ev.title}`
+                  }
+                  title={ev.highlight ? "Remover do carrossel" : "Adicionar ao carrossel"}
+                >
+                  <Icon.Star size={15} filled={ev.highlight} />
+                </button>
                 <button
                   type="button"
                   className="admin-icon-btn"

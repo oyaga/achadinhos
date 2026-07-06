@@ -766,6 +766,9 @@ export interface ApiEvent {
   location: string;
   event_date: string; // ISO; use .slice(0,10) para a data "AAAA-MM-DD"
   event_time: string; // "HH:MM"
+  // Destaque no slider da home + banner (vazio quando sem banner).
+  highlight: boolean;
+  banner_url: string;
   created_at?: string;
 }
 
@@ -775,6 +778,7 @@ export interface AdminEventPayload {
   location: string;
   event_date: string; // "AAAA-MM-DD"
   event_time: string; // "HH:MM"
+  highlight?: boolean;
 }
 
 // ── Certificados de empresa qualificada ──
@@ -1002,6 +1006,12 @@ export const adminApi = {
   },
   async deleteEvent(id: string): Promise<void> {
     return request<void>(`/admin/events/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+  async uploadEventBanner(id: string, file: File): Promise<{ banner_url: string }> {
+    return uploadImage(`/admin/events/${id}/banner`, file);
+  },
+  async deleteEventBanner(id: string): Promise<void> {
+    return request<void>(`/admin/events/${id}/banner`, { method: "DELETE", parseAs: "none" });
   },
 
   // ── Certificados ──

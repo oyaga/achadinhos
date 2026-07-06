@@ -10468,3 +10468,51 @@ input[type="time"].prof-input {
 .agd-admin-day-sep {
   color: var(--ink-400);
 }
+
+/* ── Slide de evento (home) ── */
+/* Banner segue o bloco padrão da mídia do slide (84px mobile / 240px radius 24
+   no desktop — mesmas medidas de .hero-product-img) para não causar overflow;
+   o recorte 16:9 → quadrado é feito pelo object-fit: cover. */
+.hero-event-banner {
+  width: 84px;
+  height: 84px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 2px solid rgba(201, 169, 97, 0.4);
+}
+.hero-event-placeholder {
+  width: 84px;
+  height: 84px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px dashed rgba(201, 169, 97, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.3);
+}
+/* Meta com data por extenso + hora + local pode passar de uma linha no mobile. */
+.hero-event-meta {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.hero-event-date::first-letter {
+  text-transform: uppercase;
+}
+.hero-event-place {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+@media (min-width: 768px) {
+  .hero-event-banner,
+  .hero-event-placeholder {
+    width: 240px;
+    height: 240px;
+    border-radius: 24px;
+  }
+  .hero-event-place {
+    max-width: 260px;
+  }
+}

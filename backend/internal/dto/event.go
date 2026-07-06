@@ -10,6 +10,7 @@ type AdminEventRequest struct {
 	Location    string `json:"location" binding:"max=500"`
 	EventDate   string `json:"event_date" binding:"required"`
 	EventTime   string `json:"event_time" binding:"max=5"`
+	Highlight   bool   `json:"highlight"`
 }
 
 // AdminEventPatch is the body for PATCH /admin/events/:id. All fields optional.
@@ -19,4 +20,5 @@ type AdminEventPatch struct {
 	Location    *string `json:"location" binding:"omitempty,max=500"`
 	EventDate   *string `json:"event_date"`
 	EventTime   *string `json:"event_time" binding:"omitempty,max=5"`
+	Highlight   *bool   `json:"highlight"`
 }

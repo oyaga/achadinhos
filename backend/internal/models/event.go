@@ -20,6 +20,11 @@ type Event struct {
 	EventDate   time.Time `gorm:"type:date;not null;index" json:"event_date"`
 	EventTime   string    `gorm:"size:5;not null;default:''" json:"event_time"`
 
+	// Highlight marks the event to be shown as a slide in the home carousel;
+	// BannerURL is the uploaded banner image served from /uploads.
+	Highlight bool   `gorm:"not null;default:false;index" json:"highlight"`
+	BannerURL string `gorm:"size:1000;not null;default:''" json:"banner_url"`
+
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
