@@ -260,7 +260,7 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
         </div>
       </div>
 
-      <div className="screen-body" style={{ paddingBottom: 100 }}>
+      <div className="screen-body">
         <form onSubmit={handleSave}>
           {/* Avatar + name hero */}
           <div className="prof-hero">

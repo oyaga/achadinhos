@@ -2045,6 +2045,16 @@ textarea.field-input {
 .screen:has(.sticky-cta) {
   z-index: 60;
 }
+/* Telas-aba abertas dentro do app (calendário, favoritos, perfil) mantêm a
+   bottom-nav visível por cima do .screen (z-index 50 > 10). Sem folga no fim
+   do corpo rolável, o último conteúdo — o CTA "Agendar horário" / o CTA de
+   certificação — fica escondido atrás da nav e não há espaço para rolar até
+   ele. Reservamos a altura da nav (+ safe-area) para que o CTA suba acima
+   dela. Não afeta as telas de detalhe (têm .sticky-cta e sobem acima da nav)
+   nem as rotas próprias /eventos e /perfil (ficam fora do .app, sem nav). */
+.app .screen:not(:has(.sticky-cta)) > .screen-body {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
 .btn-whatsapp {
   flex: 2;
   background: linear-gradient(140deg, #27c06a, #1faa59);
