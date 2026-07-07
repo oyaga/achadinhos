@@ -9856,6 +9856,7 @@ input[type="time"].prof-input {
    .route-page ele vira o conteúdo da própria rota: flui no documento,
    ocupa a viewport inteira e, no desktop, perde a cara de modal. */
 .route-page {
+  position: relative;
   min-height: 100dvh;
   background: var(--bone-50);
 }
@@ -9864,6 +9865,30 @@ input[type="time"].prof-input {
   inset: auto;
   min-height: 100dvh;
   animation: none;
+}
+
+/* No mobile o documento não rola de forma confiável quando a página é
+   servida como rota própria dentro do PWA instalado (iOS standalone:
+   body { height:100%; overflow:auto } não gera scroll). Em vez de contar
+   com a rolagem do documento, damos à .route-page o mesmo modelo do resto
+   do app: um contêiner do tamanho da viewport com o .screen-body rolando
+   por dentro — igual aos overlays de .screen sobre o .app. */
+@media (max-width: 767px) {
+  .route-page {
+    height: 100vh;
+    height: 100dvh;
+    height: 100lvh;
+    overflow: hidden;
+  }
+  .route-page .screen {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+  }
+  .route-page .screen > .screen-body {
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media (min-width: 768px) {
