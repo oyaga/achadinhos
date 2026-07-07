@@ -10523,7 +10523,9 @@ input[type="time"].prof-input {
 
 .ew-desktop { display: none; }
 @media (min-width: 768px) {
-  .ew-desktop { display: block; }
+  /* container query: o layout do card responde à largura REAL da coluna da
+     home (bem mais estreita que o viewport), não à janela. */
+  .ew-desktop { display: block; container-type: inline-size; }
   .ew-mobile { display: none; }
 }
 
@@ -10805,6 +10807,17 @@ input[type="time"].prof-input {
   grid-template-columns: 1.7fr 1fr;
   gap: 18px;
 }
+/* Coluna estreita: empilha slider + calendário e reduz o título. O container
+   query mede a largura real da coluna; a media query fica de fallback para
+   navegadores sem suporte. */
+@container (max-width: 720px) {
+  .ewd-card { grid-template-columns: 1fr; }
+  .ewd-title { font-size: 25px; }
+  .ewd-content { margin-top: 60px; }
+}
+@media (min-width: 768px) and (max-width: 1119px) {
+  .ewd-title { font-size: 25px; }
+}
 
 /* Slider (esquerda): slides absolutos em crossfade — React controla o índice */
 .ewd-slider {
@@ -10911,6 +10924,9 @@ input[type="time"].prof-input {
 /* Conteúdo ancorado embaixo */
 .ewd-content {
   position: relative;
+  /* margin-top garante que o conteúdo (ancorado embaixo) nunca suba até
+     colidir com o chip/contador absolutos do topo em colunas estreitas. */
+  margin-top: 56px;
   padding: 30px 32px 26px;
 }
 .ewd-kicker {

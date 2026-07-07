@@ -191,6 +191,12 @@ export function App({ initialRoute }: AppProps = {}) {
               </aside>
               <div className="web-main">
                 <LocationBar />
+                {/* Mural (agenda + slides do admin) abre a home, como no
+                    protótipo do handoff; os destaques vêm em seguida. */}
+                <EventsWidget
+                  onSeeAll={() => navigate({ name: "events" })}
+                  onExplore={() => navigate({ name: "allcats" })}
+                />
                 <HeroSlider
                   onProvider={goProvider}
                   onProduct={onProductOpen}
@@ -202,10 +208,6 @@ export function App({ initialRoute }: AppProps = {}) {
                   active={activeCat}
                   onSelect={goCategory}
                   onSeeAll={() => navigate({ name: "allcats" })}
-                />
-                <EventsWidget
-                  onSeeAll={() => navigate({ name: "events" })}
-                  onExplore={() => navigate({ name: "allcats" })}
                 />
                 <InstallBanner onInstall={handleInstall} />
                 <ProvidersSection
