@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/achadinhos/backend/internal/dto"
 	"github.com/achadinhos/backend/internal/models"
@@ -10,6 +11,20 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+// parseBannerDate valida "YYYY-MM-DD" (vazio => nil) e escreve 400 na falha.
+func parseBannerDate(c *gin.Context, raw string) (*time.Time, bool) {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		return nil, true
+	}
+	d, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		JSONError(c, http.StatusBadRequest, "data inválida (use AAAA-MM-DD)")
+		return nil, false
+	}
+	return &d, true
+}
 
 // BannerHandler exposes the ad/slide endpoints: public read of active banners
 // plus admin CRUD (admin routes protected by RequireRole("admin")).
@@ -24,11 +39,13 @@ func NewBannerHandler(db *gorm.DB) *BannerHandler {
 
 // ── Público ──────────────────────────────────────────────────────────────────
 
-// List handles GET /banners?placement=hero|eventos — só ativos e com imagem,
-// ordenados por posição.
+// List handles GET /banners?placement=hero|eventos — só ativos, com imagem e
+// dentro do período de exibição (quando agendado), ordenados por posição.
 func (h *BannerHandler) List(c *gin.Context) {
+	today := time.Now().Format("2006-01-02")
 	q := h.db.WithContext(c.Request.Context()).
 		Where("active = ? AND image_url <> ''", true).
+		Where("(starts_at IS NULL OR starts_at <= ?) AND (ends_at IS NULL OR ends_at >= ?)", today, today).
 		Order("position ASC, created_at ASC")
 	if p := strings.TrimSpace(c.Query("placement")); p != "" {
 		if p != models.BannerPlacementHero && p != models.BannerPlacementEventos {
@@ -69,6 +86,14 @@ func (h *BannerHandler) Create(c *gin.Context) {
 	if req.Active != nil {
 		active = *req.Active
 	}
+	starts, ok := parseBannerDate(c, req.StartsAt)
+	if !ok {
+		return
+	}
+	ends, ok := parseBannerDate(c, req.EndsAt)
+	if !ok {
+		return
+	}
 	b := &models.Banner{
 		Title:     strings.TrimSpace(req.Title),
 		Subtitle:  strings.TrimSpace(req.Subtitle),
@@ -76,6 +101,8 @@ func (h *BannerHandler) Create(c *gin.Context) {
 		Placement: req.Placement,
 		Position:  req.Position,
 		Active:    active,
+		StartsAt:  starts,
+		EndsAt:    ends,
 	}
 	if err := h.db.WithContext(c.Request.Context()).Create(b).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to create banner")
@@ -119,6 +146,20 @@ func (h *BannerHandler) Update(c *gin.Context) {
 	if req.Active != nil {
 		updates["active"] = *req.Active
 	}
+	if req.StartsAt != nil {
+		d, ok := parseBannerDate(c, *req.StartsAt)
+		if !ok {
+			return
+		}
+		updates["starts_at"] = d
+	}
+	if req.EndsAt != nil {
+		d, ok := parseBannerDate(c, *req.EndsAt)
+		if !ok {
+			return
+		}
+		updates["ends_at"] = d
+	}
 	if len(updates) > 0 {
 		if err := h.db.WithContext(c.Request.Context()).Model(&b).Updates(updates).Error; err != nil {
 			JSONError(c, http.StatusInternalServerError, "failed to update banner")
@@ -146,6 +187,35 @@ func (h *BannerHandler) Delete(c *gin.Context) {
 		return
 	}
 	removeUploadedFile(b.ImageURL)
+	c.Status(http.StatusNoContent)
+}
+
+// Reorder handles PUT /admin/banners/reorder — regrava as posições conforme a
+// ordem dos ids recebidos (drag-and-drop no admin). Ids desconhecidos são
+// ignorados; banners fora da lista mantêm a posição.
+func (h *BannerHandler) Reorder(c *gin.Context) {
+	var req dto.AdminBannerReorder
+	if !BindJSON(c, &req) {
+		return
+	}
+	err := h.db.WithContext(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
+		for i, raw := range req.IDs {
+			id, err := uuid.Parse(raw)
+			if err != nil {
+				continue
+			}
+			if err := tx.Model(&models.Banner{}).
+				Where("id = ?", id).
+				Update("position", i).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to reorder banners")
+		return
+	}
 	c.Status(http.StatusNoContent)
 }
 

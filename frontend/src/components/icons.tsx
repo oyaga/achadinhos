@@ -366,6 +366,17 @@ export const Icon = {
       <path d="M5 20h14" />
     </Svg>
   ),
+  // Alça de arrastar (drag handle) — 6 pontos em duas colunas.
+  Grip: ({ size = 16, ...rest }: IconProps = {}) => (
+    <Svg size={size} {...rest}>
+      <circle cx="9" cy="5.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="5.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="18.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="18.5" r="1.1" fill="currentColor" stroke="none" />
+    </Svg>
+  ),
   Pencil: ({ size = 16, ...rest }: IconProps = {}) => (
     <Svg size={size} {...rest}>
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />

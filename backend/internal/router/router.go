@@ -168,6 +168,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 
 		admin.GET("/banners", bnH.AdminList)
 		admin.POST("/banners", bnH.Create)
+		admin.PUT("/banners/reorder", bnH.Reorder)
 		admin.PATCH("/banners/:id", bnH.Update)
 		admin.DELETE("/banners/:id", bnH.Delete)
 		admin.POST("/banners/:id/image", bnH.UploadImage)

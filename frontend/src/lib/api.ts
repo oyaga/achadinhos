@@ -784,6 +784,10 @@ export interface ApiBanner {
   placement: BannerPlacement;
   position: number;
   active: boolean;
+  // Período de exibição (ISO ou null). Fora dele o banner não sai na listagem
+  // pública, mas o admin continua vendo ("fora do período").
+  starts_at: string | null;
+  ends_at: string | null;
   created_at?: string;
 }
 
@@ -794,6 +798,9 @@ export interface AdminBannerPayload {
   placement: BannerPlacement;
   position?: number;
   active?: boolean;
+  // "YYYY-MM-DD"; string vazia limpa a data no PATCH.
+  starts_at?: string;
+  ends_at?: string;
 }
 
 export interface AdminEventPayload {
@@ -1054,6 +1061,14 @@ export const adminApi = {
   },
   async uploadBannerImage(id: string, file: File): Promise<{ image_url: string }> {
     return uploadImage(`/admin/banners/${id}/image`, file);
+  },
+  // Regrava as posições conforme a ordem dos ids (drag-and-drop do Mural).
+  async reorderBanners(ids: string[]): Promise<void> {
+    return request<void>("/admin/banners/reorder", {
+      method: "PUT",
+      body: { ids },
+      parseAs: "none",
+    });
   },
 
   // ── Certificados ──

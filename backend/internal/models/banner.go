@@ -7,17 +7,20 @@ import (
 	"gorm.io/gorm"
 )
 
-// Banner placements — onde o anúncio aparece no site.
+// Banner placements — onde o slide aparece no widget "Mural" da home.
+// "hero" = Slide principal (abre o mural); "eventos" = Anúncios do mural.
+// Os valores ficam como estão por compatibilidade; os rótulos do admin são
+// "Slide principal" e "Anúncios".
 const (
-	// BannerPlacementHero: slide principal da home (carrossel hero).
-	BannerPlacementHero = "hero"
-	// BannerPlacementEventos: widget de eventos/calendário da home.
+	BannerPlacementHero    = "hero"
 	BannerPlacementEventos = "eventos"
 )
 
-// Banner is an admin-managed ad/slide ("anúncio"). The admin uploads an image
+// Banner is an admin-managed slide/ad do Mural. The admin uploads an image
 // and chooses where it appears (Placement); Position orders the slides and
-// Active toggles visibility without deleting.
+// Active toggles visibility without deleting. StartsAt/EndsAt (date-only,
+// nullable) delimitam o período de exibição — fora dele o slide não sai na
+// listagem pública, mas segue visível no admin como "fora do período".
 type Banner struct {
 	ID       uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
 	Title    string    `gorm:"size:255;not null;default:''" json:"title"`
@@ -30,6 +33,9 @@ type Banner struct {
 	Placement string `gorm:"size:20;not null;default:'hero';index" json:"placement"`
 	Position  int    `gorm:"not null;default:0" json:"position"`
 	Active    bool   `gorm:"not null;default:true;index" json:"active"`
+
+	StartsAt *time.Time `gorm:"type:date" json:"starts_at"`
+	EndsAt   *time.Time `gorm:"type:date" json:"ends_at"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`

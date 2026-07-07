@@ -203,7 +203,10 @@ export function App({ initialRoute }: AppProps = {}) {
                   onSelect={goCategory}
                   onSeeAll={() => navigate({ name: "allcats" })}
                 />
-                <EventsWidget onSeeAll={() => navigate({ name: "events" })} />
+                <EventsWidget
+                  onSeeAll={() => navigate({ name: "events" })}
+                  onExplore={() => navigate({ name: "allcats" })}
+                />
                 <InstallBanner onInstall={handleInstall} />
                 <ProvidersSection
                   providers={filteredProviders}

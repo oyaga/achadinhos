@@ -1,0 +1,2 @@
+ALTER TABLE banners DROP COLUMN IF EXISTS starts_at;
+ALTER TABLE banners DROP COLUMN IF EXISTS ends_at;
