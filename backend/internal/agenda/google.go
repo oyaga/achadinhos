@@ -286,12 +286,19 @@ type EventInput struct {
 	Name        string // visitor display name
 }
 
+// CreatedEvent is the result of creating a booking on the owner's calendar.
+type CreatedEvent struct {
+	ID       string // Google Calendar event ID
+	MeetLink string // Google Meet URL (may be empty)
+}
+
 // CreateEvent inserts the event on the primary calendar with a Google Meet
-// conference and e-mail notifications, returning the Meet link.
-func (s *Service) CreateEvent(ctx context.Context, owner string, in EventInput) (string, error) {
+// conference and e-mail notifications, returning the created event's ID and
+// Meet link.
+func (s *Service) CreateEvent(ctx context.Context, owner string, in EventInput) (*CreatedEvent, error) {
 	svc, err := s.calendarService(ctx, owner)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	ev := &calendar.Event{
 		Summary:     in.Summary,
@@ -313,7 +320,7 @@ func (s *Service) CreateEvent(ctx context.Context, owner string, in EventInput) 
 		SendUpdates("all").
 		Context(ctx).Do()
 	if err != nil {
-		return "", fmt.Errorf("event insert failed: %w", err)
+		return nil, fmt.Errorf("event insert failed: %w", err)
 	}
 
 	meet := created.HangoutLink
@@ -325,5 +332,5 @@ func (s *Service) CreateEvent(ctx context.Context, owner string, in EventInput) 
 			}
 		}
 	}
-	return meet, nil
+	return &CreatedEvent{ID: created.Id, MeetLink: meet}, nil
 }

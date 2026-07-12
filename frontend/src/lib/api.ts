@@ -917,6 +917,23 @@ export interface AgendaSettings {
 // PUT /admin/agenda aceita os mesmos campos, menos o estado da conexão.
 export type AgendaSettingsPayload = Omit<AgendaSettings, "connected">;
 
+// Registro de agendamento para conferência no painel admin
+// (GET /admin/agenda/bookings).
+export interface AdminAgendaBooking {
+  id: string;
+  slug: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+  notes: string;
+  starts_at: string;
+  ends_at: string;
+  timezone: string;
+  meet_link: string;
+  google_event_id: string;
+  created_at: string;
+}
+
 export const adminApi = {
   // ── Síndicos (read-only) ──
   async listSindicos(): Promise<AdminSindico[]> {
@@ -1119,6 +1136,10 @@ export const adminApi = {
   },
   async agendaUpdate(payload: AgendaSettingsPayload): Promise<AgendaSettings> {
     return request<AgendaSettings>("/admin/agenda", { method: "PUT", body: payload });
+  },
+  async agendaBookings(): Promise<AdminAgendaBooking[]> {
+    const res = await request<{ bookings: AdminAgendaBooking[] }>("/admin/agenda/bookings");
+    return res.bookings ?? [];
   },
   async agendaGoogleUrl(): Promise<{ url: string }> {
     return request<{ url: string }>("/admin/agenda/google/url");

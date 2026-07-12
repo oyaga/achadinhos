@@ -75,6 +75,7 @@ func AutoMigrate(gdb *gorm.DB) error {
 		&models.Certificate{},
 		&models.AgendaSettings{},
 		&models.GoogleOAuthToken{},
+		&models.AgendaBooking{},
 	)
 }
 

@@ -7,11 +7,34 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   adminApi,
   ApiError,
+  type AdminAgendaBooking,
   type AgendaSettings,
   type AgendaWorkHours,
 } from "@/lib/api";
 import { Icon } from "@/components/icons";
 import { cn } from "@/lib/utils";
+
+// Formata o intervalo de um agendamento no fuso da agenda, ex:
+// "ter., 15 de jul. de 2026 · 14:00–15:00".
+function formatBookingWhen(b: AdminAgendaBooking): string {
+  const tz = b.timezone || "America/Sao_Paulo";
+  const start = new Date(b.starts_at);
+  const end = new Date(b.ends_at);
+  const date = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: tz,
+  }).format(start);
+  const time = (d: Date) =>
+    new Intl.DateTimeFormat("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: tz,
+    }).format(d);
+  return `${date} · ${time(start)}–${time(end)}`;
+}
 
 const WEEKDAYS = [
   "Domingo",
@@ -91,6 +114,20 @@ export function AgendaSection() {
   // Aviso pós-OAuth: o callback do Google redireciona para /admin?agenda=conectada.
   const [justConnected, setJustConnected] = useState(false);
 
+  const [bookings, setBookings] = useState<AdminAgendaBooking[]>([]);
+  const [bookingsError, setBookingsError] = useState<string | null>(null);
+
+  const loadBookings = useCallback(async () => {
+    setBookingsError(null);
+    try {
+      setBookings(await adminApi.agendaBookings());
+    } catch (err) {
+      setBookingsError(
+        err instanceof ApiError ? err.message : "Erro ao carregar os agendamentos.",
+      );
+    }
+  }, []);
+
   const refresh = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
@@ -107,7 +144,8 @@ export function AgendaSection() {
 
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+    void loadBookings();
+  }, [refresh, loadBookings]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -324,6 +362,61 @@ export function AgendaSection() {
           {googleError}
         </div>
       )}
+
+      {/* Agendamentos — para conferência cruzada com o Google Agenda */}
+      <div className="agd-admin-bookings">
+        <div className="agd-admin-bookings-head">
+          <span className="agd-admin-bookings-title">Agendamentos</span>
+          <div className="agd-admin-bookings-actions">
+            {bookings.length > 0 && (
+              <span className="agd-admin-bookings-count">
+                {bookings.length} {bookings.length === 1 ? "reserva" : "reservas"}
+              </span>
+            )}
+            <button
+              type="button"
+              className="admin-new-btn ghost"
+              onClick={() => void loadBookings()}
+            >
+              <Icon.Calendar size={14} />
+              Atualizar
+            </button>
+          </div>
+        </div>
+        {bookingsError ? (
+          <div className="prof-alert error" role="alert">
+            {bookingsError}
+          </div>
+        ) : bookings.length === 0 ? (
+          <div className="admin-empty">
+            Nenhum agendamento ainda. As reservas feitas em {publicPath} aparecem aqui.
+          </div>
+        ) : (
+          <div className="agd-admin-booking-list">
+            {bookings.map((b) => {
+              const past = new Date(b.ends_at).getTime() < Date.now();
+              return (
+                <div className={cn("agd-admin-booking", past && "past")} key={b.id}>
+                  <div className="agd-admin-booking-top">
+                    <span className="agd-admin-booking-when">{formatBookingWhen(b)}</span>
+                    <span className="agd-admin-booking-name">{b.name}</span>
+                  </div>
+                  <div className="agd-admin-booking-meta">
+                    <a href={`mailto:${b.email}`}>{b.email}</a>
+                    {b.whatsapp && <span>WhatsApp: {b.whatsapp}</span>}
+                    {b.meet_link && (
+                      <a href={b.meet_link} target="_blank" rel="noopener noreferrer">
+                        Google Meet
+                      </a>
+                    )}
+                  </div>
+                  {b.notes && <div className="agd-admin-booking-notes">{b.notes}</div>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Configurações */}
       <form className="admin-form" onSubmit={handleSubmit}>

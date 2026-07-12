@@ -62,7 +62,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		cfg.AppBaseURL+"/api/v1/agenda/google/callback",
 		cfg.JWTSecret,
 	)
-	agendaH := handlers.NewAgendaHandler(db, agendaSvc, cfg.AppBaseURL)
+	agendaH := handlers.NewAgendaHandler(db, agendaSvc, mailer, cfg.AppBaseURL)
 
 	v1 := r.Group("/api/v1")
 
@@ -175,6 +175,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 
 		admin.GET("/agenda", agendaH.AdminGet)
 		admin.PUT("/agenda", agendaH.AdminUpdate)
+		admin.GET("/agenda/bookings", agendaH.AdminBookings)
 		admin.GET("/agenda/google/url", agendaH.GoogleAuthURL)
 		admin.DELETE("/agenda/google", agendaH.GoogleDisconnect)
 

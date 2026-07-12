@@ -10455,6 +10455,82 @@ input[type="time"].prof-input {
   font-size: 13px;
   color: var(--ink-500);
 }
+.agd-admin-bookings {
+  margin-bottom: 20px;
+}
+.agd-admin-bookings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.agd-admin-bookings-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--navy-900);
+}
+.agd-admin-bookings-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.agd-admin-bookings-count {
+  font-size: 12.5px;
+  color: var(--ink-500);
+}
+.agd-admin-booking-list {
+  display: grid;
+  gap: 8px;
+}
+.agd-admin-booking {
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--bone-200);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  box-shadow: var(--shadow-card);
+  padding: 12px 14px;
+}
+.agd-admin-booking.past {
+  opacity: 0.55;
+}
+.agd-admin-booking-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.agd-admin-booking-when {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--navy-900);
+}
+.agd-admin-booking-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+.agd-admin-booking-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12.5px;
+  color: var(--ink-500);
+}
+.agd-admin-booking-meta a {
+  color: var(--navy-900);
+  word-break: break-word;
+}
+.agd-admin-booking-notes {
+  font-size: 12.5px;
+  color: var(--ink-500);
+  white-space: pre-wrap;
+  border-top: 1px dashed var(--bone-200);
+  padding-top: 6px;
+}
 .agd-admin-nums {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

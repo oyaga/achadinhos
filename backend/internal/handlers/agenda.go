@@ -12,6 +12,7 @@ import (
 
 	"github.com/achadinhos/backend/internal/agenda"
 	"github.com/achadinhos/backend/internal/dto"
+	"github.com/achadinhos/backend/internal/email"
 	"github.com/achadinhos/backend/internal/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -25,18 +26,38 @@ var (
 	hhmmRe  = regexp.MustCompile(`^([01][0-9]|2[0-3]):[0-5][0-9]$`)
 )
 
+var (
+	ptWeekdays = [...]string{"domingo", "segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado"}
+	ptMonths   = [...]string{"", "janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"}
+)
+
+// formatAgendaQuando renders a booking's start/end in pt-BR, e.g.
+// "terça-feira, 15 de julho de 2026, das 14:00 às 15:00 (horário de Brasília)".
+// start and end are expected already in the agenda's timezone.
+func formatAgendaQuando(start, end time.Time, tz string) string {
+	when := fmt.Sprintf("%s, %d de %s de %d, das %02d:%02d às %02d:%02d",
+		ptWeekdays[int(start.Weekday())], start.Day(), ptMonths[int(start.Month())], start.Year(),
+		start.Hour(), start.Minute(), end.Hour(), end.Minute())
+	if tz == "America/Sao_Paulo" {
+		when += " (horário de Brasília)"
+	}
+	return when
+}
+
 // AgendaHandler exposes the booking feature: public page info, free slots and
 // booking, plus the admin settings CRUD and the Google OAuth connect flow.
 type AgendaHandler struct {
 	db      *gorm.DB
 	svc     *agenda.Service
+	mailer  *email.Client
 	baseURL string
 }
 
 // NewAgendaHandler builds an AgendaHandler. baseURL is the public app URL used
-// for the post-OAuth redirect (no trailing slash expected).
-func NewAgendaHandler(db *gorm.DB, svc *agenda.Service, baseURL string) *AgendaHandler {
-	return &AgendaHandler{db: db, svc: svc, baseURL: strings.TrimRight(baseURL, "/")}
+// for the post-OAuth redirect (no trailing slash expected). mailer sends the
+// branded booking-confirmation e-mail (best-effort; may be a disabled client).
+func NewAgendaHandler(db *gorm.DB, svc *agenda.Service, mailer *email.Client, baseURL string) *AgendaHandler {
+	return &AgendaHandler{db: db, svc: svc, mailer: mailer, baseURL: strings.TrimRight(baseURL, "/")}
 }
 
 func (h *AgendaHandler) settingsBySlug(c *gin.Context, slug string) (*models.AgendaSettings, bool) {
@@ -252,7 +273,7 @@ func (h *AgendaHandler) Book(c *gin.Context) {
 	if req.Notes != "" {
 		desc += "\n\nObservações:\n" + req.Notes
 	}
-	meet, err := h.svc.CreateEvent(c.Request.Context(), owner, agenda.EventInput{
+	created, err := h.svc.CreateEvent(c.Request.Context(), owner, agenda.EventInput{
 		Summary:     s.Title + " — " + req.Name,
 		Description: desc,
 		Start:       start,
@@ -266,10 +287,36 @@ func (h *AgendaHandler) Book(c *gin.Context) {
 		return
 	}
 
+	// Persist the booking so the admin can review it in the panel and cross-check
+	// against Google. Best-effort: the event already exists on the calendar, so a
+	// DB failure must not fail the booking (just logs a warning).
+	booking := models.AgendaBooking{
+		Slug:          s.Slug,
+		Name:          req.Name,
+		Email:         req.Email,
+		Whatsapp:      req.Whatsapp,
+		Notes:         req.Notes,
+		StartsAt:      start,
+		EndsAt:        end,
+		Timezone:      s.Timezone,
+		MeetLink:      created.MeetLink,
+		GoogleEventID: created.ID,
+	}
+	if err := h.db.WithContext(c.Request.Context()).Create(&booking).Error; err != nil {
+		slog.Warn("agenda booking persist failed", "err", err, "email", req.Email)
+	}
+
+	// Branded confirmation e-mail to the visitor. Best-effort: Google already
+	// sent its own calendar invite, so a mailer failure must not fail the booking.
+	quando := formatAgendaQuando(start, end, s.Timezone)
+	if err := h.mailer.SendAgendamentoConfirmado(c.Request.Context(), req.Email, req.Name, s.DisplayName, quando, created.MeetLink); err != nil {
+		slog.Warn("agenda confirmation email failed", "err", err, "email", req.Email)
+	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"start":     start.Format(time.RFC3339),
 		"end":       end.Format(time.RFC3339),
-		"meet_link": meet,
+		"meet_link": created.MeetLink,
 	})
 }
 
@@ -432,6 +479,25 @@ func validateWorkHours(wh models.AgendaWorkHours) string {
 		}
 	}
 	return ""
+}
+
+// AdminBookings handles GET /admin/agenda/bookings — the bookings made through
+// the agenda, most recent/future first, for review inside the admin panel.
+func (h *AgendaHandler) AdminBookings(c *gin.Context) {
+	s, ok := h.firstSettings(c)
+	if !ok {
+		return
+	}
+	var bookings []models.AgendaBooking
+	if err := h.db.WithContext(c.Request.Context()).
+		Where("slug = ?", s.Slug).
+		Order("starts_at DESC").
+		Limit(500).
+		Find(&bookings).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to list bookings")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"bookings": bookings})
 }
 
 // GoogleAuthURL handles GET /admin/agenda/google/url — returns the Google

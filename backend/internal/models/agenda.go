@@ -106,3 +106,33 @@ func (t *GoogleOAuthToken) BeforeCreate(tx *gorm.DB) error {
 	}
 	return nil
 }
+
+// AgendaBooking records a confirmed booking made through the public agenda,
+// mirroring the event created on the owner's Google Calendar. It lets the admin
+// review bookings inside the panel and cross-check them against Google. It is a
+// snapshot at creation time (a later cancellation in Google is not reflected).
+type AgendaBooking struct {
+	ID            uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	Slug          string    `gorm:"size:64;not null;index" json:"slug"`
+	Name          string    `gorm:"size:255;not null" json:"name"`
+	Email         string    `gorm:"size:255;not null" json:"email"`
+	Whatsapp      string    `gorm:"size:64;not null;default:''" json:"whatsapp"`
+	Notes         string    `gorm:"type:text;not null;default:''" json:"notes"`
+	StartsAt      time.Time `gorm:"not null;index" json:"starts_at"`
+	EndsAt        time.Time `gorm:"not null" json:"ends_at"`
+	Timezone      string    `gorm:"size:64;not null;default:''" json:"timezone"`
+	MeetLink      string    `gorm:"type:text;not null;default:''" json:"meet_link"`
+	GoogleEventID string    `gorm:"size:255;not null;default:''" json:"google_event_id"`
+
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// TableName pins the table name.
+func (AgendaBooking) TableName() string { return "agenda_bookings" }
+
+func (b *AgendaBooking) BeforeCreate(tx *gorm.DB) error {
+	if b.ID == uuid.Nil {
+		b.ID = uuid.New()
+	}
+	return nil
+}
