@@ -9190,6 +9190,12 @@ input[type="time"].prof-input {
   color: var(--navy-700);
 }
 
+/* Loja: tom verde para sinalizar vitrine/Shopping */
+.admin-chip.biz-loja {
+  background: #e7f6ec;
+  color: #1c7a40;
+}
+
 /* Eventos: tile de data (mês + dia) no lugar do avatar genérico */
 .admin-event-date {
   width: 52px;

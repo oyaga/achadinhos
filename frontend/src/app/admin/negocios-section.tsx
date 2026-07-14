@@ -28,12 +28,25 @@ import { LogoCropper } from "@/components/admin/logo-cropper";
 import { PdfThumbnail } from "@/components/screens/pdf-thumbnail";
 import { cn } from "@/lib/utils";
 
-type Kind = "empresa" | "prestador";
+// "loja" e "empresa" são a mesma entidade (Seller); a diferença é só a
+// categoria "loja", que faz o cadastro aparecer na vitrine do Shopping.
+// "prestador" é a entidade Provider (afiliado de serviço).
+type Kind = "empresa" | "loja" | "prestador";
 type Coverage = "bairro" | "cidade" | "regiao";
+
+// Marcador de vitrine: um Seller com esta categoria aparece no Shopping como
+// "Loja parceira" (ver shopping-screen.tsx). É o backing store do tipo "Loja".
+const LOJA_CATEGORY = "loja";
 
 type Business =
   | { kind: "empresa"; seller: AdminSeller }
+  | { kind: "loja"; seller: AdminSeller }
   | { kind: "prestador"; provider: ApiProvider };
+
+// Um Seller é do tipo "loja" quando está pendurado na categoria "loja".
+function sellerKind(s: AdminSeller): "empresa" | "loja" {
+  return s.category_id === LOJA_CATEGORY ? "loja" : "empresa";
+}
 
 const COVERAGE_OPTIONS: Array<{ id: Coverage; label: string }> = [
   { id: "bairro", label: "Bairro" },
@@ -136,8 +149,8 @@ export function NegociosSection() {
         categoriesApi.list(),
       ]);
       const merged: Business[] = [
-        ...sellers.map((s) => ({ kind: "empresa" as const, seller: s })),
-        ...providers.map((p) => ({ kind: "prestador" as const, provider: p })),
+        ...sellers.map((s): Business => ({ kind: sellerKind(s), seller: s })),
+        ...providers.map((p): Business => ({ kind: "prestador", provider: p })),
       ].sort((a, b) => businessName(a).localeCompare(businessName(b)));
       setItems(merged);
       setCategories(cats);
@@ -167,14 +180,16 @@ export function NegociosSection() {
   }
 
   function openEdit(b: Business) {
-    if (b.kind === "empresa") {
+    if (b.kind !== "prestador") {
       const s = b.seller;
-      setEditing({ kind: "empresa", id: s.id });
+      setEditing({ kind: b.kind, id: s.id });
       setForm({
         ...EMPTY_FORM,
-        kind: "empresa",
+        kind: b.kind,
         name: s.name,
-        categoryId: s.category_id ?? "",
+        // Loja não usa o seletor de categoria (é fixa "loja"); guardamos o valor
+        // só pra consistência — no submit ele é sempre reescrito.
+        categoryId: b.kind === "loja" ? "" : (s.category_id ?? ""),
         docType: (s.document_type as DocumentType) || "cnpj",
         document: s.document ? formatDocument(s.document, (s.document_type as DocumentType) || "cnpj") : "",
         whatsapp: formatPhone(s.whatsapp ?? ""),
@@ -287,10 +302,10 @@ export function NegociosSection() {
   async function removeExistingPortfolio(photoId: string) {
     if (!editing) return;
     try {
-      if (editing.kind === "empresa") {
-        await adminApi.deleteSellerPortfolio(editing.id, photoId);
-      } else {
+      if (editing.kind === "prestador") {
         await adminApi.deleteProviderPortfolio(editing.id, photoId);
+      } else {
+        await adminApi.deleteSellerPortfolio(editing.id, photoId);
       }
       setExistingPortfolio((prev) => prev.filter((p) => p.id !== photoId));
     } catch (err) {
@@ -323,7 +338,8 @@ export function NegociosSection() {
       setFormError("Informe um WhatsApp válido.");
       return;
     }
-    if (!form.categoryId) {
+    // Loja não escolhe categoria (é fixa "loja"); os demais tipos precisam.
+    if (form.kind !== "loja" && !form.categoryId) {
       setFormError("Selecione uma categoria.");
       return;
     }
@@ -336,16 +352,21 @@ export function NegociosSection() {
     try {
       let id: string;
       let kind: Kind;
-      // Conversão empresa ⇄ afiliado: o tipo mudou em relação ao cadastro
-      // existente. Um endpoint dedicado cria a nova entidade, migra logo e
-      // portfólio e remove a antiga, devolvendo um novo id.
-      const isConversion = !!editing && editing.kind !== form.kind;
+      // Conversão Seller ⇄ Provider: o cadastro cruzou a fronteira entre
+      // empresa/loja (Seller) e afiliado de serviço (Provider). Um endpoint
+      // dedicado cria a nova entidade, migra logo e portfólio e remove a
+      // antiga, devolvendo um novo id. Empresa ⇄ Loja NÃO é conversão — é o
+      // mesmo Seller trocando de categoria, então basta um update normal.
+      const isConversion =
+        !!editing && (editing.kind === "prestador") !== (form.kind === "prestador");
 
-      if (form.kind === "empresa") {
-        kind = "empresa";
+      if (form.kind !== "prestador") {
+        kind = form.kind; // "empresa" | "loja"
         const payload: AdminSellerPayload = {
           name: form.name.trim(),
-          category_id: form.categoryId,
+          // Loja fica pendurada na categoria "loja" (marcador da vitrine do
+          // Shopping); empresa usa a categoria escolhida no formulário.
+          category_id: form.kind === "loja" ? LOJA_CATEGORY : form.categoryId,
           description: form.description.trim(),
           whatsapp: whatsappDigits,
           link: form.link.trim(),
@@ -401,15 +422,15 @@ export function NegociosSection() {
       }
 
       if (logoFile) {
-        if (kind === "empresa") await adminApi.uploadSellerLogo(id, logoFile);
+        if (kind !== "prestador") await adminApi.uploadSellerLogo(id, logoFile);
         else await adminApi.uploadProviderLogo(id, logoFile);
       }
       for (const file of portfolioFiles) {
-        if (kind === "empresa") await adminApi.uploadSellerPortfolio(id, file);
+        if (kind !== "prestador") await adminApi.uploadSellerPortfolio(id, file);
         else await adminApi.uploadProviderPortfolio(id, file);
       }
       for (const link of portfolioLinks) {
-        if (kind === "empresa") await adminApi.addSellerPortfolioLink(id, link);
+        if (kind !== "prestador") await adminApi.addSellerPortfolioLink(id, link);
         else await adminApi.addProviderPortfolioLink(id, link);
       }
 
@@ -426,8 +447,8 @@ export function NegociosSection() {
     const name = businessName(b);
     if (!window.confirm(`Excluir "${name}"?`)) return;
     try {
-      if (b.kind === "empresa") await adminApi.deleteSeller(b.seller.id);
-      else await adminApi.deleteProvider(b.provider.id);
+      if (b.kind === "prestador") await adminApi.deleteProvider(b.provider.id);
+      else await adminApi.deleteSeller(b.seller.id);
       await refresh();
     } catch (err) {
       window.alert(err instanceof ApiError ? err.message : "Não foi possível excluir.");
@@ -442,10 +463,11 @@ export function NegociosSection() {
   const photoSlotsLeft =
     5 - existingPortfolio.length - portfolioFiles.length - portfolioLinks.length;
   const isPrestador = form.kind === "prestador";
+  const isLoja = form.kind === "loja";
 
   // Verificado = possui certificado emitido (cert_tier).
   const verifiedCount = items.filter((b) =>
-    b.kind === "empresa" ? Boolean(b.seller.cert_tier) : Boolean(b.provider.cert_tier),
+    b.kind === "prestador" ? Boolean(b.provider.cert_tier) : Boolean(b.seller.cert_tier),
   ).length;
 
   return (
@@ -479,6 +501,7 @@ export function NegociosSection() {
               {(
                 [
                   { v: "empresa", l: "Empresa" },
+                  { v: "loja", l: "Loja" },
                   { v: "prestador", l: "Afiliado de serviço" },
                 ] as const
               ).map(({ v, l }) => (
@@ -492,13 +515,22 @@ export function NegociosSection() {
                 </button>
               ))}
             </div>
-            {editing && editing.kind !== form.kind && (
+            {isLoja && (
               <div className="admin-hint">
-                Ao salvar, o cadastro será convertido para{" "}
-                {form.kind === "empresa" ? "empresa" : "afiliado de serviço"}. Logo e
-                portfólio são mantidos; avaliações e nota não são transferidas.
+                Lojas aparecem na vitrine do Shopping (&quot;Lojas parceiras&quot;) e
+                podem ter produtos vinculados.
               </div>
             )}
+            {/* Aviso só quando cruza Seller↔Provider — empresa⇄loja preserva tudo. */}
+            {editing &&
+              (editing.kind === "prestador") !== (form.kind === "prestador") && (
+                <div className="admin-hint">
+                  Ao salvar, o cadastro será convertido para{" "}
+                  {form.kind === "prestador" ? "afiliado de serviço" : "empresa/loja"}.
+                  Logo e portfólio são mantidos; avaliações e nota não são
+                  transferidas.
+                </div>
+              )}
           </div>
 
           <div className="prof-field">
@@ -555,19 +587,25 @@ export function NegociosSection() {
             />
           </div>
 
-          <div className="prof-field">
-            <label className="prof-label">Categoria</label>
-            <select
-              className="prof-input"
-              value={form.categoryId}
-              onChange={(e) => update("categoryId", e.target.value)}
-            >
-              <option value="">Selecione…</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.label}</option>
-              ))}
-            </select>
-          </div>
+          {/* Categoria: Loja não escolhe — é sempre a vitrine "loja". Nos demais
+              tipos, escondemos a opção "loja" do dropdown (agora é um tipo). */}
+          {!isLoja && (
+            <div className="prof-field">
+              <label className="prof-label">Categoria</label>
+              <select
+                className="prof-input"
+                value={form.categoryId}
+                onChange={(e) => update("categoryId", e.target.value)}
+              >
+                <option value="">Selecione…</option>
+                {categories
+                  .filter((c) => c.id !== LOJA_CATEGORY)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>{c.label}</option>
+                  ))}
+              </select>
+            </div>
+          )}
 
           <div className="prof-field">
             <label className="prof-label">Descrição</label>
@@ -939,13 +977,13 @@ export function NegociosSection() {
       ) : (
         <div className="admin-biz-grid">
           {items.map((b) => {
-            const logo = b.kind === "empresa" ? b.seller.logo_url : b.provider.logo_url;
-            const id = b.kind === "empresa" ? b.seller.id : b.provider.id;
+            const logo = b.kind === "prestador" ? b.provider.logo_url : b.seller.logo_url;
+            const id = b.kind === "prestador" ? b.provider.id : b.seller.id;
             const name = businessName(b);
             const meta =
-              b.kind === "empresa"
-                ? `${categoryLabel(b.seller.category_id ?? "")} · ${b.seller.whatsapp ? formatPhone(b.seller.whatsapp) : "sem WhatsApp"}`
-                : `${categoryLabel(b.provider.category_id)} · ${b.provider.whatsapp ? formatPhone(b.provider.whatsapp) : "sem WhatsApp"}`;
+              b.kind === "prestador"
+                ? `${categoryLabel(b.provider.category_id)} · ${b.provider.whatsapp ? formatPhone(b.provider.whatsapp) : "sem WhatsApp"}`
+                : `${categoryLabel(b.seller.category_id ?? "")} · ${b.seller.whatsapp ? formatPhone(b.seller.whatsapp) : "sem WhatsApp"}`;
             return (
               <div key={`${b.kind}-${id}`} className="admin-biz-card">
                 <div className="admin-biz-avatar">
@@ -962,10 +1000,12 @@ export function NegociosSection() {
                     <span
                       className={cn(
                         "admin-chip",
-                        b.kind === "empresa" ? "biz-empresa" : "biz-afiliado",
+                        b.kind === "empresa" && "biz-empresa",
+                        b.kind === "loja" && "biz-loja",
+                        b.kind === "prestador" && "biz-afiliado",
                       )}
                     >
-                      {b.kind === "empresa" ? "Empresa" : "Afiliado"}
+                      {b.kind === "empresa" ? "Empresa" : b.kind === "loja" ? "Loja" : "Afiliado"}
                     </span>
                   </div>
                   <div className="admin-row-meta">{meta}</div>
@@ -1006,5 +1046,5 @@ export function NegociosSection() {
 }
 
 function businessName(b: Business): string {
-  return b.kind === "empresa" ? b.seller.name : b.provider.name;
+  return b.kind === "prestador" ? b.provider.name : b.seller.name;
 }
