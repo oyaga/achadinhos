@@ -25,7 +25,7 @@ import {
 
 export interface CertificateDocData {
   tipo?: "empresa" | "afiliado";
-  tier?: "prata" | "blue" | "black";
+  tier?: "blue" | "ouro" | "black";
   empresaNome: string;
   categoria?: string;
   responsavelNome: string;
@@ -38,20 +38,20 @@ export interface CertificateDocData {
 
 // Paleta e textos por nível (tier) do certificado.
 const TIER = {
-  prata: {
-    label: "VERIFICADO",
-    name: "Verificado",
-    light: "#cfd5dc",
-    main: "#8a929c",
-    dark: "#5b6470",
-    sentence: "Atende aos requisitos mínimos do Achadinhos do Condomínio.",
-  },
   blue: {
     label: "BLUE",
     name: "Blue",
     light: "#bfdbfe",
     main: "#2563eb",
     dark: "#1e40af",
+    sentence: "Atende aos requisitos mínimos do Achadinhos do Condomínio.",
+  },
+  ouro: {
+    label: "OURO",
+    name: "Ouro",
+    light: "#e6cf96",
+    main: "#c9a961",
+    dark: "#a8884a",
     sentence: "Atende aos requisitos padrão do Achadinhos do Condomínio.",
   },
   black: {
@@ -302,7 +302,7 @@ function Guilloche() {
 export function CertificateDocument({ data }: { data: CertificateDocData }) {
   const categoria = (data.categoria ?? "").trim() || "—";
   const isEmpresa = data.tipo !== "afiliado";
-  const tier = TIER[data.tier ?? "blue"] ?? TIER.blue;
+  const tier = TIER[data.tier ?? "ouro"] ?? TIER.ouro;
   const titulo = isEmpresa
     ? "Certificado de Empresa Qualificada"
     : "Certificado de Afiliado Qualificado";

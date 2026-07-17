@@ -7,25 +7,25 @@ import { BrandLockup } from "@/components/auth/brand-lockup";
 
 const TIERS = [
   {
-    key: "prata",
-    name: "Verificado",
+    key: "blue",
+    name: "Blue",
     tagline: "Requisitos mínimos",
     desc: "Atende aos requisitos mínimos do Achadinhos do Condomínio.",
     crit: "Documento (CPF/CNPJ) válido, identidade e contato confirmados, perfil completo.",
   },
   {
-    key: "blue",
-    name: "Blue",
+    key: "ouro",
+    name: "Ouro",
     tagline: "Requisitos padrão",
     desc: "Atende aos requisitos padrão do Achadinhos do Condomínio.",
-    crit: "Tudo do nível Verificado + portfólio comprovado, boas avaliações de clientes, tempo de atuação e histórico sem pendências.",
+    crit: "Tudo do nível Blue + portfólio comprovado, boas avaliações de clientes, tempo de atuação e histórico sem pendências.",
   },
   {
     key: "black",
     name: "Black",
     tagline: "Avaliação rigorosa",
     desc: "Aprovado em avaliação rigorosa, conduzida diretamente pela equipe especializada do Achadinhos.",
-    crit: "Tudo do nível Blue + auditoria aprofundada e referências verificadas pela equipe especializada Achadinhos; excelência comprovada.",
+    crit: "Tudo do nível Ouro + auditoria aprofundada e referências verificadas pela equipe especializada Achadinhos; excelência comprovada.",
   },
 ] as const;
 
@@ -33,7 +33,7 @@ const STEPS = [
   { t: "Cadastro e documentos", d: "O titular se cadastra e envia os documentos exigidos." },
   { t: "Verificação", d: "Conferimos a identidade e a situação do CNPJ ou CPF." },
   { t: "Análise", d: "Avaliamos o portfólio, a reputação e o histórico." },
-  { t: "Definição do nível", d: "Atribuímos o selo: Verificado, Blue ou Black." },
+  { t: "Definição do nível", d: "Atribuímos o selo: Blue, Ouro ou Black." },
   { t: "Certificado", d: "Emitimos o certificado oficial, verificável por QR code." },
 ] as const;
 
@@ -172,7 +172,7 @@ export function CertificacaoScreen() {
             </div>
           </div>
           <div className="cert-hero-art" data-reveal>
-            <Seal className="cert-hero-seal blue" />
+            <Seal className="cert-hero-seal ouro" />
           </div>
         </section>
 

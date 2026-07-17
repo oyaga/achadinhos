@@ -11,7 +11,7 @@ package dto
 type AdminCertificateCreateRequest struct {
 	Tipo            string `json:"tipo" binding:"required,oneof=empresa afiliado"`
 	OwnerID         string `json:"owner_id" binding:"required,uuid"`
-	Tier            string `json:"tier" binding:"required,oneof=prata blue black"`
+	Tier            string `json:"tier" binding:"required,oneof=blue ouro black"`
 	ResponsavelNome string `json:"responsavel_nome" binding:"required,min=2,max=255"`
 	ResponsavelCPF  string `json:"responsavel_cpf" binding:"max=14"`
 	IssuedAt        string `json:"issued_at"`

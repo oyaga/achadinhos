@@ -24,13 +24,13 @@ export function isPublicCategory(c: { id: string }): boolean {
 }
 
 // Rótulo do nível do certificado.
-// prata -> Verificado · blue -> Blue · black -> Black.
+// blue -> Blue · ouro -> Ouro · black -> Black.
 export function tierLabel(tier: string | null | undefined): string {
   switch (tier) {
-    case "prata":
-      return "Verificado";
     case "blue":
       return "Blue";
+    case "ouro":
+      return "Ouro";
     case "black":
       return "Black";
     default:

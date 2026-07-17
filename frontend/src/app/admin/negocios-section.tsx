@@ -53,7 +53,7 @@ const COVERAGE_OPTIONS: Array<{ id: Coverage; label: string }> = [
   { id: "cidade", label: "Cidade" },
   { id: "regiao", label: "Região" },
 ];
-const BADGE_OPTIONS = ["", "Blue", "Verificado", "Premium Black"];
+const BADGE_OPTIONS = ["", "Blue", "Ouro", "Premium Black"];
 
 interface FormState {
   kind: Kind;

@@ -20,14 +20,14 @@ interface CategoryScreenProps {
   onQuote?: (p: Provider) => void;
 }
 
-type FilterId = "all" | "verified" | "blue" | "near" | "cheap";
+type FilterId = "all" | "verified" | "gold" | "near" | "cheap";
 type SortId = "relevance" | "rating" | "distance";
 
 const FILTERS: Array<{ id: FilterId; label: string; icon?: keyof typeof Icon }> =
   [
     { id: "all", label: "Todos" },
     { id: "verified", label: "Verificados", icon: "Check" },
-    { id: "blue", label: "Blue", icon: "Crown" },
+    { id: "gold", label: "Ouro", icon: "Crown" },
     { id: "near", label: "Mais próximos", icon: "Pin" },
     { id: "cheap", label: "Mais baratos" },
   ];
@@ -80,7 +80,7 @@ export function CategoryScreen({
   const filtered = useMemo(() => {
     let list = [...providers];
     if (filter === "verified") list = list.filter((p) => p.verified);
-    if (filter === "blue") list = list.filter((p) => p.badge === "Blue");
+    if (filter === "gold") list = list.filter((p) => p.badge === "Ouro");
     if (filter === "near")
       list = list.sort((a, b) => parseKm(a.distance) - parseKm(b.distance));
     if (filter === "cheap")

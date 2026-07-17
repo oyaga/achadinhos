@@ -15,7 +15,7 @@ interface CertSealProps {
   style?: CSSProperties;
 }
 
-// Selo de nível do certificado (Verificado/Blue/Black). Renderiza nada quando não há
+// Selo de nível do certificado (Blue/Ouro/Black). Renderiza nada quando não há
 // nível. Centraliza rótulo + classes e leva o usuário à página de certificação.
 export function CertSeal({ tier, linked = true, size, prefix, className, style }: CertSealProps) {
   const label = tierLabel(tier);

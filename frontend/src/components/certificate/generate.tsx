@@ -45,7 +45,7 @@ async function imageUrlToDataUrl(url: string): Promise<string | null> {
 
 export interface BuildCertificateInput {
   tipo?: "empresa" | "afiliado";
-  tier?: "prata" | "blue" | "black";
+  tier?: "blue" | "ouro" | "black";
   empresaNome: string;
   categoria?: string;
   responsavelNome: string;
@@ -72,7 +72,7 @@ export async function buildCertificateBlob(input: BuildCertificateInput): Promis
 
   const data: CertificateDocData = {
     tipo: input.tipo ?? "empresa",
-    tier: input.tier ?? "blue",
+    tier: input.tier ?? "ouro",
     empresaNome: input.empresaNome,
     categoria: input.categoria,
     responsavelNome: input.responsavelNome,
