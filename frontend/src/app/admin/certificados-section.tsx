@@ -63,7 +63,7 @@ function emptyForm(): FormState {
   return {
     tipo: "empresa",
     owner_id: "",
-    tier: "ouro",
+    tier: "blue",
     responsavel_nome: "",
     responsavel_cpf: "",
     issued_at: todayISO(),
@@ -78,7 +78,7 @@ const TIPO_OPTIONS: ReadonlyArray<{ v: CertTipo; l: string }> = [
 
 const TIER_OPTIONS: ReadonlyArray<{ v: CertTier; l: string }> = [
   { v: "prata", l: "Verificado" },
-  { v: "ouro", l: "Afiliados" },
+  { v: "blue", l: "Blue" },
   { v: "black", l: "Black" },
 ];
 

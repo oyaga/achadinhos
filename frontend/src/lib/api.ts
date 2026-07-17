@@ -814,7 +814,7 @@ export interface AdminEventPayload {
 
 // ── Certificados de empresa qualificada ──
 export type CertTipo = "empresa" | "afiliado";
-export type CertTier = "prata" | "ouro" | "black";
+export type CertTier = "prata" | "blue" | "black";
 
 export interface ApiCertificate {
   id: string;

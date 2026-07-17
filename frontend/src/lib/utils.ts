@@ -23,15 +23,14 @@ export function isPublicCategory(c: { id: string }): boolean {
   return c.id !== "loja";
 }
 
-// Rótulo do nível do certificado. Os IDs internos (prata/ouro/black) são
-// mantidos no banco e na API; só o nome exibido mudou:
-// prata -> Verificado · ouro -> Afiliados · black -> Black.
+// Rótulo do nível do certificado.
+// prata -> Verificado · blue -> Blue · black -> Black.
 export function tierLabel(tier: string | null | undefined): string {
   switch (tier) {
     case "prata":
       return "Verificado";
-    case "ouro":
-      return "Afiliados";
+    case "blue":
+      return "Blue";
     case "black":
       return "Black";
     default:

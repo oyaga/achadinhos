@@ -47,7 +47,7 @@ export default function TermosPage() {
 
         <h2>3. Certificação Achadinhos</h2>
         <p>
-          Os selos (Verificado, Afiliados e Black) refletem a análise documental e de
+          Os selos (Verificado, Blue e Black) refletem a análise documental e de
           reputação feita pela nossa equipe na data de emissão do certificado, com
           validade indicada no próprio certificado. Eles são um indicador de confiança —
           não uma garantia de resultado ou fiança dos serviços prestados.

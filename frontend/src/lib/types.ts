@@ -39,8 +39,8 @@ export interface Provider {
   logoUrl?: string;
   rating: number;
   reviews: number;
-  badge?: "Ouro" | "Verificado" | "Premium Black";
-  certTier?: "prata" | "ouro" | "black";
+  badge?: "Blue" | "Verificado" | "Premium Black";
+  certTier?: "prata" | "blue" | "black";
   verified: boolean;
   distance: string;
   price: string;

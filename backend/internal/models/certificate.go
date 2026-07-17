@@ -19,7 +19,7 @@ type CertTier = string
 
 const (
 	CertTierPrata CertTier = "prata"
-	CertTierOuro  CertTier = "ouro"
+	CertTierBlue  CertTier = "blue"
 	CertTierBlack CertTier = "black"
 )
 
@@ -35,7 +35,7 @@ type Certificate struct {
 	ID              uuid.UUID  `gorm:"type:uuid;primaryKey" json:"id"`
 	Code            string     `gorm:"size:32;not null;uniqueIndex" json:"code"`
 	Tipo            CertTipo   `gorm:"size:16;not null;default:'empresa'" json:"tipo"`
-	Tier            CertTier   `gorm:"size:8;not null;default:'ouro'" json:"tier"`
+	Tier            CertTier   `gorm:"size:8;not null;default:'blue'" json:"tier"`
 	SellerID        *uuid.UUID `gorm:"type:uuid;index" json:"seller_id,omitempty"`
 	ProviderID      *uuid.UUID `gorm:"type:uuid;index" json:"provider_id,omitempty"`
 	EmpresaNome     string     `gorm:"size:255;not null" json:"empresa_nome"`

@@ -86,7 +86,7 @@ type Provider struct {
 	RadiusKM          int         `gorm:"default:10" json:"radius_km"`
 	DocumentType      string      `gorm:"size:4" json:"document_type,omitempty"`
 	Document          string      `gorm:"size:18" json:"document,omitempty"`
-	// CertTier é o nível (prata/ouro/black) do certificado ativo mais recente,
+	// CertTier é o nível (prata/blue/black) do certificado ativo mais recente,
 	// desnormalizado para alimentar o selo no marketplace. Vazio = sem selo.
 	CertTier string `gorm:"size:8;not null;default:''" json:"cert_tier,omitempty"`
 

@@ -14,8 +14,8 @@ const TIERS = [
     crit: "Documento (CPF/CNPJ) válido, identidade e contato confirmados, perfil completo.",
   },
   {
-    key: "ouro",
-    name: "Afiliados",
+    key: "blue",
+    name: "Blue",
     tagline: "Requisitos padrão",
     desc: "Atende aos requisitos padrão do Achadinhos do Condomínio.",
     crit: "Tudo do nível Verificado + portfólio comprovado, boas avaliações de clientes, tempo de atuação e histórico sem pendências.",
@@ -25,7 +25,7 @@ const TIERS = [
     name: "Black",
     tagline: "Avaliação rigorosa",
     desc: "Aprovado em avaliação rigorosa, conduzida diretamente pela equipe especializada do Achadinhos.",
-    crit: "Tudo do nível Afiliados + auditoria aprofundada e referências verificadas pela equipe especializada Achadinhos; excelência comprovada.",
+    crit: "Tudo do nível Blue + auditoria aprofundada e referências verificadas pela equipe especializada Achadinhos; excelência comprovada.",
   },
 ] as const;
 
@@ -33,7 +33,7 @@ const STEPS = [
   { t: "Cadastro e documentos", d: "O titular se cadastra e envia os documentos exigidos." },
   { t: "Verificação", d: "Conferimos a identidade e a situação do CNPJ ou CPF." },
   { t: "Análise", d: "Avaliamos o portfólio, a reputação e o histórico." },
-  { t: "Definição do nível", d: "Atribuímos o selo: Verificado, Afiliados ou Black." },
+  { t: "Definição do nível", d: "Atribuímos o selo: Verificado, Blue ou Black." },
   { t: "Certificado", d: "Emitimos o certificado oficial, verificável por QR code." },
 ] as const;
 
@@ -172,7 +172,7 @@ export function CertificacaoScreen() {
             </div>
           </div>
           <div className="cert-hero-art" data-reveal>
-            <Seal className="cert-hero-seal ouro" />
+            <Seal className="cert-hero-seal blue" />
           </div>
         </section>
 

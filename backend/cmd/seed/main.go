@@ -54,7 +54,7 @@ type productSeed struct {
 func ptr[T any](v T) *T { return &v }
 
 var providers = []providerSeed{
-	{Slug: "premium-admin", Name: "Premium Administradora", Cat: "administracao-condominios", Avatar: "P", Rating: 5.0, Reviews: 2, Badge: "Ouro", Verified: true, Distance: "2,5km", Price: "Sob consulta", ResponseTime: "15min", Desc: "Gestão completa e transparente para o seu condomínio. Equipe especializada e tecnologia de ponta.", Services: []string{"Gestão financeira", "Assessoria jurídica", "Recursos humanos", "App do morador"}, YearsActive: 10, JobsDone: 150, WhatsApp: "11987654333", Highlight: true},
+		{Slug: "premium-admin", Name: "Premium Administradora", Cat: "administracao-condominios", Avatar: "P", Rating: 5.0, Reviews: 2, Badge: "Blue", Verified: true, Distance: "2,5km", Price: "Sob consulta", ResponseTime: "15min", Desc: "Gestão completa e transparente para o seu condomínio. Equipe especializada e tecnologia de ponta.", Services: []string{"Gestão financeira", "Assessoria jurídica", "Recursos humanos", "App do morador"}, YearsActive: 10, JobsDone: 150, WhatsApp: "11987654333", Highlight: true},
 }
 
 // Sample products. Each references a seller (empresa) by name; the seller
