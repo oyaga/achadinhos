@@ -803,6 +803,17 @@ export interface AdminBannerPayload {
   ends_at?: string;
 }
 
+export type BlogPostFormat = "traditional" | "presentation";
+export interface ApiBlogPost {
+  id: string; title: string; slug: string; excerpt: string;
+  format: BlogPostFormat; content_html: string; cover_url: string; pdf_url: string;
+  published: boolean; published_at: string | null; created_at: string; updated_at: string;
+}
+export interface BlogPostPayload {
+  title: string; slug: string; excerpt: string; format: BlogPostFormat;
+  content_html: string; published: boolean;
+}
+
 export interface AdminEventPayload {
   title: string;
   description: string;
@@ -1088,6 +1099,28 @@ export const adminApi = {
     });
   },
 
+  async listBlogPosts(): Promise<ApiBlogPost[]> {
+    const res = await request<{ data: ApiBlogPost[] }>("/admin/blog"); return res.data ?? [];
+  },
+  async createBlogPost(payload: BlogPostPayload): Promise<ApiBlogPost> {
+    return request<ApiBlogPost>("/admin/blog", { method: "POST", body: payload });
+  },
+  async updateBlogPost(id: string, payload: Partial<BlogPostPayload>): Promise<ApiBlogPost> {
+    return request<ApiBlogPost>(`/admin/blog/${id}`, { method: "PATCH", body: payload });
+  },
+  async deleteBlogPost(id: string): Promise<void> {
+    return request<void>(`/admin/blog/${id}`, { method: "DELETE", parseAs: "none" });
+  },
+  async uploadBlogCover(id: string, file: File): Promise<{ cover_url: string }> {
+    return uploadImage(`/admin/blog/${id}/cover`, file);
+  },
+  async uploadBlogPDF(id: string, file: File): Promise<{ pdf_url: string }> {
+    return uploadImage(`/admin/blog/${id}/pdf`, file);
+  },
+  async uploadBlogContentImage(file: File): Promise<{ url: string }> {
+    return uploadImage("/admin/blog/content-image", file);
+  },
+
   // ── Certificados ──
   async listCertificates(): Promise<ApiCertificate[]> {
     const res = await request<{ data: ApiCertificate[] }>("/admin/certificates");
@@ -1187,6 +1220,15 @@ export const bannersApi = {
     const qs = placement ? `?placement=${placement}` : "";
     const res = await request<{ data: ApiBanner[] }>(`/banners${qs}`, { skipAuth: true });
     return res.data ?? [];
+  },
+};
+
+export const blogApi = {
+  async list(): Promise<ApiBlogPost[]> {
+    const res = await request<{ data: ApiBlogPost[] }>("/blog", { skipAuth: true }); return res.data ?? [];
+  },
+  async get(slug: string): Promise<ApiBlogPost> {
+    return request<ApiBlogPost>(`/blog/${encodeURIComponent(slug)}`, { skipAuth: true });
   },
 };
 

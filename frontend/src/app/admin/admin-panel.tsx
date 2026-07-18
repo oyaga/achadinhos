@@ -13,6 +13,7 @@ import { EventosSection } from "./eventos-section";
 import { MuralSection } from "./mural-section";
 import { CertificadosSection } from "./certificados-section";
 import { AgendaSection } from "./agenda-section";
+import { BlogSection } from "./blog-section";
 
 type AdminTab =
   | "produtos"
@@ -22,6 +23,7 @@ type AdminTab =
   | "eventos"
   | "mural"
   | "agenda"
+  | "blog"
   | "sindicos";
 
 const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
@@ -32,6 +34,7 @@ const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "eventos", label: "Eventos", icon: "Calendar" },
   { id: "mural", label: "Mural", icon: "Tag" },
   { id: "agenda", label: "Agenda", icon: "Clock" },
+  { id: "blog", label: "Blog", icon: "Tag" },
   { id: "sindicos", label: "Síndicos", icon: "User" },
 ];
 
@@ -128,6 +131,7 @@ export function AdminPanel() {
         {tab === "eventos" && <EventosSection />}
         {tab === "mural" && <MuralSection onGoEventos={() => setTab("eventos")} />}
         {tab === "agenda" && <AgendaSection />}
+        {tab === "blog" && <BlogSection />}
         {tab === "sindicos" && <SindicosSection />}
       </div>
     </main>

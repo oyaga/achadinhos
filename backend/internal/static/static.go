@@ -50,6 +50,13 @@ func Mount(r *gin.Engine) error {
 			serveFile(c, sub, clean+".html")
 			return
 		}
+		// Posts do blog são criados pelo admin depois do build estático. Para
+		// slugs ainda não exportados, serve o shell dinâmico que lê o slug da URL
+		// e busca o conteúdo na API.
+		if strings.HasPrefix(clean, "blog/") && isFile(sub, "blog/_unavailable/index.html") {
+			serveFile(c, sub, "blog/_unavailable/index.html")
+			return
+		}
 		// Subdomínio de agendamento (ex.: ligia.achadinhoscondominio.com.br):
 		// quando o primeiro rótulo do host corresponde a um slug de agenda
 		// exportado, a raiz (e qualquer rota não resolvida) serve a página

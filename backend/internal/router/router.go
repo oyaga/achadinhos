@@ -55,6 +55,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	evH := handlers.NewEventHandler(db)
 	bnH := handlers.NewBannerHandler(db)
 	certH := handlers.NewCertificateHandler(db)
+	blogH := handlers.NewBlogHandler(db)
 	agendaSvc := agenda.NewService(
 		db,
 		cfg.GoogleOAuthClientID,
@@ -99,6 +100,8 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 
 	// Public banners/anúncios (slide principal e widget de eventos).
 	v1.GET("/banners", bnH.List)
+	v1.GET("/blog", blogH.List)
+	v1.GET("/blog/:slug", blogH.Get)
 
 	// Public certificate verification (acessada pelo QR code).
 	v1.GET("/certificates/:code", certH.GetByCode)
@@ -183,6 +186,14 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.POST("/certificates", certH.Create)
 		admin.PATCH("/certificates/:id", certH.Revoke)
 		admin.DELETE("/certificates/:id", certH.Delete)
+
+		admin.GET("/blog", blogH.AdminList)
+		admin.POST("/blog", blogH.Create)
+		admin.PATCH("/blog/:id", blogH.Update)
+		admin.DELETE("/blog/:id", blogH.Delete)
+		admin.POST("/blog/:id/cover", blogH.UploadCover)
+		admin.POST("/blog/:id/pdf", blogH.UploadPDF)
+		admin.POST("/blog/content-image", blogH.UploadContentImage)
 
 		admin.GET("/products", adminH.ListProducts)
 		admin.POST("/products", adminH.CreateProduct)
