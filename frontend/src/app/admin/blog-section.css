@@ -1,0 +1,10 @@
+.admin-success { margin: 0 0 14px; padding: 11px 14px; border: 1px solid #a8d5be; border-radius: 10px; background: #e7f6ed; color: #236746; font-size: 13px; }
+.admin-secondary-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; padding: 0 14px; border: 1px solid var(--bone-300); border-radius: 10px; background: #fff; color: var(--navy-800); font-size: 13px; font-weight: 600; cursor: pointer; }
+.blog-editor-toolbar { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 8px; }
+.blog-editor-toolbar > button { min-width: 38px; min-height: 36px; padding: 0 10px; border: 1px solid var(--bone-300); border-radius: 8px; background: #fff; }
+.blog-editor { min-height: 280px; overflow-y: auto; background: #fff; line-height: 1.65; }
+.blog-editor:focus { border-color: var(--gold-500); }
+.blog-editor img { max-width: 100%; height: auto; }
+.admin-status { display: inline-flex; padding: 4px 9px; border-radius: 999px; background: var(--bone-100); color: var(--ink-500); font-size: 11px; font-weight: 700; }
+.admin-status.active { background: #e7f6ed; color: #236746; }
+.admin-row-actions a { display: inline-flex; align-items: center; justify-content: center; color: var(--navy-800); }

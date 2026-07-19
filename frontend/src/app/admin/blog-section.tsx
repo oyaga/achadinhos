@@ -1,19 +1,74 @@
 "use client";
-import { useEffect,useRef,useState } from "react";
-import { adminApi,ApiBlogPost,BlogPostFormat } from "@/lib/api";
-const empty={title:"",slug:"",excerpt:"",format:"traditional" as BlogPostFormat,content_html:"",published:true};
+
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { adminApi, ApiBlogPost, ApiError, BlogPostFormat, getImageUrl } from "@/lib/api";
+import { Icon } from "@/components/icons";
+import "./blog-section.css";
+
+type FormState = { title:string; slug:string; excerpt:string; format:BlogPostFormat; content_html:string; published:boolean };
+const EMPTY: FormState = { title:"", slug:"", excerpt:"", format:"traditional", content_html:"", published:true };
+
+const slugify=(s:string)=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+
 export function BlogSection(){
- const [posts,setPosts]=useState<ApiBlogPost[]>([]),[form,setForm]=useState(empty),[edit,setEdit]=useState<ApiBlogPost|null>(null),[busy,setBusy]=useState(false); const editor=useRef<HTMLDivElement>(null),cover=useRef<HTMLInputElement>(null),pdf=useRef<HTMLInputElement>(null),contentImage=useRef<HTMLInputElement>(null);
- const load=()=>adminApi.listBlogPosts().then(setPosts); useEffect(()=>{load()},[]);
- const slug=(s:string)=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
- const start=(p?:ApiBlogPost)=>{setEdit(p||null);setForm(p?{title:p.title,slug:p.slug,excerpt:p.excerpt,format:p.format,content_html:p.content_html,published:p.published}:empty);setTimeout(()=>{if(editor.current)editor.current.innerHTML=p?.content_html||""},0)};
- async function save(){setBusy(true);try{const payload={...form,content_html:editor.current?.innerHTML||form.content_html};const p=edit?await adminApi.updateBlogPost(edit.id,payload):await adminApi.createBlogPost(payload);const cf=cover.current?.files?.[0],pf=pdf.current?.files?.[0];if(cf)await adminApi.uploadBlogCover(p.id,cf);if(pf)await adminApi.uploadBlogPDF(p.id,pf);start();await load()}finally{setBusy(false)}}
- const cmd=(c:string,v?:string)=>{document.execCommand(c,false,v);editor.current?.focus()};
- async function insertImage(){const f=contentImage.current?.files?.[0];if(!f)return;const {url}=await adminApi.uploadBlogContentImage(f);cmd("insertImage",url);if(contentImage.current)contentImage.current.value=""}
- return <section><div className="admin-section-head"><div><h2 className="admin-section-title">Blog</h2><p className="admin-section-sub">Artigos e apresentações em PDF</p></div><button className="admin-primary-btn" onClick={()=>start()}>Nova postagem</button></div>
- <div className="admin-form-card"><div className="admin-form-title">{edit?"Editar":"Nova"} postagem</div><div className="prof-field"><label className="prof-label">Formato</label><select className="prof-input" value={form.format} onChange={e=>setForm({...form,format:e.target.value as BlogPostFormat})}><option value="traditional">Post tradicional</option><option value="presentation">Apresentação em PDF</option></select></div>
- <div className="prof-field"><label className="prof-label">Título</label><input className="prof-input" value={form.title} onChange={e=>setForm({...form,title:e.target.value,slug:edit?form.slug:slug(e.target.value)})}/></div><div className="prof-field"><label className="prof-label">Slug</label><input className="prof-input" value={form.slug} onChange={e=>setForm({...form,slug:slug(e.target.value)})}/></div><div className="prof-field"><label className="prof-label">Resumo</label><textarea className="prof-input" value={form.excerpt} onChange={e=>setForm({...form,excerpt:e.target.value})}/></div><div className="prof-field"><label className="prof-label">Imagem de capa</label><input ref={cover} type="file" accept="image/*"/></div>
- {form.format==="presentation"?<div className="prof-field"><label className="prof-label">PDF da apresentação (máx. 20 MB)</label><input ref={pdf} type="file" accept="application/pdf"/></div>:<div className="prof-field"><label className="prof-label">Conteúdo</label><div style={{display:"flex",gap:8,marginBottom:8,flexWrap:"wrap"}}><button onClick={()=>cmd("bold")}><b>B</b></button><button onClick={()=>cmd("italic")}><i>I</i></button><button onClick={()=>cmd("formatBlock","h2")}>Título</button><button onClick={()=>cmd("insertUnorderedList")}>Lista</button><input ref={contentImage} type="file" accept="image/*" onChange={insertImage}/></div><div ref={editor} contentEditable className="prof-input" style={{minHeight:240,background:"white"}}/></div>}
- <div className="prof-field"><label className="prof-label">Status da postagem</label><select className="prof-input" value={form.published?"published":"draft"} onChange={e=>setForm({...form,published:e.target.value==="published"})}><option value="published">Publicado — aparece no Blog</option><option value="draft">Rascunho — visível somente no admin</option></select></div><button className="admin-primary-btn" disabled={busy||!form.title||!form.slug} onClick={save}>{busy?"Salvando…":form.published?"Publicar postagem":"Salvar rascunho"}</button></div>
- <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Título</th><th>Formato</th><th>Status</th><th></th></tr></thead><tbody>{posts.map(p=><tr key={p.id}><td>{p.title}</td><td>{p.format==="presentation"?"Apresentação":"Tradicional"}</td><td>{p.published?"Publicado":"Rascunho"}</td><td><button onClick={()=>start(p)}>Editar</button> <button onClick={async()=>{if(confirm("Excluir postagem?")){await adminApi.deleteBlogPost(p.id);load()}}}>Excluir</button></td></tr>)}</tbody></table></div></section>
+  const [posts,setPosts]=useState<ApiBlogPost[]>([]);
+  const [editing,setEditing]=useState<ApiBlogPost|null>(null);
+  const [form,setForm]=useState<FormState>(EMPTY);
+  const [open,setOpen]=useState(false);
+  const [loading,setLoading]=useState(true);
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState("");
+  const [success,setSuccess]=useState("");
+  const editor=useRef<HTMLDivElement>(null), cover=useRef<HTMLInputElement>(null), pdf=useRef<HTMLInputElement>(null), contentImage=useRef<HTMLInputElement>(null);
+
+  async function load(){setLoading(true);setError("");try{setPosts(await adminApi.listBlogPosts())}catch(e){setError(e instanceof ApiError?e.message:"Não foi possível carregar as postagens.")}finally{setLoading(false)}}
+  useEffect(()=>{void load()},[]);
+
+  function showForm(post?:ApiBlogPost){
+    setEditing(post??null);setError("");setSuccess("");setOpen(true);
+    const next=post?{title:post.title,slug:post.slug,excerpt:post.excerpt,format:post.format,content_html:post.content_html,published:post.published}:EMPTY;
+    setForm(next);setTimeout(()=>{if(editor.current)editor.current.innerHTML=next.content_html},0);
+  }
+  function closeForm(){setOpen(false);setEditing(null);setForm(EMPTY);setError("")}
+  const update=<K extends keyof FormState>(key:K,value:FormState[K])=>setForm(f=>({...f,[key]:value}));
+  const command=(name:string,value?:string)=>{document.execCommand(name,false,value);editor.current?.focus()};
+
+  async function insertImage(){const file=contentImage.current?.files?.[0];if(!file)return;setBusy(true);try{const {url}=await adminApi.uploadBlogContentImage(file);command("insertImage",getImageUrl(url))}catch(e){setError(e instanceof ApiError?e.message:"Falha ao enviar imagem.")}finally{setBusy(false);if(contentImage.current)contentImage.current.value=""}}
+
+  async function save(){
+    setError("");setSuccess("");const content=editor.current?.innerHTML.trim()||form.content_html.trim();
+    if(form.title.trim().length<3)return setError("Informe um título com pelo menos 3 caracteres.");
+    if(!form.slug)return setError("Informe o endereço (slug) da postagem.");
+    if(form.format==="traditional"&&!content)return setError("Escreva o conteúdo da postagem.");
+    if(form.format==="presentation"&&!editing?.pdf_url&&!pdf.current?.files?.[0])return setError("Selecione o PDF da apresentação.");
+    setBusy(true);
+    try{
+      const payload={...form,title:form.title.trim(),excerpt:form.excerpt.trim(),content_html:content};
+      const post=editing?await adminApi.updateBlogPost(editing.id,payload):await adminApi.createBlogPost(payload);
+      const coverFile=cover.current?.files?.[0],pdfFile=pdf.current?.files?.[0];
+      if(coverFile)await adminApi.uploadBlogCover(post.id,coverFile);
+      if(pdfFile)await adminApi.uploadBlogPDF(post.id,pdfFile);
+      await load();closeForm();setSuccess(form.published?"Postagem publicada com sucesso.":"Rascunho salvo com sucesso.");
+    }catch(e){setError(e instanceof ApiError?e.message:"Não foi possível salvar a postagem.")}finally{setBusy(false)}
+  }
+  async function toggle(post:ApiBlogPost){setError("");try{await adminApi.updateBlogPost(post.id,{published:!post.published});await load();setSuccess(post.published?"Postagem removida do Blog.":"Postagem publicada.")}catch(e){setError(e instanceof ApiError?e.message:"Não foi possível alterar o status.")}}
+  async function remove(post:ApiBlogPost){if(!confirm(`Excluir “${post.title}”?`))return;try{await adminApi.deleteBlogPost(post.id);await load();setSuccess("Postagem excluída.")}catch(e){setError(e instanceof ApiError?e.message:"Não foi possível excluir.")}}
+
+  return <section>
+    <div className="admin-section-head"><div><h2 className="admin-section-title">Blog</h2><p className="admin-section-sub">{posts.length} postagem(ns) · artigos e apresentações</p></div><button className="admin-primary-btn" onClick={()=>showForm()}><Icon.Plus size={16}/> Nova postagem</button></div>
+    {error&&<div className="auth-error" role="alert">{error}</div>}{success&&<div className="admin-success">{success}</div>}
+    {open&&<div className="admin-form-card">
+      <div className="admin-section-head"><div className="admin-form-title">{editing?"Editar postagem":"Criar postagem"}</div><button className="auth-tertiary-link" onClick={closeForm}>Cancelar</button></div>
+      <div className="prof-field"><label className="prof-label">Formato</label><select className="prof-input" value={form.format} onChange={e=>update("format",e.target.value as BlogPostFormat)}><option value="traditional">Post tradicional</option><option value="presentation">Apresentação em PDF</option></select></div>
+      <div className="prof-field"><label className="prof-label">Título</label><input className="prof-input" value={form.title} onChange={e=>{update("title",e.target.value);if(!editing)update("slug",slugify(e.target.value))}}/></div>
+      <div className="prof-field"><label className="prof-label">Endereço da postagem</label><div className="prof-help">/blog/{form.slug||"titulo-da-postagem"}</div><input className="prof-input" value={form.slug} onChange={e=>update("slug",slugify(e.target.value))}/></div>
+      <div className="prof-field"><label className="prof-label">Resumo</label><textarea className="prof-input" rows={3} maxLength={600} value={form.excerpt} onChange={e=>update("excerpt",e.target.value)}/></div>
+      <div className="prof-field"><label className="prof-label">Imagem de capa {editing?.cover_url&&<span>· atual cadastrada</span>}</label><input ref={cover} type="file" accept="image/jpeg,image/png,image/webp"/></div>
+      {form.format==="presentation"?<div className="prof-field"><label className="prof-label">Arquivo PDF {editing?.pdf_url&&<span>· atual cadastrado</span>}</label><input ref={pdf} type="file" accept="application/pdf"/><div className="prof-help">Máximo de 20 MB. Cada página será exibida como um slide.</div></div>:<div className="prof-field"><label className="prof-label">Conteúdo</label><div className="blog-editor-toolbar"><button type="button" onClick={()=>command("bold")}><b>B</b></button><button type="button" onClick={()=>command("italic")}><i>I</i></button><button type="button" onClick={()=>command("formatBlock","h2")}>Título</button><button type="button" onClick={()=>command("insertUnorderedList")}>Lista</button><label className="admin-secondary-btn">Inserir imagem<input hidden ref={contentImage} type="file" accept="image/*" onChange={()=>void insertImage()}/></label></div><div ref={editor} contentEditable suppressContentEditableWarning className="prof-input blog-editor"/></div>}
+      <div className="prof-field"><label className="prof-label">Status</label><select className="prof-input" value={form.published?"published":"draft"} onChange={e=>update("published",e.target.value==="published")}><option value="published">Publicado — aparece no Blog</option><option value="draft">Rascunho — somente no admin</option></select></div>
+      <div className="admin-form-actions"><button className="admin-secondary-btn" onClick={closeForm}>Cancelar</button><button className="admin-primary-btn" disabled={busy} onClick={()=>void save()}>{busy?"Salvando…":form.published?"Publicar postagem":"Salvar rascunho"}</button></div>
+    </div>}
+    {loading?<div className="admin-loading"><span className="auth-spinner"/> Carregando…</div>:posts.length===0?<div className="admin-empty">Nenhuma postagem criada. Clique em “Nova postagem”.</div>:<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Postagem</th><th>Formato</th><th>Status</th><th>Ações</th></tr></thead><tbody>{posts.map(p=><tr key={p.id}><td><strong>{p.title}</strong><div className="admin-cert-code">/blog/{p.slug}</div></td><td>{p.format==="presentation"?"Apresentação":"Tradicional"}</td><td><span className={`admin-status ${p.published?"active":""}`}>{p.published?"Publicado":"Rascunho"}</span></td><td><div className="admin-row-actions">{p.published&&<Link href={`/blog/${p.slug}`} target="_blank" title="Visualizar"><Icon.Eye size={16}/></Link>}<button title="Editar" onClick={()=>showForm(p)}><Icon.Pencil size={16}/></button><button title={p.published?"Despublicar":"Publicar"} onClick={()=>void toggle(p)}>{p.published?<Icon.EyeOff size={16}/>:<Icon.Eye size={16}/>}</button><button title="Excluir" onClick={()=>void remove(p)}><Icon.Trash size={16}/></button></div></td></tr>)}</tbody></table></div>}
+  </section>;
 }
