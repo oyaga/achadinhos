@@ -51,6 +51,9 @@ export function TopNav({ onSearchClick, onProfile }: TopNavProps) {
         </button>
 
         <div className="top-nav-actions">
+          <Link href="/blog" className="top-nav-link">
+            Blog
+          </Link>
           <Link href="/eventos" className="top-nav-link">
             Eventos
           </Link>

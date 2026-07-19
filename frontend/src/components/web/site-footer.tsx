@@ -50,6 +50,9 @@ export function SiteFooter({ onShopping, onHighlights, authed }: SiteFooterProps
             <Link href="/eventos" className="site-footer-link">
               Eventos e assembleias
             </Link>
+            <Link href="/blog" className="site-footer-link">
+              Blog
+            </Link>
           </nav>
 
           <nav className="site-footer-col" aria-label="Certificação">
