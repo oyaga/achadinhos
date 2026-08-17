@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import type { Provider } from "@/lib/types";
 import { getImageUrl, type AdminSeller } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { badgeLabel, cn } from "@/lib/utils";
 import { Icon } from "../icons";
 import { CertSeal } from "../cert-seal";
 import { CompanyCard } from "./featured-companies";
+import { FILTERS, type FilterId } from "../web/category-sidebar";
 
 interface ProvidersSectionProps {
   providers: Provider[];
@@ -18,6 +20,10 @@ interface ProvidersSectionProps {
   onToggleSellerFav?: (id: string) => void;
   title?: string;
   showSeeAll?: boolean;
+  /** Quando presentes, o botão "Filtrar" abre um popover funcional com os
+      mesmos filtros da sidebar desktop. */
+  filters?: Set<FilterId>;
+  onToggleFilter?: (id: FilterId) => void;
 }
 
 export function ProvidersSection({
@@ -31,16 +37,43 @@ export function ProvidersSection({
   onToggleSellerFav,
   title = "Recomendados pra você",
   showSeeAll = true,
+  filters,
+  onToggleFilter,
 }: ProvidersSectionProps) {
+  const [filterOpen, setFilterOpen] = useState(false);
   const empty = providers.length === 0 && sellers.length === 0;
+  const filterable = !!filters && !!onToggleFilter;
   return (
     <div className="section">
       <div className="section-title">
         <h2>{title}</h2>
         {showSeeAll && (
-          <button type="button" className="see-all">
-            Filtrar <Icon.Filter size={12} />
-          </button>
+          <div className="filter-menu-wrap">
+            <button
+              type="button"
+              className="see-all"
+              onClick={filterable ? () => setFilterOpen((o) => !o) : undefined}
+              aria-expanded={filterOpen}
+            >
+              Filtrar{filters && filters.size > 0 ? ` (${filters.size})` : ""}{" "}
+              <Icon.Filter size={12} />
+            </button>
+            {filterable && filterOpen && (
+              <div className="filter-pop">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    className={cn("side-chip", filters!.has(f.id) && "active")}
+                    onClick={() => onToggleFilter!(f.id)}
+                    aria-pressed={filters!.has(f.id)}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
       <div className="providers">
@@ -135,7 +168,7 @@ export function ProviderCard({
           {provider.name}
           <CertSeal tier={provider.certTier} />
           {provider.badge && (
-            <span className="provider-badge">{provider.badge}</span>
+            <span className="provider-badge">{badgeLabel(provider.badge)}</span>
           )}
         </div>
         {showCatLabel && (

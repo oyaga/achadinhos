@@ -4,36 +4,50 @@ package dto
 
 // AdminSellerRequest is the body for POST /admin/sellers.
 type AdminSellerRequest struct {
-	Name         string `json:"name" binding:"required,min=2,max=255"`
-	CategoryID   string `json:"category_id" binding:"required"`
-	Description  string `json:"description" binding:"max=2000"`
-	WhatsApp     string `json:"whatsapp" binding:"required,min=8,max=32"`
-	Link         string `json:"link" binding:"omitempty,max=500"`
-	Instagram    string `json:"instagram" binding:"omitempty,max=255"`
-	Facebook     string `json:"facebook" binding:"omitempty,max=255"`
-	TikTok       string `json:"tiktok" binding:"omitempty,max=255"`
-	YouTube      string `json:"youtube" binding:"omitempty,max=255"`
-	Partner      bool   `json:"partner"`
-	Highlight    bool   `json:"highlight"`
-	DocumentType string `json:"document_type" binding:"required,oneof=cpf cnpj"`
-	Document     string `json:"document" binding:"required"`
+	Name       string `json:"name" binding:"required,min=2,max=255"`
+	CategoryID string `json:"category_id" binding:"required"`
+	// CategoryIDs são TODAS as categorias da empresa (a primeira é a principal).
+	// Quando vazio, vale [CategoryID] — compatibilidade com clientes antigos.
+	CategoryIDs  []string `json:"category_ids" binding:"omitempty,max=10,dive,min=1,max=64"`
+	Description  string   `json:"description" binding:"max=2000"`
+	WhatsApp     string   `json:"whatsapp" binding:"required,min=8,max=32"`
+	Link         string   `json:"link" binding:"omitempty,max=500"`
+	Instagram    string   `json:"instagram" binding:"omitempty,max=255"`
+	Facebook     string   `json:"facebook" binding:"omitempty,max=255"`
+	TikTok       string   `json:"tiktok" binding:"omitempty,max=255"`
+	YouTube      string   `json:"youtube" binding:"omitempty,max=255"`
+	Partner      bool     `json:"partner"`
+	Highlight    bool     `json:"highlight"`
+	DocumentType string   `json:"document_type" binding:"required,oneof=cpf cnpj"`
+	Document     string   `json:"document" binding:"required"`
+	// Dados internos do contrato (uso administrativo).
+	ContratoInicio        string `json:"contrato_inicio" binding:"omitempty,max=32"`
+	ContratoVigenciaMeses string `json:"contrato_vigencia_meses" binding:"omitempty,max=32"`
+	ValorMensal           string `json:"valor_mensal" binding:"omitempty,max=32"`
+	ValorAnual            string `json:"valor_anual" binding:"omitempty,max=32"`
 }
 
 // AdminSellerPatch is the body for PATCH /admin/sellers/:id. All fields optional.
 type AdminSellerPatch struct {
-	Name         *string `json:"name" binding:"omitempty,min=2,max=255"`
-	CategoryID   *string `json:"category_id"`
-	Description  *string `json:"description" binding:"omitempty,max=2000"`
-	WhatsApp     *string `json:"whatsapp" binding:"omitempty,min=8,max=32"`
-	Link         *string `json:"link" binding:"omitempty,max=500"`
-	Instagram    *string `json:"instagram" binding:"omitempty,max=255"`
-	Facebook     *string `json:"facebook" binding:"omitempty,max=255"`
-	TikTok       *string `json:"tiktok" binding:"omitempty,max=255"`
-	YouTube      *string `json:"youtube" binding:"omitempty,max=255"`
-	Partner      *bool   `json:"partner"`
-	Highlight    *bool   `json:"highlight"`
-	DocumentType *string `json:"document_type" binding:"omitempty,oneof=cpf cnpj"`
-	Document     *string `json:"document"`
+	Name         *string   `json:"name" binding:"omitempty,min=2,max=255"`
+	CategoryID   *string   `json:"category_id"`
+	CategoryIDs  *[]string `json:"category_ids" binding:"omitempty,max=10,dive,min=1,max=64"`
+	Description  *string   `json:"description" binding:"omitempty,max=2000"`
+	WhatsApp     *string   `json:"whatsapp" binding:"omitempty,min=8,max=32"`
+	Link         *string   `json:"link" binding:"omitempty,max=500"`
+	Instagram    *string   `json:"instagram" binding:"omitempty,max=255"`
+	Facebook     *string   `json:"facebook" binding:"omitempty,max=255"`
+	TikTok       *string   `json:"tiktok" binding:"omitempty,max=255"`
+	YouTube      *string   `json:"youtube" binding:"omitempty,max=255"`
+	Partner      *bool     `json:"partner"`
+	Highlight    *bool     `json:"highlight"`
+	DocumentType *string   `json:"document_type" binding:"omitempty,oneof=cpf cnpj"`
+	Document     *string   `json:"document"`
+
+	ContratoInicio        *string `json:"contrato_inicio" binding:"omitempty,max=32"`
+	ContratoVigenciaMeses *string `json:"contrato_vigencia_meses" binding:"omitempty,max=32"`
+	ValorMensal           *string `json:"valor_mensal" binding:"omitempty,max=32"`
+	ValorAnual            *string `json:"valor_anual" binding:"omitempty,max=32"`
 }
 
 // ── Prestadores (providers) ──────────────────────────────────────────────────

@@ -43,6 +43,59 @@ async function imageUrlToDataUrl(url: string): Promise<string | null> {
   }
 }
 
+// Busca um asset PNG/JPEG do próprio site (pasta public/) como data URL.
+// Retorna null em caso de falha — o PDF sai sem a imagem, nunca quebra.
+async function publicImageToDataUrl(path: string): Promise<string | null> {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    if (!/^image\/(png|jpe?g)$/i.test(blob.type)) return null;
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+// Rasteriza um SVG do site num PNG data URL (o @react-pdf/renderer não decodifica
+// SVG em <Image>). Desenha o primeiro frame num canvas na altura pedida.
+async function svgToPngDataUrl(path: string, targetHeight: number): Promise<string | null> {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return null;
+    const svgText = await res.text();
+    const blobUrl = URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml" }));
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = document.createElement("img");
+        el.onload = () => resolve(el);
+        el.onerror = () => reject(new Error("svg load failed"));
+        el.src = blobUrl;
+      });
+      const ratio = img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1;
+      // 2x a altura final no PDF, para o mascote sair nítido na impressão.
+      const h = Math.round(targetHeight * 2);
+      const w = Math.max(1, Math.round(h * ratio));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return null;
+      ctx.drawImage(img, 0, 0, w, h);
+      return canvas.toDataURL("image/png");
+    } finally {
+      URL.revokeObjectURL(blobUrl);
+    }
+  } catch {
+    return null;
+  }
+}
+
 export interface BuildCertificateInput {
   tipo?: "empresa" | "afiliado";
   tier?: "blue" | "ouro" | "black";
@@ -70,6 +123,13 @@ export async function buildCertificateBlob(input: BuildCertificateInput): Promis
     signatureDataUrl = await imageUrlToDataUrl(input.signatureUrl);
   }
 
+  // Logo oficial + mascote da marca. Best-effort: se algum falhar, o PDF sai
+  // com o fallback (logo desenhado) / sem o mascote.
+  const [logoDataUrl, mascotDataUrl] = await Promise.all([
+    publicImageToDataUrl("/logo-achadinhos-do-condominio.png"),
+    svgToPngDataUrl("/mascote-acenando.svg", 74),
+  ]);
+
   const data: CertificateDocData = {
     tipo: input.tipo ?? "empresa",
     tier: input.tier ?? "ouro",
@@ -81,6 +141,8 @@ export async function buildCertificateBlob(input: BuildCertificateInput): Promis
     validLabel: formatDateBR(input.validUntil),
     qrDataUrl,
     signatureDataUrl,
+    logoDataUrl,
+    mascotDataUrl,
   };
 
   try {

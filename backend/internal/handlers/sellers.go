@@ -32,7 +32,12 @@ func (h *SellersHandler) List(c *gin.Context) {
 		q = q.Where("highlight = ?", true)
 	}
 	if cat := c.Query("category"); cat != "" {
-		q = q.Where("category_id = ?", cat)
+		// Empresas podem ter várias categorias (seller_categories); a principal
+		// segue em category_id, então cobrimos as duas fontes.
+		q = q.Where(
+			"category_id = ? OR id IN (SELECT seller_id FROM seller_categories WHERE category_id = ?)",
+			cat, cat,
+		)
 	}
 	var sellers []models.Seller
 	if err := q.Order("name ASC").Find(&sellers).Error; err != nil {
@@ -52,6 +57,7 @@ func (h *SellersHandler) Get(c *gin.Context) {
 	var s models.Seller
 	if err := h.db.WithContext(c.Request.Context()).
 		Preload("Category").
+		Preload("Categories").
 		Preload("PortfolioPhotos", orderByPosition).
 		First(&s, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

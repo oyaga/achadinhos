@@ -3,6 +3,27 @@
 import Link from "next/link";
 import { Icon } from "../icons";
 
+// Perfis oficiais do Achadinhos do Condomínio. Centralizados aqui para o
+// rodapé (e futuros pontos) usarem o mesmo conjunto: Instagram, Facebook e
+// TikTok — padrão pedido pelo cliente.
+export const SOCIAL_LINKS = [
+  {
+    key: "instagram",
+    label: "Instagram",
+    href: "https://www.instagram.com/achadinhosdocondominio",
+  },
+  {
+    key: "facebook",
+    label: "Facebook",
+    href: "https://www.facebook.com/achadinhosdocondominio",
+  },
+  {
+    key: "tiktok",
+    label: "TikTok",
+    href: "https://www.tiktok.com/@achadinhosdocondominio",
+  },
+] as const;
+
 interface SiteFooterProps {
   /** Abre a tela do Shopping (overlay por estado na home). */
   onShopping?: () => void;
@@ -22,7 +43,16 @@ export function SiteFooter({ onShopping, onHighlights, authed }: SiteFooterProps
         <div className="site-footer-grid">
           <div className="site-footer-brand">
             <div className="site-footer-lockup">
-              <span className="site-footer-tile" aria-hidden="true">A</span>
+              <span className="site-footer-tile" aria-hidden="true">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo-achadinhos-do-condominio.png"
+                  alt=""
+                  className="site-footer-logo"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
               <span className="site-footer-name">
                 Achadinhos
                 <span className="site-footer-name-sub">DO CONDOMÍNIO</span>
@@ -33,6 +63,29 @@ export function SiteFooter({ onShopping, onHighlights, authed }: SiteFooterProps
               condomínio — com empresas verificadas pela Certificação
               Achadinhos.
             </p>
+            <div className="site-footer-social" aria-label="Redes sociais">
+              {SOCIAL_LINKS.map((s) => {
+                const I =
+                  s.key === "instagram"
+                    ? Icon.Instagram
+                    : s.key === "facebook"
+                      ? Icon.Facebook
+                      : Icon.TikTok;
+                return (
+                  <a
+                    key={s.key}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="site-footer-social-btn"
+                    aria-label={s.label}
+                    title={s.label}
+                  >
+                    <I size={18} />
+                  </a>
+                );
+              })}
+            </div>
           </div>
 
           <nav className="site-footer-col" aria-label="Explorar">
@@ -59,6 +112,9 @@ export function SiteFooter({ onShopping, onHighlights, authed }: SiteFooterProps
             <div className="site-footer-col-title">Certificação</div>
             <Link href="/certificacao" className="site-footer-link">
               Como funciona
+            </Link>
+            <Link href="/planos" className="site-footer-link">
+              Planos Blue, Top e Black
             </Link>
             <Link href="/verificar" className="site-footer-link">
               Verificar certificado

@@ -40,6 +40,7 @@ type FichaCadastro struct {
 	Instagram             string `gorm:"size:255;not null;default:''" json:"instagram"`
 	Facebook              string `gorm:"size:255;not null;default:''" json:"facebook"`
 	LinkedIn              string `gorm:"size:255;not null;default:''" json:"linkedin"`
+	TikTok                string `gorm:"column:tiktok;size:255;not null;default:''" json:"tiktok"`
 	Site                  string `gorm:"size:255;not null;default:''" json:"site"`
 	ContratoInicio        string `gorm:"size:32;not null;default:''" json:"contrato_inicio"`
 	ContratoVigenciaMeses string `gorm:"size:32;not null;default:''" json:"contrato_vigencia_meses"`

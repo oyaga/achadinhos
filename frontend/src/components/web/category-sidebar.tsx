@@ -7,7 +7,8 @@ import { cn, isPublicCategory } from "@/lib/utils";
 
 export type FilterId = "verified" | "rating45" | "now" | "homologado";
 
-const FILTERS: Array<{ id: FilterId; label: string }> = [
+// Exportado também para o popover "Filtrar" da seção Recomendados (mobile).
+export const FILTERS: Array<{ id: FilterId; label: string }> = [
   { id: "verified", label: "Verificado" },
   { id: "rating45", label: "Nota 4,5+" },
   { id: "now", label: "Atende agora" },

@@ -328,6 +328,7 @@ function FichaDetail({ ficha, onBack }: { ficha: FichaCadastro; onBack: () => vo
     ["Instagram", ficha.instagram],
     ["Facebook", ficha.facebook],
     ["LinkedIn", ficha.linkedin],
+    ["TikTok", ficha.tiktok],
     ["Site", ficha.site],
   ];
   return (

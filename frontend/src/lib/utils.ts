@@ -23,14 +23,22 @@ export function isPublicCategory(c: { id: string }): boolean {
   return c.id !== "loja";
 }
 
-// Rótulo do nível do certificado.
-// blue -> Blue · ouro -> Ouro · black -> Black.
+// Rótulo do selo legado do prestador (Provider.badge). O valor gravado "Ouro"
+// exibe como "Top" — mesma renomeação do nível de certificado.
+export function badgeLabel(badge: string | null | undefined): string {
+  if (!badge) return "";
+  return badge === "Ouro" ? "Top" : badge;
+}
+
+// Rótulo do nível do certificado. O valor interno "ouro" foi renomeado para
+// "Top" na interface (pedido do cliente) — o banco continua gravando "ouro".
+// blue -> Blue · ouro -> Top · black -> Black.
 export function tierLabel(tier: string | null | undefined): string {
   switch (tier) {
     case "blue":
       return "Blue";
     case "ouro":
-      return "Ouro";
+      return "Top";
     case "black":
       return "Black";
     default:

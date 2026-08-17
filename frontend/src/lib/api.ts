@@ -577,6 +577,9 @@ export interface AdminSeller {
   name: string;
   category_id?: string;
   category?: ApiCategory;
+  // Todas as categorias da empresa (multi-categoria). A principal continua em
+  // category_id/category.
+  categories?: ApiCategory[];
   avatar?: string;
   logo_url?: string;
   description?: string;
@@ -595,6 +598,11 @@ export interface AdminSeller {
   document?: string;
   portfolio_photos?: PortfolioPhoto[];
   created_at?: string;
+  // Dados internos do contrato — só chegam nas rotas /admin.
+  contrato_inicio?: string;
+  contrato_vigencia_meses?: string;
+  valor_mensal?: string;
+  valor_anual?: string;
 }
 
 export interface SellerReview {
@@ -608,6 +616,9 @@ export interface SellerReview {
 export interface AdminSellerPayload {
   name: string;
   category_id: string;
+  // Todas as categorias (a primeira é a principal). Se omitido, vale
+  // [category_id].
+  category_ids?: string[];
   description?: string;
   whatsapp: string;
   link?: string;
@@ -619,6 +630,10 @@ export interface AdminSellerPayload {
   highlight?: boolean;
   document_type: "cpf" | "cnpj";
   document: string;
+  contrato_inicio?: string;
+  contrato_vigencia_meses?: string;
+  valor_mensal?: string;
+  valor_anual?: string;
 }
 
 export interface AdminProviderPayload {
@@ -723,6 +738,7 @@ export interface FichaCadastro {
   instagram: string;
   facebook: string;
   linkedin: string;
+  tiktok: string;
   site: string;
   contrato_inicio: string;
   contrato_vigencia_meses: string;
@@ -748,6 +764,7 @@ export type FichaFillPayload = Pick<
   | "instagram"
   | "facebook"
   | "linkedin"
+  | "tiktok"
   | "site"
   | "observacoes"
 >;

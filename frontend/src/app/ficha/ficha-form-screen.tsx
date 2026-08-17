@@ -36,6 +36,7 @@ const EMPTY: FichaFillPayload = {
   instagram: "",
   facebook: "",
   linkedin: "",
+  tiktok: "",
   site: "",
   observacoes: "",
 };
@@ -354,6 +355,16 @@ export function FichaFormScreen() {
                   value={form.linkedin}
                   onChange={(e) => update("linkedin", e.target.value)}
                   placeholder="linkedin.com/company/suaempresa"
+                />
+              </div>
+              <div className="prof-field">
+                <label className="prof-label">TikTok</label>
+                <input
+                  className="prof-input"
+                  type="text"
+                  value={form.tiktok}
+                  onChange={(e) => update("tiktok", e.target.value)}
+                  placeholder="tiktok.com/@suaempresa"
                 />
               </div>
               <div className="prof-field">

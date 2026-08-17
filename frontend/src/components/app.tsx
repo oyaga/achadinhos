@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { providersApi, sellersApi, type AdminSeller } from "@/lib/api";
-import { adaptProvider } from "@/lib/adapters";
+import { adaptProduct, adaptProvider } from "@/lib/adapters";
 import type { CategoryId, Provider, Product, Route } from "@/lib/types";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useToast } from "@/hooks/use-toast";
@@ -35,6 +35,7 @@ import { ShoppingScreen } from "./shop/shopping-screen";
 import { ProductDetail } from "./shop/product-detail";
 import { ProfileScreen } from "./screens/profile-screen";
 import { TopNav } from "./web/top-nav";
+import { SplashIntro } from "./splash/splash-intro";
 import { CategorySidebar, type FilterId } from "./web/category-sidebar";
 import { SiteFooter } from "./web/site-footer";
 import { cn } from "@/lib/utils";
@@ -138,6 +139,7 @@ export function App({ initialRoute }: AppProps = {}) {
 
   const [homeProviders, setHomeProviders] = useState<Provider[]>([]);
   const [homeSellers, setHomeSellers] = useState<AdminSeller[]>([]);
+  const [homeLojas, setHomeLojas] = useState<AdminSeller[]>([]);
   const [activeFilters, setActiveFilters] = useState<Set<FilterId>>(new Set());
 
   const toggleFilter = (id: FilterId) =>
@@ -148,7 +150,8 @@ export function App({ initialRoute }: AppProps = {}) {
       return next;
     });
 
-  // Filtros da sidebar desktop, aplicados client-side sobre os recomendados.
+  // Filtros (sidebar desktop + botão "Filtrar" da seção), aplicados
+  // client-side sobre os recomendados.
   const filteredProviders = homeProviders.filter((p) => {
     if (activeFilters.has("verified") && !p.verified) return false;
     if (activeFilters.has("rating45") && p.rating < 4.5) return false;
@@ -156,13 +159,27 @@ export function App({ initialRoute }: AppProps = {}) {
     if (activeFilters.has("homologado") && !p.badge) return false;
     return true;
   });
+  // Empresas passam pelos filtros equivalentes: verificado = tem selo de
+  // certificação, homologado = parceira. "Atende agora" é exclusivo dos
+  // afiliados de serviço (empresas não têm tempo de resposta).
+  const filteredSellers = homeSellers.filter((s) => {
+    if (activeFilters.has("verified") && !s.cert_tier) return false;
+    if (activeFilters.has("rating45") && (s.rating ?? 0) < 4.5) return false;
+    if (activeFilters.has("now")) return false;
+    if (activeFilters.has("homologado") && !s.partner) return false;
+    return true;
+  });
 
   useEffect(() => {
     void providersApi.list({ limit: 6, sort: "rating" }).then((res) => {
       setHomeProviders(res.data.map(adaptProvider));
     }).catch(() => { /* silent — empty list */ });
+    // Recomendados = empresas afiliadas; as da categoria "loja" ganham a
+    // própria seção "Lojas" logo abaixo (pedido do cliente: destaque →
+    // recomendados → lojas).
     void sellersApi.list().then((s) => {
-      setHomeSellers(s.slice(0, 6));
+      setHomeSellers(s.filter((x) => x.category_id !== "loja"));
+      setHomeLojas(s.filter((x) => x.category_id === "loja"));
     }).catch(() => { /* silent — empty list */ });
   }, []);
 
@@ -170,6 +187,7 @@ export function App({ initialRoute }: AppProps = {}) {
 
   return (
     <div className="device-frame">
+      {(!initialRoute || initialRoute.name === "home") && <SplashIntro />}
       <TopNav
         onSearchClick={() => setSearchOpen(true)}
         // No desktop o perfil agora é página real (/perfil), com URL própria
@@ -210,21 +228,38 @@ export function App({ initialRoute }: AppProps = {}) {
                   onSeeAll={() => navigate({ name: "allcats" })}
                 />
                 <InstallBanner onInstall={handleInstall} />
+                {/* Ordem pedida pelo cliente: 1º destaques, 2º recomendados
+                    (empresas afiliadas + prestadores), 3º lojas. */}
+                <FeaturedCompanies
+                  onSeller={goSeller}
+                  isFav={isFav}
+                  onToggleFav={toggleSellerFav}
+                />
                 <ProvidersSection
                   providers={filteredProviders}
                   isFav={isFav}
                   onToggleFav={toggleProviderFav}
                   onProvider={goProvider}
                   onQuote={openWhatsapp}
-                  sellers={homeSellers}
+                  sellers={filteredSellers}
                   onSeller={goSeller}
                   onToggleSellerFav={toggleSellerFav}
+                  filters={activeFilters}
+                  onToggleFilter={toggleFilter}
                 />
-                <FeaturedCompanies
-                  onSeller={goSeller}
-                  isFav={isFav}
-                  onToggleFav={toggleSellerFav}
-                />
+                {homeLojas.length > 0 && (
+                  <ProvidersSection
+                    title="Lojas"
+                    showSeeAll={false}
+                    providers={[]}
+                    isFav={isFav}
+                    onToggleFav={toggleProviderFav}
+                    onProvider={goProvider}
+                    sellers={homeLojas}
+                    onSeller={goSeller}
+                    onToggleSellerFav={toggleSellerFav}
+                  />
+                )}
                 <Link href="/certificacao" className="home-cert-link">
                   <Icon.Award size={16} />
                   <span>
@@ -285,6 +320,7 @@ export function App({ initialRoute }: AppProps = {}) {
             isFav={isFav(route.seller.id)}
             onToggleFav={toggleSellerFav}
             onRecordContact={recordWa}
+            onProduct={(p) => onProductOpen(adaptProduct(p))}
           />
         )}
         {route.name === "category" && (

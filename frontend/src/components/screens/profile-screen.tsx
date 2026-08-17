@@ -592,7 +592,7 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
             <span>
               <span className="cert-profile-cta-title">Certificação Achadinhos</span>
               <span className="cert-profile-cta-sub">
-              Conheça os selos Blue, Ouro e Black e como avaliamos cada perfil.
+              Conheça os selos Blue, Top e Black e como avaliamos cada perfil.
               </span>
             </span>
             <Icon.ChevRight size={16} style={{ marginLeft: "auto", opacity: 0.7 }} />

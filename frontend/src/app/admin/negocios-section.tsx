@@ -53,7 +53,13 @@ const COVERAGE_OPTIONS: Array<{ id: Coverage; label: string }> = [
   { id: "cidade", label: "Cidade" },
   { id: "regiao", label: "Região" },
 ];
-const BADGE_OPTIONS = ["", "Blue", "Ouro", "Premium Black"];
+// Valor gravado no banco → rótulo exibido ("Ouro" agora aparece como "Top").
+const BADGE_OPTIONS: Array<{ value: string; label: string }> = [
+  { value: "", label: "Nenhum" },
+  { value: "Blue", label: "Blue" },
+  { value: "Ouro", label: "Top" },
+  { value: "Premium Black", label: "Premium Black" },
+];
 
 interface FormState {
   kind: Kind;
@@ -70,9 +76,16 @@ interface FormState {
   // empresa
   link: string;
   partner: boolean;
+  // Contrato (uso interno do admin — não aparece no perfil público)
+  contratoInicio: string;
+  contratoVigenciaMeses: string;
+  valorMensal: string;
+  valorAnual: string;
   // prestador
   site: string;
   categoryId: string;
+  // empresa: todas as categorias (a primeira é a principal)
+  categoryIds: string[];
   services: string[];
   yearsActive: string;
   jobsDone: string;
@@ -97,8 +110,13 @@ const EMPTY_FORM: FormState = {
   youtube: "",
   link: "",
   partner: false,
+  contratoInicio: "",
+  contratoVigenciaMeses: "",
+  valorMensal: "",
+  valorAnual: "",
   site: "",
   categoryId: "",
+  categoryIds: [],
   services: [],
   yearsActive: "",
   jobsDone: "",
@@ -183,6 +201,12 @@ export function NegociosSection() {
     if (b.kind !== "prestador") {
       const s = b.seller;
       setEditing({ kind: b.kind, id: s.id });
+      // Todas as categorias da empresa (multi). Cai na principal quando o
+      // backend ainda não devolveu a lista. "loja" nunca entra na lista.
+      const catIds = (
+        s.categories?.map((c) => c.id) ??
+        (s.category_id ? [s.category_id] : [])
+      ).filter((id) => id !== LOJA_CATEGORY);
       setForm({
         ...EMPTY_FORM,
         kind: b.kind,
@@ -190,6 +214,7 @@ export function NegociosSection() {
         // Loja não usa o seletor de categoria (é fixa "loja"); guardamos o valor
         // só pra consistência — no submit ele é sempre reescrito.
         categoryId: b.kind === "loja" ? "" : (s.category_id ?? ""),
+        categoryIds: b.kind === "loja" ? [] : catIds,
         docType: (s.document_type as DocumentType) || "cnpj",
         document: s.document ? formatDocument(s.document, (s.document_type as DocumentType) || "cnpj") : "",
         whatsapp: formatPhone(s.whatsapp ?? ""),
@@ -201,6 +226,10 @@ export function NegociosSection() {
         link: s.link ?? "",
         partner: s.partner,
         highlight: s.highlight ?? false,
+        contratoInicio: s.contrato_inicio ?? "",
+        contratoVigenciaMeses: s.contrato_vigencia_meses ?? "",
+        valorMensal: s.valor_mensal ?? "",
+        valorAnual: s.valor_anual ?? "",
       });
       setExistingLogo(s.logo_url ?? "");
       setExistingPortfolio(s.portfolio_photos ?? []);
@@ -268,6 +297,17 @@ export function NegociosSection() {
 
   function removeService(s: string) {
     setForm((prev) => ({ ...prev, services: prev.services.filter((x) => x !== s) }));
+  }
+
+  // Liga/desliga uma categoria da empresa preservando a ordem de seleção —
+  // a primeira selecionada é a principal.
+  function toggleCategory(id: string) {
+    setForm((prev) => ({
+      ...prev,
+      categoryIds: prev.categoryIds.includes(id)
+        ? prev.categoryIds.filter((x) => x !== id)
+        : [...prev.categoryIds, id],
+    }));
   }
 
   function addPortfolioFiles(files: FileList | null) {
@@ -338,8 +378,13 @@ export function NegociosSection() {
       setFormError("Informe um WhatsApp válido.");
       return;
     }
-    // Loja não escolhe categoria (é fixa "loja"); os demais tipos precisam.
-    if (form.kind !== "loja" && !form.categoryId) {
+    // Loja não escolhe categoria (é fixa "loja"); empresa usa a lista
+    // multi-categoria; prestador segue com uma só.
+    if (form.kind === "empresa" && form.categoryIds.length === 0) {
+      setFormError("Selecione ao menos uma categoria.");
+      return;
+    }
+    if (form.kind === "prestador" && !form.categoryId) {
       setFormError("Selecione uma categoria.");
       return;
     }
@@ -362,11 +407,14 @@ export function NegociosSection() {
 
       if (form.kind !== "prestador") {
         kind = form.kind; // "empresa" | "loja"
+        // Loja fica pendurada na categoria "loja" (marcador da vitrine do
+        // Shopping); empresa usa a lista escolhida (a primeira é a principal).
+        const catIds =
+          form.kind === "loja" ? [LOJA_CATEGORY] : form.categoryIds;
         const payload: AdminSellerPayload = {
           name: form.name.trim(),
-          // Loja fica pendurada na categoria "loja" (marcador da vitrine do
-          // Shopping); empresa usa a categoria escolhida no formulário.
-          category_id: form.kind === "loja" ? LOJA_CATEGORY : form.categoryId,
+          category_id: catIds[0],
+          category_ids: catIds,
           description: form.description.trim(),
           whatsapp: whatsappDigits,
           link: form.link.trim(),
@@ -378,6 +426,10 @@ export function NegociosSection() {
           highlight: form.highlight,
           document_type: form.docType,
           document: stripDocument(form.document),
+          contrato_inicio: form.contratoInicio.trim(),
+          contrato_vigencia_meses: form.contratoVigenciaMeses.trim(),
+          valor_mensal: form.valorMensal.trim(),
+          valor_anual: form.valorAnual.trim(),
         };
         if (editing && isConversion) {
           id = (await adminApi.convertProviderToSeller(editing.id, payload)).id;
@@ -587,9 +639,38 @@ export function NegociosSection() {
             />
           </div>
 
-          {/* Categoria: Loja não escolhe — é sempre a vitrine "loja". Nos demais
-              tipos, escondemos a opção "loja" do dropdown (agora é um tipo). */}
-          {!isLoja && (
+          {/* Categoria: Loja não escolhe — é sempre a vitrine "loja". Empresa
+              pode marcar várias (a primeira vira a principal); prestador segue
+              com uma só. A opção "loja" fica fora (agora é um tipo). */}
+          {form.kind === "empresa" && (
+            <div className="prof-field">
+              <label className="prof-label">Categorias</label>
+              <div className="admin-hint" style={{ marginBottom: 8 }}>
+                Marque todas as categorias em que a empresa atua. A primeira
+                selecionada é a principal.
+              </div>
+              <div className="side-filters" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {categories
+                  .filter((c) => c.id !== LOJA_CATEGORY)
+                  .map((c) => {
+                    const idx = form.categoryIds.indexOf(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        className={cn("side-chip", idx >= 0 && "active")}
+                        onClick={() => toggleCategory(c.id)}
+                        aria-pressed={idx >= 0}
+                      >
+                        {c.label}
+                        {idx === 0 && form.categoryIds.length > 1 ? " · principal" : ""}
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+          {isPrestador && (
             <div className="prof-field">
               <label className="prof-label">Categoria</label>
               <select
@@ -718,6 +799,59 @@ export function NegociosSection() {
                   <span className="auth-checkbox-text">Destaque na home</span>
                 </label>
               </div>
+
+              {/* Contrato — mesmos campos da ficha de cadastro. Uso interno. */}
+              <div className="prof-field">
+                <label className="prof-label">Contrato (uso interno)</label>
+                <div className="admin-hint" style={{ marginBottom: 8 }}>
+                  Visível apenas no painel admin — não aparece no perfil público.
+                </div>
+                <div className="prof-row-fields">
+                  <div className="prof-field">
+                    <label className="prof-label">Início do contrato</label>
+                    <input
+                      className="prof-input"
+                      type="text"
+                      value={form.contratoInicio}
+                      onChange={(e) => update("contratoInicio", e.target.value)}
+                      placeholder="dd/mm/aaaa"
+                    />
+                  </div>
+                  <div className="prof-field">
+                    <label className="prof-label">Vigência (meses)</label>
+                    <input
+                      className="prof-input"
+                      type="text"
+                      inputMode="numeric"
+                      value={form.contratoVigenciaMeses}
+                      onChange={(e) => update("contratoVigenciaMeses", e.target.value)}
+                      placeholder="Ex: 12"
+                    />
+                  </div>
+                </div>
+                <div className="prof-row-fields">
+                  <div className="prof-field">
+                    <label className="prof-label">Valor mensal</label>
+                    <input
+                      className="prof-input"
+                      type="text"
+                      value={form.valorMensal}
+                      onChange={(e) => update("valorMensal", e.target.value)}
+                      placeholder="Ex: R$ 250,00"
+                    />
+                  </div>
+                  <div className="prof-field">
+                    <label className="prof-label">Valor anual</label>
+                    <input
+                      className="prof-input"
+                      type="text"
+                      value={form.valorAnual}
+                      onChange={(e) => update("valorAnual", e.target.value)}
+                      placeholder="Ex: R$ 2.500,00"
+                    />
+                  </div>
+                </div>
+              </div>
             </>
           )}
 
@@ -824,7 +958,7 @@ export function NegociosSection() {
                   onChange={(e) => update("badge", e.target.value)}
                 >
                   {BADGE_OPTIONS.map((b) => (
-                    <option key={b} value={b}>{b || "Nenhum"}</option>
+                    <option key={b.value} value={b.value}>{b.label}</option>
                   ))}
                 </select>
               </div>
@@ -980,10 +1114,16 @@ export function NegociosSection() {
             const logo = b.kind === "prestador" ? b.provider.logo_url : b.seller.logo_url;
             const id = b.kind === "prestador" ? b.provider.id : b.seller.id;
             const name = businessName(b);
+            const sellerCats =
+              b.kind === "prestador"
+                ? ""
+                : b.seller.categories?.length
+                  ? b.seller.categories.map((c) => c.label).join(", ")
+                  : categoryLabel(b.seller.category_id ?? "");
             const meta =
               b.kind === "prestador"
                 ? `${categoryLabel(b.provider.category_id)} · ${b.provider.whatsapp ? formatPhone(b.provider.whatsapp) : "sem WhatsApp"}`
-                : `${categoryLabel(b.seller.category_id ?? "")} · ${b.seller.whatsapp ? formatPhone(b.seller.whatsapp) : "sem WhatsApp"}`;
+                : `${sellerCats} · ${b.seller.whatsapp ? formatPhone(b.seller.whatsapp) : "sem WhatsApp"}`;
             return (
               <div key={`${b.kind}-${id}`} className="admin-biz-card">
                 <div className="admin-biz-avatar">

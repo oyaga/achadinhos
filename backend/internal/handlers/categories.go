@@ -21,6 +21,8 @@ func NewCategoriesHandler(db *gorm.DB) *CategoriesHandler {
 
 type categoryWithCount struct {
 	models.Category
+	// Count é o total de negócios da categoria: afiliados (providers) +
+	// empresas (sellers, contando também as categorias secundárias).
 	ProviderCount int64 `json:"count"`
 }
 
@@ -51,6 +53,22 @@ func (h *CategoriesHandler) List(c *gin.Context) {
 		countMap[c.CategoryID] = c.Count
 	}
 
+	// Empresas por categoria, via tabela de junção (cobre principal +
+	// secundárias); exclui empresas soft-deletadas.
+	var sellerCounts []catCount
+	if err := h.db.WithContext(c.Request.Context()).
+		Table("seller_categories sc").
+		Joins("JOIN sellers s ON s.id = sc.seller_id AND s.deleted_at IS NULL").
+		Select("sc.category_id, count(DISTINCT sc.seller_id) as count").
+		Group("sc.category_id").
+		Scan(&sellerCounts).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to count sellers")
+		return
+	}
+	for _, sc := range sellerCounts {
+		countMap[sc.CategoryID] += sc.Count
+	}
+
 	out := make([]categoryWithCount, 0, len(cats))
 	for _, cat := range cats {
 		out = append(out, categoryWithCount{Category: cat, ProviderCount: countMap[cat.ID]})
@@ -78,5 +96,15 @@ func (h *CategoriesHandler) Get(c *gin.Context) {
 		JSONError(c, http.StatusInternalServerError, "failed to count providers")
 		return
 	}
-	c.JSON(http.StatusOK, categoryWithCount{Category: cat, ProviderCount: count})
+	var sellerCount int64
+	if err := h.db.WithContext(c.Request.Context()).
+		Table("seller_categories sc").
+		Joins("JOIN sellers s ON s.id = sc.seller_id AND s.deleted_at IS NULL").
+		Where("sc.category_id = ?", id).
+		Select("count(DISTINCT sc.seller_id)").
+		Scan(&sellerCount).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to count sellers")
+		return
+	}
+	c.JSON(http.StatusOK, categoryWithCount{Category: cat, ProviderCount: count + sellerCount})
 }

@@ -445,6 +445,27 @@ select {
   gap: 3px;
 }
 
+/* Popover do botão "Filtrar" da seção Recomendados (reusa os chips .side-chip
+   da sidebar). */
+.filter-menu-wrap {
+  position: relative;
+}
+.filter-pop {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 230px;
+  padding: 12px;
+  background: white;
+  border: 1px solid var(--bone-200);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(11, 27, 59, 0.14);
+}
+
 /* ===== Hero ===== */
 .hero {
   background: linear-gradient(
@@ -1188,7 +1209,7 @@ select {
   text-transform: uppercase;
 }
 
-/* Selo de nível do certificado (Prata/Ouro/Black), usado em cards/perfil,
+/* Selo de nível do certificado (Blue/Ouro/Black), usado em cards/perfil,
    admin e verificação. Coexiste com .provider-badge. */
 .cert-seal {
   display: inline-flex;
@@ -7449,6 +7470,14 @@ input[type="time"].prof-input {
   flex-direction: column;
   gap: 6px;
 }
+.pd-product--clickable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.pd-product--clickable:hover {
+  border-color: var(--gold-400);
+  box-shadow: 0 6px 18px rgba(11, 27, 59, 0.08);
+}
 .pd-product-thumb {
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -8527,6 +8556,44 @@ input[type="time"].prof-input {
 .cert-tier-card.black .cert-tier-desc {
   color: #c9d2e4;
 }
+/* Página /planos — cards de plano com lista de benefícios. */
+.plan-card {
+  text-align: left;
+}
+.plan-card .cert-seal {
+  display: inline-flex;
+}
+.plan-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--bone-200);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.plan-list li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-700);
+}
+.plan-list li svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--gold-500);
+}
+.cert-tier-card.black .plan-list {
+  border-top-color: rgba(255, 255, 255, 0.14);
+}
+.cert-tier-card.black .plan-list li {
+  color: rgba(255, 255, 255, 0.85);
+}
+.cert-tier-card.black .plan-list li svg {
+  color: var(--gold-300);
+}
 .cert-tier-seal {
   width: 72px;
   height: 72px;
@@ -9559,6 +9626,36 @@ input[type="time"].prof-input {
   font-weight: 600;
   font-size: 20px;
   color: var(--navy-900);
+  overflow: hidden;
+}
+.site-footer-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 3px;
+}
+/* Redes sociais oficiais no rodapé (Instagram / Facebook / TikTok). */
+.site-footer-social {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.site-footer-social-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--gold-300);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.site-footer-social-btn:hover {
+  background: var(--gold-400);
+  color: var(--navy-900);
+  transform: translateY(-1px);
 }
 .site-footer-name {
   font-family: var(--font-display);
@@ -11493,4 +11590,54 @@ input[type="time"].prof-input {
   margin-top: 14px;
   font-size: 12px;
   color: var(--ink-400);
+}
+
+/* ===== Splash intro 3D ===== */
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(120% 120% at 50% 30%, #13264e 0%, #0b1b3b 60%, #071229 100%);
+  opacity: 1;
+  animation: splash-in 0.15s ease-out;
+  transition: opacity 0.5s ease;
+  cursor: pointer;
+  touch-action: none;
+}
+.splash-overlay.splash-exit {
+  opacity: 0;
+  pointer-events: none;
+}
+@keyframes splash-in {
+  from {
+    opacity: 0;
+  }
+}
+.splash-logo {
+  position: absolute;
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+  animation: splash-pulse 1.2s ease-in-out infinite;
+}
+@keyframes splash-pulse {
+  50% {
+    transform: scale(1.06);
+    opacity: 0.85;
+  }
+}
+.splash-canvas {
+  position: absolute;
+  inset: 0;
+}
+.splash-hint {
+  position: absolute;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

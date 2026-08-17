@@ -34,6 +34,8 @@ export interface CertificateDocData {
   validLabel: string; // "dd/mm/aaaa"
   qrDataUrl: string; // PNG data URL do QR
   signatureDataUrl?: string | null; // PNG data URL da assinatura desenhada
+  logoDataUrl?: string | null; // PNG data URL do logo oficial (emblema laranja)
+  mascotDataUrl?: string | null; // PNG data URL do mascote (rasterizado do SVG)
 }
 
 // Paleta e textos por nível (tier) do certificado.
@@ -47,8 +49,8 @@ const TIER = {
     sentence: "Atende aos requisitos mínimos do Achadinhos do Condomínio.",
   },
   ouro: {
-    label: "OURO",
-    name: "Ouro",
+    label: "TOP",
+    name: "Top",
     light: "#e6cf96",
     main: "#c9a961",
     dark: "#a8884a",
@@ -117,6 +119,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  headerLogo: { width: 34, height: 34, marginRight: 10 },
   headerBrand: { fontFamily: "Helvetica-Bold", color: C.goldLight, fontSize: 15, letterSpacing: 3 },
   headerSub: { color: C.cream, fontSize: 7, letterSpacing: 2, marginTop: 2, opacity: 0.85 },
   kicker: { color: C.gold, fontSize: 9, letterSpacing: 4, marginTop: 26, fontFamily: "Helvetica-Bold" },
@@ -180,6 +183,9 @@ const s = StyleSheet.create({
   signLine: { width: 200, borderTopWidth: 1, borderTopColor: C.navy, marginTop: 2 },
   signName: { color: C.navy, fontSize: 9.5, fontFamily: "Helvetica-Bold", marginTop: 4 },
   signRole: { color: C.ink, fontSize: 7.5, marginTop: 1, opacity: 0.8 },
+  // Mascote da marca (moeda dourada acenando) entre a assinatura e o QR.
+  mascotWrap: { alignItems: "center", justifyContent: "flex-end" },
+  mascotImg: { width: 58, height: 74, objectFit: "contain" },
   qrWrap: { alignItems: "center", width: 110 },
   qrImg: { width: 72, height: 72 },
   qrCaption: { color: C.ink, fontSize: 6.5, marginTop: 3, textAlign: "center", opacity: 0.8 },
@@ -322,18 +328,22 @@ export function CertificateDocument({ data }: { data: CertificateDocData }) {
         <Corner corner="br" />
 
         <View style={s.content}>
-          {/* Faixa superior azul-marinho com o logo/emissor */}
+          {/* Faixa superior azul-marinho com o logo oficial + emissor */}
           <View style={s.header}>
-            <Svg width={26} height={26} viewBox="0 0 24 24" style={{ marginRight: 10 }}>
-              <Path
-                d="M3 11 L12 4 L21 11 L21 20 a1 1 0 0 1 -1 1 h-5 v-6 h-6 v6 H4 a1 1 0 0 1 -1 -1 Z"
-                fill="none"
-                stroke={C.goldLight}
-                strokeWidth={1.6}
-                strokeLinejoin="round"
-              />
-              <Circle cx="12" cy="13" r="1.5" fill={C.goldLight} />
-            </Svg>
+            {data.logoDataUrl ? (
+              <Image src={data.logoDataUrl} style={s.headerLogo} />
+            ) : (
+              <Svg width={26} height={26} viewBox="0 0 24 24" style={{ marginRight: 10 }}>
+                <Path
+                  d="M3 11 L12 4 L21 11 L21 20 a1 1 0 0 1 -1 1 h-5 v-6 h-6 v6 H4 a1 1 0 0 1 -1 -1 Z"
+                  fill="none"
+                  stroke={C.goldLight}
+                  strokeWidth={1.6}
+                  strokeLinejoin="round"
+                />
+                <Circle cx="12" cy="13" r="1.5" fill={C.goldLight} />
+              </Svg>
+            )}
             <View style={{ alignItems: "center" }}>
               <Text style={s.headerBrand}>ACHADINHOS DO CONDOMÍNIO</Text>
               <Text style={s.headerSub}>PLATAFORMA DE SERVIÇOS E COMÉRCIO PARA CONDOMÍNIOS</Text>
@@ -391,6 +401,11 @@ export function CertificateDocument({ data }: { data: CertificateDocData }) {
                 <Text style={s.signRole}>Responsável: {data.responsavelNome}</Text>
               ) : null}
             </View>
+            {data.mascotDataUrl ? (
+              <View style={s.mascotWrap}>
+                <Image src={data.mascotDataUrl} style={s.mascotImg} />
+              </View>
+            ) : null}
             <View style={s.qrWrap}>
               <Image src={data.qrDataUrl} style={s.qrImg} />
               <Text style={s.qrCaption}>Verifique a autenticidade</Text>

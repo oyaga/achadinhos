@@ -11,6 +11,7 @@ import {
   type SellerReview,
 } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
+import { cn } from "@/lib/utils";
 import { CertSeal } from "../cert-seal";
 import type { ContactInput } from "@/hooks/use-whatsapp-history";
 import { Icon } from "../icons";
@@ -25,6 +26,8 @@ interface SellerDetailProps {
   isFav: boolean;
   onToggleFav: (id: string) => void;
   onRecordContact: (input: ContactInput) => void;
+  /** Abre a tela do produto (mesma usada no Shopping). */
+  onProduct?: (p: ApiProduct) => void;
 }
 
 // SellerDetail is the public profile screen for an empresa (seller). It mirrors
@@ -35,6 +38,7 @@ export function SellerDetail({
   isFav,
   onToggleFav,
   onRecordContact,
+  onProduct,
 }: SellerDetailProps) {
   const [full, setFull] = useState<AdminSeller>(seller);
   const [products, setProducts] = useState<ApiProduct[]>([]);
@@ -97,7 +101,10 @@ export function SellerDetail({
     }
   }
 
-  const categoryLabel = full.category?.label ?? "Empresa";
+  // Multi-categoria: mostra todas as categorias da empresa, separadas por "·".
+  const categoryLabel = full.categories?.length
+    ? full.categories.map((c) => c.label).join(" · ")
+    : (full.category?.label ?? "Empresa");
 
   function openWhatsapp() {
     const wa = (full.whatsapp ?? "").replace(/\D+/g, "");
@@ -229,34 +236,60 @@ export function SellerDetail({
           <div className="pd-section">
             <h3>Produtos &amp; serviços</h3>
             <div className="pd-products">
-              {products.map((p) => (
-                <div key={p.id} className="pd-product">
-                  <div className="pd-product-thumb">
-                    {p.photos && p.photos.length > 0 ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={getImageUrl(p.photos[0].url)}
-                        alt={p.name}
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    ) : (
-                      <span className="pd-product-letter">
-                        {p.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
+              {products.map((p) => {
+                // Clique abre a tela do produto; sem handler (fallback), abre
+                // o link externo do produto/da loja quando existir.
+                const externalLink = p.link_override || full.link || "";
+                const open = onProduct
+                  ? () => onProduct(p)
+                  : externalLink
+                    ? () => window.open(externalLink, "_blank", "noopener,noreferrer")
+                    : undefined;
+                return (
+                  <div
+                    key={p.id}
+                    className={cn("pd-product", open && "pd-product--clickable")}
+                    onClick={open}
+                    role={open ? "button" : undefined}
+                    tabIndex={open ? 0 : undefined}
+                    onKeyDown={
+                      open
+                        ? (e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              open();
+                            }
+                          }
+                        : undefined
+                    }
+                  >
+                    <div className="pd-product-thumb">
+                      {p.photos && p.photos.length > 0 ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={getImageUrl(p.photos[0].url)}
+                          alt={p.name}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <span className="pd-product-letter">
+                          {p.name.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="pd-product-name">{p.name}</div>
+                    <div className="pd-product-price">
+                      {p.price > 0
+                        ? p.price.toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          })
+                        : "Sob consulta"}
+                    </div>
                   </div>
-                  <div className="pd-product-name">{p.name}</div>
-                  <div className="pd-product-price">
-                    {p.price > 0
-                      ? p.price.toLocaleString("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        })
-                      : "Sob consulta"}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

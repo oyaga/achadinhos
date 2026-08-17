@@ -27,7 +27,7 @@ const FILTERS: Array<{ id: FilterId; label: string; icon?: keyof typeof Icon }> 
   [
     { id: "all", label: "Todos" },
     { id: "verified", label: "Verificados", icon: "Check" },
-    { id: "gold", label: "Ouro", icon: "Crown" },
+    { id: "gold", label: "Top", icon: "Crown" },
     { id: "near", label: "Mais próximos", icon: "Pin" },
     { id: "cheap", label: "Mais baratos" },
   ];
@@ -80,7 +80,8 @@ export function CategoryScreen({
   const filtered = useMemo(() => {
     let list = [...providers];
     if (filter === "verified") list = list.filter((p) => p.verified);
-    if (filter === "gold") list = list.filter((p) => p.badge === "Ouro");
+    if (filter === "gold")
+      list = list.filter((p) => p.badge === "Ouro" || p.certTier === "ouro");
     if (filter === "near")
       list = list.sort((a, b) => parseKm(a.distance) - parseKm(b.distance));
     if (filter === "cheap")
@@ -123,8 +124,10 @@ export function CategoryScreen({
           <h1>{catLabel}</h1>
           <p>{catDesc ?? "Encontre os melhores afiliados desta categoria"}</p>
           <div className="cat-stats">
+            {/* Conta empresas + afiliados — mesmo total do contador da sidebar. */}
             <div className="cat-stat">
-              <strong>{providers.length}</strong> afiliados
+              <strong>{providers.length + sellers.length}</strong>{" "}
+              {providers.length + sellers.length === 1 ? "negócio" : "negócios"}
             </div>
             <div className="cat-stat">
               ⭐ <strong>4,8</strong> média

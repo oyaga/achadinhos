@@ -25,6 +25,7 @@ type FichaFillRequest struct {
 	Instagram             string `json:"instagram" binding:"max=255"`
 	Facebook              string `json:"facebook" binding:"max=255"`
 	LinkedIn              string `json:"linkedin" binding:"max=255"`
+	TikTok                string `json:"tiktok" binding:"max=255"`
 	Site                  string `json:"site" binding:"max=255"`
 	ContratoInicio        string `json:"contrato_inicio" binding:"max=32"`
 	ContratoVigenciaMeses string `json:"contrato_vigencia_meses" binding:"max=32"`

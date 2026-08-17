@@ -78,7 +78,7 @@ const TIPO_OPTIONS: ReadonlyArray<{ v: CertTipo; l: string }> = [
 
 const TIER_OPTIONS: ReadonlyArray<{ v: CertTier; l: string }> = [
   { v: "blue", l: "Blue" },
-  { v: "ouro", l: "Ouro" },
+  { v: "ouro", l: "Top" },
   { v: "black", l: "Black" },
 ];
 

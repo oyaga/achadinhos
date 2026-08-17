@@ -31,11 +31,22 @@ type Seller struct {
 	// desnormalizado para alimentar o selo no marketplace. Vazio = sem selo.
 	CertTier string `gorm:"size:8;not null;default:''" json:"cert_tier,omitempty"`
 
+	// Dados internos do contrato (mesmos campos da ficha de cadastro). São de
+	// uso administrativo: json:"-" garante que NUNCA vazam nas rotas públicas —
+	// o admin os recebe via adminSellerResponse (handlers/admin.go).
+	ContratoInicio        string `gorm:"size:32;not null;default:''" json:"-"`
+	ContratoVigenciaMeses string `gorm:"size:32;not null;default:''" json:"-"`
+	ValorMensal           string `gorm:"size:32;not null;default:''" json:"-"`
+	ValorAnual            string `gorm:"size:32;not null;default:''" json:"-"`
+
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	Category        *Category        `gorm:"foreignKey:CategoryID;references:ID" json:"category,omitempty"`
+	// Categories são TODAS as categorias da empresa (inclui a principal).
+	// CategoryID segue sendo a principal, por compatibilidade.
+	Categories      []Category       `gorm:"many2many:seller_categories;" json:"categories,omitempty"`
 	PortfolioPhotos []PortfolioPhoto `gorm:"polymorphic:Owner;polymorphicValue:seller" json:"portfolio_photos,omitempty"`
 }
 

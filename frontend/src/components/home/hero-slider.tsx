@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { providersApi, productsApi, sellersApi, eventsApi, getImageUrl, type AdminSeller, type ApiEvent } from "@/lib/api";
 import { adaptProvider, adaptProduct } from "@/lib/adapters";
 import type { Provider, Product } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { badgeLabel, cn } from "@/lib/utils";
 import { CertSeal } from "../cert-seal";
 import { Icon } from "../icons";
 
@@ -239,7 +239,7 @@ function ProviderSlide({ provider: p, onClick, onWhatsapp }: { provider: Provide
           <span className="hero-divider" />
           <span>{p.distance}</span>
         </div>
-        {p.badge && <div className="hero-badge">{p.badge}</div>}
+        {p.badge && <div className="hero-badge">{badgeLabel(p.badge)}</div>}
         <div className="hero-slide-cta">
           <button
             type="button"

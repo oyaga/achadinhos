@@ -48,18 +48,87 @@ func (h *AdminHandler) ListSindicos(c *gin.Context) {
 
 // ── Empresas (sellers) ───────────────────────────────────────────────────────
 
+// adminSellerResponse expõe ao admin os campos internos de contrato que o
+// modelo esconde das rotas públicas (json:"-" em models.Seller).
+type adminSellerResponse struct {
+	*models.Seller
+	ContratoInicio        string `json:"contrato_inicio"`
+	ContratoVigenciaMeses string `json:"contrato_vigencia_meses"`
+	ValorMensal           string `json:"valor_mensal"`
+	ValorAnual            string `json:"valor_anual"`
+}
+
+func adminSeller(s *models.Seller) adminSellerResponse {
+	return adminSellerResponse{
+		Seller:                s,
+		ContratoInicio:        s.ContratoInicio,
+		ContratoVigenciaMeses: s.ContratoVigenciaMeses,
+		ValorMensal:           s.ValorMensal,
+		ValorAnual:            s.ValorAnual,
+	}
+}
+
+// resolveSellerCategories normaliza e valida as categorias da empresa: usa
+// `ids` quando presente (a primeira é a principal), senão cai no `primary`
+// único — compatibilidade com clientes que ainda mandam só category_id.
+// Retorna as categorias carregadas do banco, na ordem enviada. Em erro, já
+// escreve a resposta HTTP e retorna ok=false.
+func (h *AdminHandler) resolveSellerCategories(c *gin.Context, primary string, ids []string) ([]models.Category, bool) {
+	if len(ids) == 0 {
+		ids = []string{primary}
+	}
+	seen := make(map[string]bool, len(ids))
+	ordered := make([]string, 0, len(ids))
+	for _, id := range ids {
+		id = strings.TrimSpace(id)
+		if id == "" || seen[id] {
+			continue
+		}
+		seen[id] = true
+		ordered = append(ordered, id)
+	}
+	if len(ordered) == 0 {
+		JSONError(c, http.StatusBadRequest, "selecione ao menos uma categoria")
+		return nil, false
+	}
+	var cats []models.Category
+	if err := h.db.WithContext(c.Request.Context()).Where("id IN ?", ordered).Find(&cats).Error; err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to load categories")
+		return nil, false
+	}
+	byID := make(map[string]models.Category, len(cats))
+	for _, cat := range cats {
+		byID[cat.ID] = cat
+	}
+	out := make([]models.Category, 0, len(ordered))
+	for _, id := range ordered {
+		cat, found := byID[id]
+		if !found {
+			JSONError(c, http.StatusBadRequest, "category does not exist: "+id)
+			return nil, false
+		}
+		out = append(out, cat)
+	}
+	return out, true
+}
+
 // ListSellers handles GET /admin/sellers.
 func (h *AdminHandler) ListSellers(c *gin.Context) {
 	var sellers []models.Seller
 	if err := h.db.WithContext(c.Request.Context()).
 		Preload("Category").
+		Preload("Categories").
 		Preload("PortfolioPhotos", orderByPosition).
 		Order("name ASC").
 		Find(&sellers).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to list sellers")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": sellers})
+	out := make([]adminSellerResponse, 0, len(sellers))
+	for i := range sellers {
+		out = append(out, adminSeller(&sellers[i]))
+	}
+	c.JSON(http.StatusOK, gin.H{"data": out})
 }
 
 // CreateSeller handles POST /admin/sellers.
@@ -68,7 +137,8 @@ func (h *AdminHandler) CreateSeller(c *gin.Context) {
 	if !BindJSON(c, &req) {
 		return
 	}
-	if !h.categoryExists(c, req.CategoryID) {
+	cats, ok := h.resolveSellerCategories(c, req.CategoryID, req.CategoryIDs)
+	if !ok {
 		return
 	}
 	doc, ok := validateDocument(c, req.DocumentType, req.Document)
@@ -78,7 +148,7 @@ func (h *AdminHandler) CreateSeller(c *gin.Context) {
 	name := strings.TrimSpace(req.Name)
 	s := &models.Seller{
 		Name:         name,
-		CategoryID:   req.CategoryID,
+		CategoryID:   cats[0].ID,
 		Avatar:       firstRune(name),
 		Description:  strings.TrimSpace(req.Description),
 		WhatsApp:     strings.TrimSpace(req.WhatsApp),
@@ -91,12 +161,19 @@ func (h *AdminHandler) CreateSeller(c *gin.Context) {
 		Highlight:    req.Highlight,
 		DocumentType: req.DocumentType,
 		Document:     doc,
+
+		ContratoInicio:        strings.TrimSpace(req.ContratoInicio),
+		ContratoVigenciaMeses: strings.TrimSpace(req.ContratoVigenciaMeses),
+		ValorMensal:           strings.TrimSpace(req.ValorMensal),
+		ValorAnual:            strings.TrimSpace(req.ValorAnual),
+
+		Categories: cats,
 	}
 	if err := h.db.WithContext(c.Request.Context()).Create(s).Error; err != nil {
 		JSONError(c, http.StatusConflict, "failed to create seller (name may already exist)")
 		return
 	}
-	c.JSON(http.StatusCreated, s)
+	c.JSON(http.StatusCreated, adminSeller(s))
 }
 
 // UpdateSeller handles PATCH /admin/sellers/:id.
@@ -120,16 +197,30 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 		return
 	}
 	updates := map[string]any{}
+	// Categorias: category_ids (lista completa, primeira = principal) tem
+	// precedência; category_id sozinho vale como lista de um item. Em ambos os
+	// casos a tabela de junção é substituída para refletir a lista.
+	var newCats []models.Category
+	if req.CategoryIDs != nil || req.CategoryID != nil {
+		primary := s.CategoryID
+		if req.CategoryID != nil {
+			primary = *req.CategoryID
+		}
+		var ids []string
+		if req.CategoryIDs != nil {
+			ids = *req.CategoryIDs
+		}
+		cats, ok := h.resolveSellerCategories(c, primary, ids)
+		if !ok {
+			return
+		}
+		newCats = cats
+		updates["category_id"] = cats[0].ID
+	}
 	if req.Name != nil {
 		name := strings.TrimSpace(*req.Name)
 		updates["name"] = name
 		updates["avatar"] = firstRune(name)
-	}
-	if req.CategoryID != nil {
-		if !h.categoryExists(c, *req.CategoryID) {
-			return
-		}
-		updates["category_id"] = *req.CategoryID
 	}
 	if req.Description != nil {
 		updates["description"] = strings.TrimSpace(*req.Description)
@@ -181,13 +272,33 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 			updates["document"] = doc
 		}
 	}
+	if req.ContratoInicio != nil {
+		updates["contrato_inicio"] = strings.TrimSpace(*req.ContratoInicio)
+	}
+	if req.ContratoVigenciaMeses != nil {
+		updates["contrato_vigencia_meses"] = strings.TrimSpace(*req.ContratoVigenciaMeses)
+	}
+	if req.ValorMensal != nil {
+		updates["valor_mensal"] = strings.TrimSpace(*req.ValorMensal)
+	}
+	if req.ValorAnual != nil {
+		updates["valor_anual"] = strings.TrimSpace(*req.ValorAnual)
+	}
 	if len(updates) > 0 {
 		if err := h.db.WithContext(c.Request.Context()).Model(&s).Updates(updates).Error; err != nil {
 			JSONError(c, http.StatusInternalServerError, "failed to update seller")
 			return
 		}
 	}
-	c.JSON(http.StatusOK, &s)
+	if newCats != nil {
+		if err := h.db.WithContext(c.Request.Context()).Model(&s).
+			Association("Categories").Replace(newCats); err != nil {
+			JSONError(c, http.StatusInternalServerError, "failed to update seller categories")
+			return
+		}
+		s.Categories = newCats
+	}
+	c.JSON(http.StatusOK, adminSeller(&s))
 }
 
 // DeleteSeller handles DELETE /admin/sellers/:id.
@@ -567,7 +678,8 @@ func (h *AdminHandler) ConvertProviderToSeller(c *gin.Context) {
 	if !BindJSON(c, &req) {
 		return
 	}
-	if !h.categoryExists(c, req.CategoryID) {
+	cats, ok := h.resolveSellerCategories(c, req.CategoryID, req.CategoryIDs)
+	if !ok {
 		return
 	}
 	doc, ok := validateDocument(c, req.DocumentType, req.Document)
@@ -588,7 +700,7 @@ func (h *AdminHandler) ConvertProviderToSeller(c *gin.Context) {
 	name := strings.TrimSpace(req.Name)
 	s := &models.Seller{
 		Name:         name,
-		CategoryID:   req.CategoryID,
+		CategoryID:   cats[0].ID,
 		Avatar:       firstRune(name),
 		LogoURL:      provider.LogoURL,
 		Description:  strings.TrimSpace(req.Description),
@@ -602,12 +714,19 @@ func (h *AdminHandler) ConvertProviderToSeller(c *gin.Context) {
 		Highlight:    req.Highlight,
 		DocumentType: req.DocumentType,
 		Document:     doc,
+
+		ContratoInicio:        strings.TrimSpace(req.ContratoInicio),
+		ContratoVigenciaMeses: strings.TrimSpace(req.ContratoVigenciaMeses),
+		ValorMensal:           strings.TrimSpace(req.ValorMensal),
+		ValorAnual:            strings.TrimSpace(req.ValorAnual),
+
+		Categories: cats,
 	}
 
 	if err := h.convert(c, s, "provider", "seller", id); err != nil {
 		return
 	}
-	c.JSON(http.StatusOK, s)
+	c.JSON(http.StatusOK, adminSeller(s))
 }
 
 // convert persists the new record, re-points the portfolio photos from the old
