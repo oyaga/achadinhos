@@ -11,6 +11,7 @@ import { useFavorites } from "@/hooks/use-favorites";
 import { useToast } from "@/hooks/use-toast";
 import { useInstallPrompt } from "@/hooks/use-install-prompt";
 import { useWhatsappHistory } from "@/hooks/use-whatsapp-history";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { Icon } from "./icons";
 import { Header } from "./home/header";
 import { LocationBar } from "./home/location-bar";
@@ -51,6 +52,9 @@ export function App({ initialRoute }: AppProps = {}) {
   const { toast, showToast } = useToast();
   const { canInstall, isIOS, isStandalone, promptInstall } = useInstallPrompt();
   const { record: recordWa } = useWhatsappHistory();
+  // No desktop, empresa e produto são páginas de verdade (/empresa, /produto)
+  // em vez de modais; no mobile continuam como overlay por estado.
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const [activeCat, setActiveCat] = useState<CategoryId>("destaque");
   const [activeNav, setActiveNav] = useState<NavId>("home");
@@ -103,8 +107,10 @@ export function App({ initialRoute }: AppProps = {}) {
   };
   const goProvider = (provider: Provider) =>
     navigate({ name: "provider", provider });
-  const goSeller = (seller: AdminSeller) =>
-    navigate({ name: "seller", seller });
+  const goSeller = (seller: AdminSeller) => {
+    if (isDesktop) router.push(`/empresa/${seller.id}`);
+    else navigate({ name: "seller", seller });
+  };
   const goRate = (provider: Provider) => navigate({ name: "rate", provider });
 
   const openWhatsapp = (provider: Provider) => {
@@ -198,7 +204,10 @@ export function App({ initialRoute }: AppProps = {}) {
     }).catch(() => { /* silent — empty list */ });
   }, []);
 
-  const onProductOpen = (p: Product) => navigate({ name: "product", product: p });
+  const onProductOpen = (p: Product) => {
+    if (isDesktop) router.push(`/produto/${p.id}`);
+    else navigate({ name: "product", product: p });
+  };
 
   return (
     <div className="device-frame">

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { sellersApi } from "@/lib/api";
-import { App } from "@/components/app";
 import { JsonLd, sellerLocalBusinessSchema } from "@/components/seo/json-ld";
+import { EmpresaPageScreen } from "./empresa-page-screen";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
@@ -70,7 +70,7 @@ export default async function EmpresaPage({
   return (
     <>
       <JsonLd data={sellerLocalBusinessSchema(seller)} />
-      <App initialRoute={{ name: "seller", seller }} />
+      <EmpresaPageScreen seller={seller} />
     </>
   );
 }

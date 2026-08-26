@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { productsApi } from "@/lib/api";
 import { adaptProduct } from "@/lib/adapters";
-import { App } from "@/components/app";
 import { JsonLd, productSchema } from "@/components/seo/json-ld";
+import { ProdutoPageScreen } from "./produto-page-screen";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
@@ -67,7 +67,7 @@ export default async function ProdutoPage({
   return (
     <>
       <JsonLd data={productSchema(apiProduct)} />
-      <App initialRoute={{ name: "product", product }} />
+      <ProdutoPageScreen product={product} sellerId={apiProduct.seller_id} />
     </>
   );
 }
