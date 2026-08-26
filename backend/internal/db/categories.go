@@ -74,6 +74,7 @@ var CanonicalCategories = []models.Category{
 	{ID: "treinamento-funcionarios", Label: "Treinamento para funcionários próprios", Short: "Treinamento\nfuncionários", Icon: "CatPartners", SortOrder: 142},
 	{ID: "administracao-condominios", Label: "Administração de condomínios", Short: "Administração\ncondomínios", Icon: "CatPartners", SortOrder: 143},
 	{ID: "escritorio-advocacia", Label: "Escritório de Advocacia", Short: "Escritório\nadvocacia", Icon: "CatPartners", SortOrder: 144},
+	{ID: "imobiliaria", Label: "Imobiliária", Short: "Imobi-\nliária", Icon: "CatPartners", SortOrder: 145},
 }
 
 // EnsureCategories upserts the canonical category list. Existing categories

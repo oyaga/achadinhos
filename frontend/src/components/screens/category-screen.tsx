@@ -93,6 +93,33 @@ export function CategoryScreen({
     return list;
   }, [providers, filter, sort]);
 
+  // Empresas passam pelos mesmos chips: "Verificados" = tem certificado,
+  // "Top" = certificado nível ouro. "Mais próximos"/"Mais baratos" e a
+  // ordenação por distância não se aplicam (empresa não tem distância/preço),
+  // então nesses casos a lista de empresas fica como está.
+  const filteredSellers = useMemo(() => {
+    let list = [...sellers];
+    if (filter === "verified") list = list.filter((s) => !!s.cert_tier);
+    if (filter === "gold") list = list.filter((s) => s.cert_tier === "ouro");
+    if (sort === "rating") list = list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    return list;
+  }, [sellers, filter, sort]);
+
+  // Estatísticas reais do cabeçalho (antes eram valores fixos do protótipo).
+  const totalCount = providers.length + sellers.length;
+  const ratings = [
+    ...providers.map((p) => p.rating),
+    ...sellers.map((s) => s.rating ?? 0),
+  ].filter((r) => r > 0);
+  const avgRating =
+    ratings.length > 0
+      ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1).replace(".", ",")
+      : null;
+  const nearestKm = providers
+    .map((p) => parseKm(p.distance || ""))
+    .filter((km) => Number.isFinite(km))
+    .reduce<number | null>((min, km) => (min === null || km < min ? km : min), null);
+
   const iconKey = catIcon as keyof typeof Icon;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const IconCmp = Icon[iconKey] as ((props: { size?: number }) => any) | undefined;
@@ -126,16 +153,18 @@ export function CategoryScreen({
           <div className="cat-stats">
             {/* Conta empresas + afiliados — mesmo total do contador da sidebar. */}
             <div className="cat-stat">
-              <strong>{providers.length + sellers.length}</strong>{" "}
-              {providers.length + sellers.length === 1 ? "negócio" : "negócios"}
+              <strong>{totalCount}</strong> {totalCount === 1 ? "negócio" : "negócios"}
             </div>
-            <div className="cat-stat">
-              ⭐ <strong>4,8</strong> média
-            </div>
-            <div className="cat-stat">
-              📍{" "}
-              <strong>{providers.length > 0 ? "0,5" : "-"}</strong>km mais próximo
-            </div>
+            {avgRating && (
+              <div className="cat-stat">
+                ⭐ <strong>{avgRating}</strong> média
+              </div>
+            )}
+            {nearestKm !== null && (
+              <div className="cat-stat">
+                📍 <strong>{nearestKm.toFixed(1).replace(".", ",")}</strong>km mais próximo
+              </div>
+            )}
           </div>
         </div>
 
@@ -167,7 +196,7 @@ export function CategoryScreen({
         >
           <div style={{ fontSize: 12, color: "var(--ink-500)" }}>
             <strong style={{ color: "var(--navy-900)" }}>
-              {filtered.length + sellers.length}
+              {filtered.length + filteredSellers.length}
             </strong>{" "}
             resultados
           </div>
@@ -195,7 +224,7 @@ export function CategoryScreen({
           </div>
         ) : (
           <div className="providers">
-            {sellers.map((s) => (
+            {filteredSellers.map((s) => (
               <CompanyCard
                 key={s.id}
                 company={s}
@@ -215,11 +244,15 @@ export function CategoryScreen({
                 onQuote={onQuote ? () => onQuote(p) : undefined}
               />
             ))}
-            {filtered.length === 0 && sellers.length === 0 && (
+            {filtered.length === 0 && filteredSellers.length === 0 && (
               <div className="empty-state">
                 <Icon.Search size={42} />
-                <div className="empty-state-title">Nada nesta categoria</div>
-                <div className="empty-state-sub">Tente outra categoria</div>
+                <div className="empty-state-title">
+                  {totalCount > 0 ? "Nenhum resultado com esse filtro" : "Nada nesta categoria"}
+                </div>
+                <div className="empty-state-sub">
+                  {totalCount > 0 ? "Tente outro filtro" : "Tente outra categoria"}
+                </div>
               </div>
             )}
           </div>

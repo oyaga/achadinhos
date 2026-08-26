@@ -250,11 +250,16 @@ export function AgendarScreen({ slug }: AgendarScreenProps) {
       {/* Hero navy compacto */}
       <header className="agd-hero">
         <div className="agd-hero-inner">
-          <Link href="/" className="agd-brand">
-            <span className="agd-brand-mark">
-              <Icon.BrandHouse size={20} />
-            </span>
-            Achadinhos do condomínio
+          <Link href="/" className="agd-brand" aria-label="Achadinhos do Condomínio — início">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mobile-logo-achadinhos-do-condominio.png?v=3"
+              alt="Achadinhos do Condomínio"
+              className="agd-brand-logo"
+              width={760}
+              height={176}
+              decoding="async"
+            />
           </Link>
           {phase === "loading" ? (
             <div className="agd-hero-skel" aria-hidden>

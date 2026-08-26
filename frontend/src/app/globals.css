@@ -3536,7 +3536,7 @@ textarea.field-input {
   gap: 8px;
 }
 .product-btn-link {
-  flex: 1.2 !important;
+  flex: 1 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4403,40 +4403,12 @@ textarea.field-input {
   gap: 12px;
   margin-bottom: 28px;
 }
-.auth-brand-mark {
-  width: 44px;
-  height: 44px;
-  border-radius: 13px;
-  background: linear-gradient(140deg, var(--gold-400), var(--gold-500) 60%, #a8843e);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--navy-900);
-  box-shadow: 0 4px 16px rgba(201, 169, 97, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}
-.auth-brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.05;
-}
-.auth-brand-name {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 600;
-  font-size: 20px;
-  color: var(--navy-900);
-  letter-spacing: -0.005em;
-}
-.auth-brand-sub {
-  font-family: var(--font-ui);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  color: var(--navy-700);
-  margin-top: 4px;
-  text-transform: uppercase;
-  opacity: 0.75;
+/* Logo oficial horizontal (PNG) no lugar do lockup desenhado em CSS. */
+.auth-brand-logo {
+  display: block;
+  width: 220px;
+  max-width: 70vw;
+  height: auto;
 }
 
 .auth-card {
@@ -9613,26 +9585,11 @@ input[type="time"].prof-input {
   align-items: center;
   gap: 10px;
 }
-.site-footer-tile {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(140deg, var(--gold-400), var(--gold-500) 60%, #a8843e);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 600;
-  font-size: 20px;
-  color: var(--navy-900);
-  overflow: hidden;
-}
 .site-footer-logo {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 3px;
+  display: block;
+  width: 200px;
+  max-width: 100%;
+  height: auto;
 }
 /* Redes sociais oficiais no rodapé (Instagram / Facebook / TikTok). */
 .site-footer-social {
@@ -9656,25 +9613,6 @@ input[type="time"].prof-input {
   background: var(--gold-400);
   color: var(--navy-900);
   transform: translateY(-1px);
-}
-.site-footer-name {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 600;
-  font-size: 17px;
-  color: #fff;
-  line-height: 1.1;
-  display: flex;
-  flex-direction: column;
-}
-.site-footer-name-sub {
-  font-family: var(--font-mono);
-  font-style: normal;
-  font-weight: 600;
-  font-size: 8px;
-  letter-spacing: 0.2em;
-  color: var(--gold-300);
-  opacity: 0.85;
 }
 .site-footer-tagline {
   margin: 12px 0 0;
@@ -10096,17 +10034,11 @@ input[type="time"].prof-input {
 .agd-brand:hover {
   color: var(--gold-200);
 }
-.agd-brand-mark {
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(201, 169, 97, 0.14);
-  border: 1px solid rgba(201, 169, 97, 0.35);
-  color: var(--gold-300);
-  flex-shrink: 0;
+.agd-brand-logo {
+  display: block;
+  width: 150px;
+  max-width: 60vw;
+  height: auto;
 }
 .agd-name {
   font-family: var(--font-display);

@@ -36,7 +36,7 @@ import { ProductDetail } from "./shop/product-detail";
 import { ProfileScreen } from "./screens/profile-screen";
 import { TopNav } from "./web/top-nav";
 import { SplashIntro } from "./splash/splash-intro";
-import { CategorySidebar, type FilterId } from "./web/category-sidebar";
+import { CategorySidebar, FILTERS, type FilterId } from "./web/category-sidebar";
 import { SiteFooter } from "./web/site-footer";
 import { cn } from "@/lib/utils";
 
@@ -150,6 +150,21 @@ export function App({ initialRoute }: AppProps = {}) {
       return next;
     });
 
+  // "Atende agora" só faz sentido para prestadores (tempo de resposta);
+  // empresas não têm esse dado. Sem prestadores na lista, o chip sumiria
+  // tudo — então ele é omitido (e destravado se já estava ativo).
+  const hasProviders = homeProviders.length > 0;
+  const filterOptions = hasProviders ? FILTERS : FILTERS.filter((f) => f.id !== "now");
+  useEffect(() => {
+    if (!hasProviders && activeFilters.has("now")) {
+      setActiveFilters((prev) => {
+        const next = new Set(prev);
+        next.delete("now");
+        return next;
+      });
+    }
+  }, [hasProviders, activeFilters]);
+
   // Filtros (sidebar desktop + botão "Filtrar" da seção), aplicados
   // client-side sobre os recomendados.
   const filteredProviders = homeProviders.filter((p) => {
@@ -205,6 +220,7 @@ export function App({ initialRoute }: AppProps = {}) {
                   onSelectCat={goCategory}
                   filters={activeFilters}
                   onToggleFilter={toggleFilter}
+                  filterOptions={filterOptions}
                 />
               </aside>
               <div className="web-main">
@@ -246,6 +262,7 @@ export function App({ initialRoute }: AppProps = {}) {
                   onToggleSellerFav={toggleSellerFav}
                   filters={activeFilters}
                   onToggleFilter={toggleFilter}
+                  filterOptions={filterOptions}
                 />
                 {homeLojas.length > 0 && (
                   <ProvidersSection

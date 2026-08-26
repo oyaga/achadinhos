@@ -43,20 +43,16 @@ export function SiteFooter({ onShopping, onHighlights, authed }: SiteFooterProps
         <div className="site-footer-grid">
           <div className="site-footer-brand">
             <div className="site-footer-lockup">
-              <span className="site-footer-tile" aria-hidden="true">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/logo-achadinhos-do-condominio.png"
-                  alt=""
-                  className="site-footer-logo"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </span>
-              <span className="site-footer-name">
-                Achadinhos
-                <span className="site-footer-name-sub">DO CONDOMÍNIO</span>
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/mobile-logo-achadinhos-do-condominio.png?v=3"
+                alt="Achadinhos do Condomínio"
+                className="site-footer-logo"
+                width={760}
+                height={176}
+                loading="lazy"
+                decoding="async"
+              />
             </div>
             <p className="site-footer-tagline">
               Serviços, afiliados e produtos de confiança para o seu

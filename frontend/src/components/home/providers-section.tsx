@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Provider } from "@/lib/types";
 import { getImageUrl, type AdminSeller } from "@/lib/api";
 import { badgeLabel, cn } from "@/lib/utils";
@@ -24,6 +24,8 @@ interface ProvidersSectionProps {
       mesmos filtros da sidebar desktop. */
   filters?: Set<FilterId>;
   onToggleFilter?: (id: FilterId) => void;
+  /** Chips exibidos no popover (default: todos). */
+  filterOptions?: typeof FILTERS;
 }
 
 export function ProvidersSection({
@@ -39,16 +41,38 @@ export function ProvidersSection({
   showSeeAll = true,
   filters,
   onToggleFilter,
+  filterOptions = FILTERS,
 }: ProvidersSectionProps) {
   const [filterOpen, setFilterOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const empty = providers.length === 0 && sellers.length === 0;
   const filterable = !!filters && !!onToggleFilter;
+
+  // Fecha o popover ao clicar/tocar fora dele ou apertar Esc.
+  useEffect(() => {
+    if (!filterOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setFilterOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFilterOpen(false);
+    };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [filterOpen]);
+
   return (
     <div className="section">
       <div className="section-title">
         <h2>{title}</h2>
         {showSeeAll && (
-          <div className="filter-menu-wrap">
+          <div className="filter-menu-wrap" ref={menuRef}>
             <button
               type="button"
               className="see-all"
@@ -60,7 +84,7 @@ export function ProvidersSection({
             </button>
             {filterable && filterOpen && (
               <div className="filter-pop">
-                {FILTERS.map((f) => (
+                {filterOptions.map((f) => (
                   <button
                     key={f.id}
                     type="button"

@@ -1,19 +1,18 @@
-import { Icon } from "../icons";
-
-interface BrandLockupProps {
-  sub?: string;
-}
-
-export function BrandLockup({ sub = "Síndico · Afiliados · Shopping" }: BrandLockupProps) {
+// Logo oficial (horizontal) usado no topo das telas de auth, planos,
+// certificação e verificação. Substitui o lockup antigo desenhado em CSS
+// (quadrado dourado + ícone de casa + texto).
+export function BrandLockup() {
   return (
     <div className="auth-brand">
-      <div className="auth-brand-mark">
-        <Icon.BrandHouse size={24} />
-      </div>
-      <div className="auth-brand-text">
-        <span className="auth-brand-name">Achadinhos do condomínio</span>
-        <span className="auth-brand-sub">{sub}</span>
-      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/mobile-logo-achadinhos-do-condominio.png?v=3"
+        alt="Achadinhos do Condomínio"
+        className="auth-brand-logo"
+        width={760}
+        height={176}
+        decoding="async"
+      />
     </div>
   );
 }

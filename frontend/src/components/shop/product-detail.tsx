@@ -227,7 +227,11 @@ export function ProductDetail({
             {product.name}.{" "}
             {isAchadinhos
               ? "Disponibilizado pelo Achadinhos do Condomínio. Use os botões abaixo para tratar pedido, frete e garantia com a equipe."
-              : `Vendido e enviado por ${product.seller}. Pagamento, frete e garantia tratados diretamente com a revenda. Use os botões abaixo para ir ao link do produto ou conversar no WhatsApp com o vendedor.`}
+              : `Vendido e enviado por ${product.seller}. Pagamento, frete e garantia tratados diretamente com a revenda. ${
+                  hasLink
+                    ? "Toque em “Compre aqui” para ir à página do produto."
+                    : "Use o botão abaixo para conversar no WhatsApp com o vendedor."
+                }`}
           </p>
           <div className="pd-features">
             <div className="pd-feature">
@@ -268,20 +272,22 @@ export function ProductDetail({
       </div>
 
       <div className="sticky-cta product-cta">
-        {hasLink && (
+        {/* Produto com link de revenda (ex.: Mercado Livre) vende só pelo
+            link — sem WhatsApp (pedido do cliente). O WhatsApp fica apenas
+            para produtos sem link. */}
+        {hasLink ? (
           <button
             type="button"
-            className="btn-secondary product-btn-link"
+            className="btn-primary product-btn-link"
             onClick={openLink}
           >
-            <Icon.ExternalLink size={14} /> Ver na revenda
+            <Icon.ExternalLink size={14} /> Compre aqui
           </button>
-        )}
-        {hasWhatsapp && (
+        ) : hasWhatsapp ? (
           <button type="button" className="btn-whatsapp" onClick={openWhatsapp}>
             <Icon.Whatsapp size={16} /> Comprar no WhatsApp
           </button>
-        )}
+        ) : null}
         {!hasLink && !hasWhatsapp && (
           <div className="product-cta-empty">
             Pedido pelo aplicativo — fale com a equipe do Achadinhos.

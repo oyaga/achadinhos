@@ -20,6 +20,9 @@ interface CategorySidebarProps {
   onSelectCat: (id: CategoryId) => void;
   filters: Set<FilterId>;
   onToggleFilter: (id: FilterId) => void;
+  /** Chips disponíveis (default: todos). A home omite "Atende agora" quando
+      não há prestadores na lista, já que empresas não têm esse dado. */
+  filterOptions?: typeof FILTERS;
 }
 
 // Desktop-only left rail (handoff M1): "Explorar" (navegação por categoria) +
@@ -29,6 +32,7 @@ export function CategorySidebar({
   onSelectCat,
   filters,
   onToggleFilter,
+  filterOptions = FILTERS,
 }: CategorySidebarProps) {
   const [cats, setCats] = useState<ApiCategory[]>([]);
 
@@ -72,7 +76,7 @@ export function CategorySidebar({
       <div className="side-card">
         <div className="side-eyebrow">Filtros</div>
         <div className="side-filters">
-          {FILTERS.map((f) => (
+          {filterOptions.map((f) => (
             <button
               key={f.id}
               type="button"
