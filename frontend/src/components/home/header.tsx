@@ -17,7 +17,6 @@ function firstName(name: string | undefined | null): string {
 export function Header({ onSearchClick }: HeaderProps) {
   const { user } = useAuth();
   const greetingTarget = firstName(user?.name);
-  const condoName = user?.condo_name ?? null;
 
   return (
     <header className="header home-mobile-header">
@@ -38,12 +37,9 @@ export function Header({ onSearchClick }: HeaderProps) {
           <Icon.Sparkle size={12} /> Boa tarde, {greetingTarget}
         </div>
         <div className="greeting-q">
-          O que você precisa <em>resolver</em>
-          {condoName ? (
-            <><br />no <em>{condoName}</em> hoje?</>
-          ) : (
-            <> hoje?</>
-          )}
+          Encontre. Compare.
+          <br />
+          Escolha <em>com segurança</em>.
         </div>
       </div>
 

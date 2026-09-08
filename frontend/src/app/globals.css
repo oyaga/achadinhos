@@ -13076,9 +13076,21 @@ input[type="time"].prof-input {
     opacity: 0.85;
   }
 }
-.splash-canvas {
+.splash-video {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* O mascote fica a ~66% da largura do quadro 16:9; sem isto o crop do
+     retrato o deixaria cortado na borda. */
+  object-position: 66% center;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.splash-video.show {
+  opacity: 1;
 }
 .splash-hint {
   position: absolute;

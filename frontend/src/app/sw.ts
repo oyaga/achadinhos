@@ -18,13 +18,15 @@ const serwist = new Serwist({
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
-    // .glb do splash é imutável e pesado; sem esta regra cairia no
-    // catch-all NetworkFirst do preset.
+    // Mídia do splash (vídeo mp4 versionado; antes o .glb do 3D) é imutável
+    // e pesada; sem esta regra cairia no catch-all NetworkFirst do preset.
     {
       matcher: ({ url, sameOrigin }) =>
-        sameOrigin && url.pathname.endsWith(".glb"),
+        sameOrigin &&
+        (url.pathname.endsWith(".glb") ||
+          url.pathname.startsWith("/splash-video-")),
       handler: new CacheFirst({
-        cacheName: "3d-models",
+        cacheName: "splash-media",
         plugins: [
           new ExpirationPlugin({
             maxEntries: 4,

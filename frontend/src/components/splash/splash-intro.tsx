@@ -1,24 +1,16 @@
 "use client";
 
-import {
-  Component,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import dynamic from "next/dynamic";
-import type { SplashPhase } from "./scene-3d";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-// ssr:false + module scope: o chunk three/r3f/drei só é baixado quando
-// <Scene3D/> renderizar pela 1ª vez — visitante recorrente nunca o baixa.
-const Scene3D = dynamic(() => import("./scene-3d"), { ssr: false });
+// Splash de abertura em vídeo (mascote-moeda 3D renderizado, 8s). Substituiu
+// a cena R3F ao vivo — sem WebGL/three no bundle; o mp4 fica no cache do
+// service worker ("splash-media", CacheFirst). Versione o arquivo (-vN) ao
+// trocar o vídeo para invalidar o cache.
+const VIDEO_URL = "/splash-video-v1.mp4";
 
 const SESSION_KEY = "achadinhos:splash-seen";
-const LOAD_TIMEOUT_MS = 2500;
-const ENTER_MS = 800;
-const FLOAT_MS = 1100;
+// Rede lenta/offline: se o vídeo não começar a tocar a tempo, aborta.
+const LOAD_TIMEOUT_MS = 3000;
 const EXIT_MS = 550;
 
 function shouldShowSplash(): boolean {
@@ -31,42 +23,15 @@ function shouldShowSplash(): boolean {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return false;
   }
-  const nav = navigator as Navigator & { deviceMemory?: number };
-  if (nav.deviceMemory !== undefined && nav.deviceMemory <= 2) return false;
-  try {
-    const c = document.createElement("canvas");
-    if (!c.getContext("webgl2") && !c.getContext("webgl")) return false;
-  } catch {
-    return false;
-  }
   return true;
 }
 
-class SceneBoundary extends Component<
-  { onError: () => void; children: ReactNode },
-  { failed: boolean }
-> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  componentDidCatch() {
-    this.props.onError();
-  }
-  render() {
-    return this.state.failed ? null : this.props.children;
-  }
-}
-
-type Stage = "hidden" | "loading" | SplashPhase | "done";
+type Stage = "hidden" | "loading" | "playing" | "exit" | "done";
 
 export function SplashIntro() {
   // SSR e 1º render do cliente: null — sem hydration mismatch no export estático.
   const [stage, setStage] = useState<Stage>("hidden");
-  const timers = useRef<number[]>([]);
-  const after = useCallback((ms: number, fn: () => void) => {
-    timers.current.push(window.setTimeout(fn, ms));
-  }, []);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (!shouldShowSplash()) return;
@@ -75,11 +40,8 @@ export function SplashIntro() {
       sessionStorage.setItem(SESSION_KEY, "1");
     } catch {}
     setStage("loading");
-    const pending = timers.current;
-    return () => pending.forEach(clearTimeout);
   }, []);
 
-  // Rede lenta/offline: aborta se chunk + glb não ficarem prontos a tempo.
   useEffect(() => {
     if (stage !== "loading") return;
     const id = window.setTimeout(() => setStage("exit"), LOAD_TIMEOUT_MS);
@@ -87,20 +49,24 @@ export function SplashIntro() {
   }, [stage]);
 
   useEffect(() => {
-    if (stage === "float") after(FLOAT_MS, () => setStage("exit"));
-    if (stage === "exit") after(EXIT_MS, () => setStage("done"));
-  }, [stage, after]);
+    if (stage !== "exit") return;
+    const id = window.setTimeout(() => setStage("done"), EXIT_MS);
+    return () => clearTimeout(id);
+  }, [stage]);
 
-  const onReady = useCallback(() => {
-    setStage((s) => (s === "loading" ? "enter" : s));
-    after(ENTER_MS, () => setStage((s) => (s === "enter" ? "float" : s)));
-  }, [after]);
+  // Autoplay pode ser negado mesmo com muted (economia de bateria etc.) —
+  // nesse caso não fica preso no logo pulsando: sai direto.
+  const onCanPlay = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.play()
+      .then(() => setStage((s) => (s === "loading" ? "playing" : s)))
+      .catch(() => setStage("exit"));
+  }, []);
 
   const skip = useCallback(() => {
     setStage((s) => (s === "done" || s === "hidden" ? s : "exit"));
   }, []);
-
-  const fail = useCallback(() => setStage("exit"), []);
 
   if (stage === "hidden" || stage === "done") return null;
 
@@ -118,15 +84,18 @@ export function SplashIntro() {
           className="splash-logo"
         />
       )}
-      <div className="splash-canvas">
-        <SceneBoundary onError={fail}>
-          <Scene3D
-            phase={stage === "loading" ? "enter" : stage}
-            onReady={onReady}
-            onError={fail}
-          />
-        </SceneBoundary>
-      </div>
+      <video
+        ref={videoRef}
+        className={`splash-video${stage === "playing" ? " show" : ""}`}
+        src={VIDEO_URL}
+        muted
+        playsInline
+        preload="auto"
+        disablePictureInPicture
+        onCanPlay={onCanPlay}
+        onEnded={skip}
+        onError={skip}
+      />
       <span className="splash-hint">toque para pular</span>
     </div>
   );
