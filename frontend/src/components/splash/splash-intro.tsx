@@ -2,11 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// Splash de abertura em vídeo (mascote-moeda 3D renderizado, 8s). Substituiu
-// a cena R3F ao vivo — sem WebGL/three no bundle; o mp4 fica no cache do
-// service worker ("splash-media", CacheFirst). Versione o arquivo (-vN) ao
-// trocar o vídeo para invalidar o cache.
-const VIDEO_URL = "/splash-video-v1.mp4";
+// Splash de abertura em vídeo (mascote-moeda 3D renderizado). Substituiu a
+// cena R3F ao vivo — sem WebGL/three no bundle; os mp4 ficam no cache do
+// service worker ("splash-media", CacheFirst). Versione os arquivos (-vN) ao
+// trocar o vídeo para invalidar o cache. Mobile/PWA (<768px) usa o corte
+// vertical 9:16; desktop, o widescreen 16:9.
+const VIDEO_URL_DESKTOP = "/splash-video-v1.mp4";
+const VIDEO_URL_MOBILE = "/splash-video-mobile-v1.mp4";
 
 const SESSION_KEY = "achadinhos:splash-seen";
 // Rede lenta/offline: se o vídeo não começar a tocar a tempo, aborta.
@@ -31,6 +33,7 @@ type Stage = "hidden" | "loading" | "playing" | "exit" | "done";
 export function SplashIntro() {
   // SSR e 1º render do cliente: null — sem hydration mismatch no export estático.
   const [stage, setStage] = useState<Stage>("hidden");
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -39,6 +42,13 @@ export function SplashIntro() {
       // Marca já na decisão de mostrar: refresh no meio do splash não replica.
       sessionStorage.setItem(SESSION_KEY, "1");
     } catch {}
+    // Escolhido uma vez na montagem — o splash dura segundos, não precisa
+    // reagir a resize.
+    setVideoUrl(
+      window.matchMedia("(max-width: 767px)").matches
+        ? VIDEO_URL_MOBILE
+        : VIDEO_URL_DESKTOP,
+    );
     setStage("loading");
   }, []);
 
@@ -84,10 +94,11 @@ export function SplashIntro() {
           className="splash-logo"
         />
       )}
+      {videoUrl && (
       <video
         ref={videoRef}
         className={`splash-video${stage === "playing" ? " show" : ""}`}
-        src={VIDEO_URL}
+        src={videoUrl}
         muted
         playsInline
         preload="auto"
@@ -96,6 +107,7 @@ export function SplashIntro() {
         onEnded={skip}
         onError={skip}
       />
+      )}
       <span className="splash-hint">toque para pular</span>
     </div>
   );

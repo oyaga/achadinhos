@@ -13082,12 +13082,17 @@ input[type="time"].prof-input {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* O mascote fica a ~66% da largura do quadro 16:9; sem isto o crop do
-     retrato o deixaria cortado na borda. */
-  object-position: 66% center;
   opacity: 0;
   transition: opacity 0.35s ease;
   pointer-events: none;
+}
+/* No desktop toca o vídeo 16:9, onde o mascote fica a ~66% da largura do
+   quadro; sem isto um viewport mais estreito o cortaria na borda. O vídeo
+   mobile (9:16) é centralizado e usa o default. */
+@media (min-width: 768px) {
+  .splash-video {
+    object-position: 66% center;
+  }
 }
 .splash-video.show {
   opacity: 1;
