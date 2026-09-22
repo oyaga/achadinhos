@@ -36,7 +36,6 @@ import { ShoppingScreen } from "./shop/shopping-screen";
 import { ProductDetail } from "./shop/product-detail";
 import { ProfileScreen } from "./screens/profile-screen";
 import { TopNav } from "./web/top-nav";
-import { SplashIntro } from "./splash/splash-intro";
 import { CategorySidebar, FILTERS, type FilterId } from "./web/category-sidebar";
 import { SiteFooter } from "./web/site-footer";
 import { cn } from "@/lib/utils";
@@ -211,7 +210,6 @@ export function App({ initialRoute }: AppProps = {}) {
 
   return (
     <div className="device-frame">
-      {(!initialRoute || initialRoute.name === "home") && <SplashIntro />}
       <TopNav
         onSearchClick={() => setSearchOpen(true)}
         // No desktop o perfil agora é página real (/perfil), com URL própria

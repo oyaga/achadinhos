@@ -2,7 +2,7 @@
 // runtime caching defaults.
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { CacheFirst, ExpirationPlugin, NetworkOnly, Serwist } from "serwist";
+import { CacheFirst, ExpirationPlugin, Serwist } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -12,26 +12,26 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+// Vídeo e poster do splash: o service worker NÃO se mete. Mídia é o caso em
+// que passar pelo worker dá mais problema que ganho — o <video> pede por
+// pedaços (header Range) e o Safari/iOS é exigente com as respostas 206 que
+// saem de um worker. Mesmo um NetworkOnly ainda chama respondWith(); este
+// listener, registrado ANTES do Serwist, encerra o evento sem responder, e o
+// navegador busca direto do servidor Go (206 via http.ServeContent), com as
+// revisitas vindo do cache HTTP (immutable).
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+  if (url.origin === self.location.origin && url.pathname.startsWith("/splash-")) {
+    event.stopImmediatePropagation();
+  }
+});
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
-    // Vídeo do splash: o service worker NÃO se mete. Mídia é o caso em que
-    // servir do Cache Storage dá mais problema que ganho — a resposta sai 200
-    // inteira, e o <video> pede por pedaços (header Range). O Safari/iOS
-    // recusa reproduzir sem um 206, e emular Range no worker (fatiar a
-    // resposta cacheada) trocou um bug por outro. Deixando passar, cada
-    // navegador usa seu caminho nativo de mídia contra o servidor Go, que já
-    // faz 206 via http.ServeContent; as revisitas vêm do cache HTTP
-    // (max-age=3600). A regra precisa existir mesmo assim, senão a requisição
-    // cai no catch-all NetworkFirst do defaultCache e volta ao problema.
-    {
-      matcher: ({ url, sameOrigin }) =>
-        sameOrigin && url.pathname.startsWith("/splash-video-"),
-      handler: new NetworkOnly(),
-    },
     // O .glb do splash 3D legado continua no CacheFirst: é imutável, pesado e
     // não é mídia com Range.
     {
