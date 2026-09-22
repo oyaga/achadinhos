@@ -10,17 +10,17 @@ export const SOCIAL_LINKS = [
   {
     key: "instagram",
     label: "Instagram",
-    href: "https://www.instagram.com/achadinhosdocondominio",
+    href: "https://www.instagram.com/achadinhoscondominio",
   },
   {
     key: "facebook",
     label: "Facebook",
-    href: "https://www.facebook.com/achadinhosdocondominio",
+    href: "https://www.facebook.com/share/1DDZqSVWff/",
   },
   {
     key: "tiktok",
     label: "TikTok",
-    href: "https://www.tiktok.com/@achadinhosdocondominio",
+    href: "https://www.tiktok.com/@achadinhosdocondomio",
   },
 ] as const;
 
