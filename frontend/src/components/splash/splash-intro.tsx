@@ -18,6 +18,9 @@ const SESSION_KEY = "achadinhos:splash-seen";
 const STALL_TIMEOUT_MS = 3000;
 const LOAD_MAX_MS = 9000;
 const EXIT_MS = 550;
+// Espera a home assentar antes de buscar o vídeo da próxima abertura, para não
+// disputar banda com o conteúdo que o usuário está de fato vendo.
+const PREFETCH_DELAY_MS = 5000;
 
 function shouldShowSplash(): boolean {
   try {
@@ -62,6 +65,28 @@ export function SplashIntro() {
     // recusa o autoplay — garantimos direto na propriedade do elemento.
     if (videoRef.current) videoRef.current.muted = true;
   }, [videoUrl]);
+
+  // Deixa o vídeo no cache HTTP do navegador para a PRÓXIMA abertura. Sem
+  // isto o splash tem que baixar 1,3-1,7MB no instante em que deveria tocar:
+  // no desktop aparece a logo antes do vídeo, e no celular o download nem
+  // termina a tempo, sobrando só a logo. Só roda com o splash fora do caminho
+  // ("hidden", quando nem apareceu, ou "done"), nunca em paralelo com ele —
+  // senão o mesmo arquivo viria duas vezes e a disputa de banda pioraria
+  // justamente a abertura que queremos salvar. E busca só o corte deste
+  // aparelho, nunca os dois. Já estando no cache, o force-cache não vai à rede.
+  useEffect(() => {
+    if (stage !== "hidden" && stage !== "done") return;
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } })
+      .connection;
+    if (conn?.saveData) return;
+    const url = window.matchMedia("(max-width: 767px)").matches
+      ? VIDEO_URL_MOBILE
+      : VIDEO_URL_DESKTOP;
+    const id = window.setTimeout(() => {
+      void fetch(url, { cache: "force-cache" }).catch(() => {});
+    }, PREFETCH_DELAY_MS);
+    return () => window.clearTimeout(id);
+  }, [stage]);
 
   useEffect(() => {
     if (stage !== "loading") return;
