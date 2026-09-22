@@ -12,7 +12,7 @@ const withSerwist = withSerwistInit({
   // celular também) e o .glb legado do splash 3D. Pior: o que sai do
   // precache vem como 200 inteiro, e o Safari/iOS exige 206 para mídia, então
   // o vídeo simplesmente não tocava no PWA. Mídia pesada fica fora daqui e é
-  // cacheada sob demanda pela regra "splash-media" do sw.ts (com Range).
+  // baixada direto do servidor (o sw.ts não intercepta /splash-*).
   // O glob não aceita negação, então a lista é por extensão; sw.js e
   // swe-worker-*.js já são ignorados pelo próprio Serwist.
   globPublicPatterns: ["**/*.{png,ico,svg,webmanifest}"],
