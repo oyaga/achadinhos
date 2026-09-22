@@ -2,12 +2,7 @@
 // runtime caching defaults.
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import {
-  CacheFirst,
-  ExpirationPlugin,
-  RangeRequestsPlugin,
-  Serwist,
-} from "serwist";
+import { CacheFirst, ExpirationPlugin, NetworkOnly, Serwist } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -17,41 +12,34 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-// O <video> pede o arquivo por pedaços (header Range). Buscar a origem com
-// esse header devolveria um 206, que a Cache API se recusa a guardar — então
-// o fetch sai sem ele e o cache fica com o arquivo inteiro, que o
-// RangeRequestsPlugin fatia na hora de servir.
-const dropRangeHeader = {
-  requestWillFetch: async ({ request }: { request: Request }) => {
-    if (!request.headers.has("range")) return request;
-    const headers = new Headers(request.headers);
-    headers.delete("range");
-    return new Request(request, { headers });
-  },
-};
-
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
-    // Mídia do splash (vídeo mp4 versionado; antes o .glb do 3D) é imutável
-    // e pesada: fica fora do precache (ver globPublicPatterns no
-    // next.config.ts) e é baixada só quando o aparelho vai de fato tocá-la —
-    // o celular não puxa mais o corte de desktop junto. O RangeRequestsPlugin
-    // é obrigatório: sem ele a resposta sai 200 inteira e o Safari/iOS, que
-    // exige 206 para mídia, não toca o vídeo.
+    // Vídeo do splash: o service worker NÃO se mete. Mídia é o caso em que
+    // servir do Cache Storage dá mais problema que ganho — a resposta sai 200
+    // inteira, e o <video> pede por pedaços (header Range). O Safari/iOS
+    // recusa reproduzir sem um 206, e emular Range no worker (fatiar a
+    // resposta cacheada) trocou um bug por outro. Deixando passar, cada
+    // navegador usa seu caminho nativo de mídia contra o servidor Go, que já
+    // faz 206 via http.ServeContent; as revisitas vêm do cache HTTP
+    // (max-age=3600). A regra precisa existir mesmo assim, senão a requisição
+    // cai no catch-all NetworkFirst do defaultCache e volta ao problema.
     {
       matcher: ({ url, sameOrigin }) =>
-        sameOrigin &&
-        (url.pathname.endsWith(".glb") ||
-          url.pathname.startsWith("/splash-video-")),
+        sameOrigin && url.pathname.startsWith("/splash-video-"),
+      handler: new NetworkOnly(),
+    },
+    // O .glb do splash 3D legado continua no CacheFirst: é imutável, pesado e
+    // não é mídia com Range.
+    {
+      matcher: ({ url, sameOrigin }) =>
+        sameOrigin && url.pathname.endsWith(".glb"),
       handler: new CacheFirst({
         cacheName: "splash-media",
         plugins: [
-          dropRangeHeader,
-          new RangeRequestsPlugin(),
           new ExpirationPlugin({
             maxEntries: 4,
             maxAgeSeconds: 30 * 24 * 60 * 60,
