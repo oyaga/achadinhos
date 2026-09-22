@@ -12,6 +12,12 @@ O splash agora é um vídeo sem áudio (h264 yuv420p + faststart), tocado por
 `public/splash-video-mobile-vN.mp4` (9:16). Ao trocar um vídeo, incremente o
 sufixo `-vN` para invalidar o cache do service worker (`splash-media`,
 CacheFirst) e atualize `VIDEO_URL_DESKTOP`/`VIDEO_URL_MOBILE`.
+Os mp4 ficam **fora** do precache do service worker (`globPublicPatterns` no
+`next.config.ts` lista só `png/ico/svg/webmanifest`): assim o celular baixa
+só o corte que vai tocar, e não os dois. Quem serve é a regra `splash-media`
+do `sw.ts`, que precisa do `RangeRequestsPlugin` — o Safari/iOS pede mídia
+com `Range` e só toca se a resposta vier `206`. Ao adicionar mídia pesada em
+`public/`, mantenha a extensão fora do `globPublicPatterns`.
 Transcodifique com: `ffmpeg -i bruto.mp4 -an -c:v libx264 -preset slow
 -crf 26 -pix_fmt yuv420p -movflags +faststart public/splash-video-vN.mp4`
 (alvo ≤2MB). A cena 3D antiga (`scene-3d.tsx` + `public/models/*.glb`)
