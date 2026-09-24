@@ -13068,7 +13068,9 @@ input[type="time"].prof-input {
 }
 .splash-stage {
   position: relative;
-  width: min(86vw, 62vh, 520px);
+  /* Um pouco maior que na v1: a câmera afastou (folga para o aceno) e isto
+     devolve o tamanho aparente do mascote. */
+  width: min(94vw, 68vh, 570px);
   aspect-ratio: 1;
   pointer-events: none;
 }
