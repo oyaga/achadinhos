@@ -25,6 +25,11 @@ type Event struct {
 	Highlight bool   `gorm:"not null;default:false;index" json:"highlight"`
 	BannerURL string `gorm:"size:1000;not null;default:''" json:"banner_url"`
 
+	// Days são as datas do evento (um evento pode ocupar vários dias, cada um
+	// com hora e imagem próprias). EventDate/EventTime acima espelham o
+	// primeiro dia, para ordenação e para clientes antigos.
+	Days []EventDay `gorm:"foreignKey:EventID;constraint:OnDelete:CASCADE" json:"days"`
+
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
@@ -33,6 +38,25 @@ type Event struct {
 func (e *Event) BeforeCreate(tx *gorm.DB) error {
 	if e.ID == uuid.Nil {
 		e.ID = uuid.New()
+	}
+	return nil
+}
+
+// EventDay é um dia de um evento: data (date-only, sem fuso), hora "HH:MM"
+// livre e imagem opcional do dia (fallback: o banner do evento).
+type EventDay struct {
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	EventID   uuid.UUID `gorm:"type:uuid;not null;index" json:"event_id"`
+	Day       time.Time `gorm:"type:date;not null;index" json:"day"`
+	DayTime   string    `gorm:"size:5;not null;default:''" json:"time"`
+	BannerURL string    `gorm:"size:1000;not null;default:''" json:"banner_url"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
+}
+
+func (d *EventDay) BeforeCreate(tx *gorm.DB) error {
+	if d.ID == uuid.Nil {
+		d.ID = uuid.New()
 	}
 	return nil
 }

@@ -1,19 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import {
   adminApi,
   ApiError,
   getImageUrl,
   type ApiEvent,
 } from "@/lib/api";
+import { formatCEP, stripCEP } from "@/lib/cep";
+import { useViaCEP } from "@/hooks/use-via-cep";
 import { Icon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
+// Um dia do evento no formulário. `id` presente = dia já salvo no backend
+// (a imagem dele vive em banner_url); `pending` é a imagem escolhida agora,
+// enviada depois do save (o upload precisa do id do dia).
+interface DayForm {
+  key: number;
+  id?: string;
+  day: string; // "AAAA-MM-DD"
+  time: string; // "HH:MM"
+  banner_url: string;
+  pending: File | null;
+}
+
 interface FormState {
   title: string;
-  event_date: string; // "AAAA-MM-DD"
-  event_time: string; // "HH:MM"
+  cep: string;
   location: string;
   description: string;
   highlight: boolean;
@@ -21,12 +34,16 @@ interface FormState {
 
 const EMPTY: FormState = {
   title: "",
-  event_date: "",
-  event_time: "",
+  cep: "",
   location: "",
   description: "",
   highlight: false,
 };
+
+let dayKeySeq = 1;
+function newDay(): DayForm {
+  return { key: dayKeySeq++, day: "", time: "", banner_url: "", pending: null };
+}
 
 // Formatos aceitos para o banner do evento.
 const BANNER_ACCEPT = "image/jpeg,image/png,image/webp";
@@ -60,11 +77,16 @@ export function EventosSection() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
-  // Banner: URL já salva no backend (edição) e arquivo pendente de envio.
+  const [days, setDays] = useState<DayForm[]>([newDay()]);
+  // Banner do destaque (carrossel): URL já salva e arquivo pendente.
   const [bannerUrl, setBannerUrl] = useState("");
   const [pendingBanner, setPendingBanner] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const { lookup: lookupCep, loading: cepLoading } = useViaCEP();
+  // Evita repetir a consulta do mesmo CEP a cada tecla.
+  const lastCepRef = useRef("");
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -85,9 +107,11 @@ export function EventosSection() {
   function openCreate() {
     setEditingId(null);
     setForm(EMPTY);
+    setDays([newDay()]);
     setBannerUrl("");
     setPendingBanner(null);
     setFormError(null);
+    lastCepRef.current = "";
     setFormOpen(true);
   }
 
@@ -95,20 +119,58 @@ export function EventosSection() {
     setEditingId(ev.id);
     setForm({
       title: ev.title,
-      event_date: ev.event_date.slice(0, 10),
-      event_time: ev.event_time,
+      cep: "",
       location: ev.location,
       description: ev.description,
       highlight: ev.highlight ?? false,
     });
+    setDays(
+      ev.days?.length
+        ? ev.days.map((d) => ({
+            key: dayKeySeq++,
+            id: d.id,
+            day: d.day.slice(0, 10),
+            time: d.time,
+            banner_url: d.banner_url,
+            pending: null,
+          }))
+        : [{
+            key: dayKeySeq++,
+            day: ev.event_date.slice(0, 10),
+            time: ev.event_time,
+            banner_url: "",
+            pending: null,
+          }],
+    );
     setBannerUrl(ev.banner_url ?? "");
     setPendingBanner(null);
     setFormError(null);
+    lastCepRef.current = "";
     setFormOpen(true);
   }
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function updateDay(key: number, patch: Partial<DayForm>) {
+    setDays((prev) => prev.map((d) => (d.key === key ? { ...d, ...patch } : d)));
+  }
+
+  // CEP: com 8 dígitos, busca no ViaCEP e preenche o Local com o endereço
+  // (o admin completa com o nome do salão etc.).
+  async function onCepChange(raw: string) {
+    const formatted = formatCEP(raw);
+    update("cep", formatted);
+    const digits = stripCEP(formatted);
+    if (digits.length !== 8 || digits === lastCepRef.current) return;
+    lastCepRef.current = digits;
+    const res = await lookupCep(digits);
+    if (!res) return;
+    const addr = [res.logradouro, res.bairro, `${res.localidade}/${res.uf}`]
+      .filter(Boolean)
+      .join(", ");
+    if (addr) update("location", addr);
   }
 
   function pickBanner(files: FileList | null) {
@@ -117,7 +179,7 @@ export function EventosSection() {
     setPendingBanner(file);
   }
 
-  // Remove o banner já salvo no backend (só existe em modo edição).
+  // Remove o banner do destaque já salvo no backend (só em modo edição).
   async function removeExistingBanner() {
     if (!editingId) return;
     try {
@@ -128,6 +190,17 @@ export function EventosSection() {
     }
   }
 
+  // Remove a imagem já salva de um dia (só em modo edição).
+  async function removeExistingDayBanner(d: DayForm) {
+    if (!editingId || !d.id) return;
+    try {
+      await adminApi.deleteEventDayBanner(editingId, d.id);
+      updateDay(d.key, { banner_url: "" });
+    } catch (err) {
+      window.alert(err instanceof ApiError ? err.message : "Não foi possível remover a imagem.");
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
@@ -135,30 +208,55 @@ export function EventosSection() {
       setFormError("Informe o título do evento.");
       return;
     }
-    if (!form.event_date) {
-      setFormError("Informe a data do evento.");
+    const filledDays = days.filter((d) => d.day);
+    if (filledDays.length === 0) {
+      setFormError("Informe ao menos uma data.");
       return;
+    }
+    const seen = new Set<string>();
+    for (const d of filledDays) {
+      if (seen.has(d.day)) {
+        setFormError("Há datas repetidas no evento.");
+        return;
+      }
+      seen.add(d.day);
     }
     const payload = {
       title: form.title.trim(),
-      event_date: form.event_date,
-      event_time: form.event_time,
       location: form.location.trim(),
       description: form.description.trim(),
       highlight: form.highlight,
+      days: filledDays.map((d) => ({ id: d.id, day: d.day, time: d.time })),
     };
     setSubmitting(true);
     try {
-      // O upload do banner exige o id — no CREATE sobe após criar o evento.
-      let eventId = editingId;
+      // Uploads exigem os ids — no CREATE sobem após criar o evento.
+      let saved: ApiEvent;
       if (editingId) {
-        await adminApi.updateEvent(editingId, payload);
+        saved = await adminApi.updateEvent(editingId, payload);
       } else {
-        const created = await adminApi.createEvent(payload);
-        eventId = created.id;
+        saved = await adminApi.createEvent(payload);
       }
-      if (eventId && pendingBanner) {
-        await adminApi.uploadEventBanner(eventId, pendingBanner);
+      if (pendingBanner) {
+        await adminApi.uploadEventBanner(saved.id, pendingBanner);
+      }
+      // Casa cada dia do formulário com o dia salvo (por id quando existe;
+      // senão por data+hora) para subir a imagem pendente daquele dia.
+      const respDays = saved.days ?? [];
+      const taken = new Set<string>();
+      for (const d of filledDays) {
+        if (!d.pending) continue;
+        const match = d.id
+          ? respDays.find((r) => r.id === d.id)
+          : respDays.find(
+              (r) =>
+                !taken.has(r.id) &&
+                r.day.slice(0, 10) === d.day &&
+                r.time === d.time,
+            );
+        if (!match) continue;
+        taken.add(match.id);
+        await adminApi.uploadEventDayBanner(saved.id, match.id, d.pending);
       }
       setFormOpen(false);
       setPendingBanner(null);
@@ -222,42 +320,136 @@ export function EventosSection() {
             />
           </div>
 
-          <div className="prof-row-fields">
-            <div className="prof-field">
-              <label className="prof-label">Data</label>
-              <div className="prof-native">
-                <input
-                  className={cn("prof-input", form.event_date && "filled")}
-                  type="date"
-                  value={form.event_date}
-                  onChange={(e) => update("event_date", e.target.value)}
-                />
-                {!form.event_date && <span className="prof-native-ph">dd/mm/aaaa</span>}
-              </div>
+          <div className="prof-field">
+            <label className="prof-label">Datas do evento</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {days.map((d) => (
+                <div
+                  key={d.key}
+                  style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}
+                >
+                  <div className="prof-native" style={{ flex: "1 1 140px" }}>
+                    <input
+                      className={cn("prof-input", d.day && "filled")}
+                      type="date"
+                      value={d.day}
+                      onChange={(e) => updateDay(d.key, { day: e.target.value })}
+                    />
+                    {!d.day && <span className="prof-native-ph">dd/mm/aaaa</span>}
+                  </div>
+                  <div className="prof-native" style={{ flex: "0 1 110px" }}>
+                    <input
+                      className={cn("prof-input", d.time && "filled")}
+                      type="time"
+                      value={d.time}
+                      onChange={(e) => updateDay(d.key, { time: e.target.value })}
+                    />
+                    {!d.time && <span className="prof-native-ph">--:--</span>}
+                  </div>
+
+                  {d.pending ? (
+                    <div className="admin-photo" style={{ width: 96, height: 54 }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={URL.createObjectURL(d.pending)} alt="Imagem do dia" />
+                      <button
+                        type="button"
+                        className="admin-photo-remove"
+                        onClick={() => updateDay(d.key, { pending: null })}
+                        aria-label="Remover imagem do dia"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : d.banner_url ? (
+                    <div className="admin-photo" style={{ width: 96, height: 54 }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={getImageUrl(d.banner_url)} alt="Imagem do dia" />
+                      <button
+                        type="button"
+                        className="admin-photo-remove"
+                        onClick={() => void removeExistingDayBanner(d)}
+                        aria-label="Remover imagem do dia"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <label
+                      className="admin-photo-add"
+                      style={{ width: 96, height: 54 }}
+                      title="Imagem deste dia (opcional)"
+                    >
+                      <Icon.Plus size={16} />
+                      <input
+                        type="file"
+                        accept={BANNER_ACCEPT}
+                        className="file-overlay"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) updateDay(d.key, { pending: f });
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  )}
+
+                  {days.length > 1 && (
+                    <button
+                      type="button"
+                      className="admin-icon-btn danger"
+                      onClick={() => setDays((prev) => prev.filter((x) => x.key !== d.key))}
+                      aria-label="Remover esta data"
+                      title="Remover esta data"
+                    >
+                      <Icon.Trash size={14} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                className="admin-new-btn ghost"
+                style={{ alignSelf: "flex-start" }}
+                onClick={() => setDays((prev) => [...prev, newDay()])}
+              >
+                <Icon.Plus size={14} />
+                Adicionar data
+              </button>
             </div>
-            <div className="prof-field">
-              <label className="prof-label">Hora</label>
-              <div className="prof-native">
-                <input
-                  className={cn("prof-input", form.event_time && "filled")}
-                  type="time"
-                  value={form.event_time}
-                  onChange={(e) => update("event_time", e.target.value)}
-                />
-                {!form.event_time && <span className="prof-native-ph">--:--</span>}
-              </div>
+            <div className="admin-hint">
+              Cada data pode ter a própria imagem (opcional) — ela aparece no
+              lugar do banner do evento naquele dia.
             </div>
           </div>
 
-          <div className="prof-field">
-            <label className="prof-label">Local</label>
-            <input
-              className="prof-input"
-              type="text"
-              value={form.location}
-              onChange={(e) => update("location", e.target.value)}
-              placeholder="Ex: Salão de festas"
-            />
+          <div className="prof-row-fields">
+            <div className="prof-field" style={{ maxWidth: 160 }}>
+              <label className="prof-label">CEP do local</label>
+              <input
+                className="prof-input"
+                type="text"
+                inputMode="numeric"
+                value={form.cep}
+                onChange={(e) => void onCepChange(e.target.value)}
+                placeholder="00000-000"
+              />
+            </div>
+            <div className="prof-field">
+              <label className="prof-label">
+                Local{cepLoading ? " · buscando CEP…" : ""}
+              </label>
+              <input
+                className="prof-input"
+                type="text"
+                value={form.location}
+                onChange={(e) => update("location", e.target.value)}
+                placeholder="Ex: Salão de festas"
+              />
+            </div>
+          </div>
+          <div className="admin-hint">
+            Informe o CEP para preencher o endereço automaticamente e complete
+            com o ponto de referência (ex.: salão de festas, bloco B).
           </div>
 
           <div className="prof-field">
@@ -329,7 +521,8 @@ export function EventosSection() {
               )}
             </div>
             <div className="admin-hint">
-              O banner aparece no destaque da home (recomendado 1200×675, 16:9).
+              O banner aparece no destaque da home (recomendado 1200×675, 16:9)
+              e nos dias sem imagem própria.
             </div>
           </div>
 
@@ -355,6 +548,7 @@ export function EventosSection() {
         <div className="admin-list">
           {events.map((ev) => {
             const parts = eventDateParts(ev.event_date);
+            const dayCount = ev.days?.length ?? 1;
             return (
             <div key={ev.id} className="admin-row">
               <div className="admin-event-date" aria-hidden="true">
@@ -371,6 +565,7 @@ export function EventosSection() {
                 <div className="admin-row-name">{ev.title}</div>
                 <div className="admin-row-meta">
                   {formatEventDate(ev.event_date)}
+                  {dayCount > 1 ? ` · ${dayCount} datas` : ""}
                   {ev.event_time ? ` · ${ev.event_time}` : ""}
                   {ev.location ? ` · ${ev.location}` : ""}
                 </div>

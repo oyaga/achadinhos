@@ -59,6 +59,11 @@ func main() {
 		slog.Warn("ensure-agenda-settings non-fatal error", "err", err)
 	}
 
+	// Copia data/hora de eventos antigos para event_days. Idempotente.
+	if err := db.EnsureEventDays(context.Background(), gdb); err != nil {
+		slog.Warn("ensure-event-days non-fatal error", "err", err)
+	}
+
 	r := router.New(cfg, gdb)
 
 	srv := &http.Server{

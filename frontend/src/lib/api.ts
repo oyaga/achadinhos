@@ -781,16 +781,26 @@ export interface CreateFichaResult {
 }
 
 // ── Eventos do condomínio ──
+export interface ApiEventDay {
+  id: string;
+  event_id: string;
+  day: string; // ISO; use .slice(0,10) para a data "AAAA-MM-DD"
+  time: string; // "HH:MM"
+  banner_url: string; // imagem do dia (vazio = usa o banner do evento)
+}
+
 export interface ApiEvent {
   id: string;
   title: string;
   description: string;
   location: string;
-  event_date: string; // ISO; use .slice(0,10) para a data "AAAA-MM-DD"
+  event_date: string; // ISO; espelho do 1º dia — use .slice(0,10)
   event_time: string; // "HH:MM"
   // Destaque no slider da home + banner (vazio quando sem banner).
   highlight: boolean;
   banner_url: string;
+  // Todas as datas do evento (um evento pode ocupar vários dias).
+  days?: ApiEventDay[];
   created_at?: string;
 }
 
@@ -836,12 +846,19 @@ export interface BlogPostPayload {
   content_html: string; published: boolean;
 }
 
+export interface AdminEventDayPayload {
+  id?: string; // presente = atualiza o dia existente (mantém a imagem)
+  day: string; // "AAAA-MM-DD"
+  time: string; // "HH:MM"
+}
+
 export interface AdminEventPayload {
   title: string;
   description: string;
   location: string;
-  event_date: string; // "AAAA-MM-DD"
-  event_time: string; // "HH:MM"
+  // Datas do evento (>= 1). event_date/event_time viram espelho do 1º dia
+  // no backend.
+  days: AdminEventDayPayload[];
   highlight?: boolean;
 }
 
@@ -1094,6 +1111,15 @@ export const adminApi = {
   async deleteEventBanner(id: string): Promise<void> {
     return request<void>(`/admin/events/${id}/banner`, { method: "DELETE", parseAs: "none" });
   },
+  async uploadEventDayBanner(eventId: string, dayId: string, file: File): Promise<{ banner_url: string }> {
+    return uploadImage(`/admin/events/${eventId}/days/${dayId}/banner`, file);
+  },
+  async deleteEventDayBanner(eventId: string, dayId: string): Promise<void> {
+    return request<void>(`/admin/events/${eventId}/days/${dayId}/banner`, {
+      method: "DELETE",
+      parseAs: "none",
+    });
+  },
 
   // ── Anúncios (banners do slide principal e do widget de eventos) ──
   async listBanners(): Promise<ApiBanner[]> {
@@ -1228,11 +1254,25 @@ export const fichasApi = {
   },
 };
 
-// Eventos do condomínio (leitura pública).
+// Eventos do condomínio (leitura pública). Um evento com várias datas é
+// EXPANDIDO em uma entrada por dia (data/hora/imagem daquele dia), então o
+// widget da home, a tela de eventos e o carrossel mostram cada dia sem
+// precisar conhecer a estrutura de dias. O id das entradas extras ganha o
+// sufixo do dia só para as keys do React continuarem únicas.
 export const eventsApi = {
   async list(): Promise<ApiEvent[]> {
     const res = await request<{ data: ApiEvent[] }>("/events");
-    return res.data ?? [];
+    return (res.data ?? []).flatMap((ev) => {
+      const days = ev.days?.length ? ev.days : null;
+      if (!days) return [ev];
+      return days.map((d, i) => ({
+        ...ev,
+        id: i === 0 ? ev.id : `${ev.id}:${d.id}`,
+        event_date: d.day,
+        event_time: d.time,
+        banner_url: d.banner_url || ev.banner_url,
+      }));
+    });
   },
 };
 

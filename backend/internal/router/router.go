@@ -168,6 +168,8 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		admin.DELETE("/events/:id", evH.Delete)
 		admin.POST("/events/:id/banner", evH.UploadBanner)
 		admin.DELETE("/events/:id/banner", evH.DeleteBanner)
+		admin.POST("/events/:id/days/:dayID/banner", evH.UploadDayBanner)
+		admin.DELETE("/events/:id/days/:dayID/banner", evH.DeleteDayBanner)
 
 		admin.GET("/banners", bnH.AdminList)
 		admin.POST("/banners", bnH.Create)
