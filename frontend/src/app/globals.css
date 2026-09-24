@@ -1149,7 +1149,17 @@ select {
   margin-bottom: 3px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  /* Nome + selo + "Parceira" podem passar da coluna no grid do desktop:
+     os chips quebram de linha em vez de estourar o card, e a folga à
+     direita evita a 1ª linha por baixo do coração de favoritar. */
+  flex-wrap: wrap;
+  gap: 3px 6px;
+  min-width: 0;
+  padding-right: 26px;
+}
+.provider-name .cert-seal,
+.provider-name .provider-badge {
+  flex: none;
 }
 .provider-cat {
   font-size: 11px;

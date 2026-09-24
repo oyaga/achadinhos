@@ -52,6 +52,10 @@ function splash(c: typeof config) {
   var stage = overlay && (overlay.querySelector(".splash-stage") as HTMLElement | null);
   if (!overlay || !stage) return;
   var el = overlay;
+  // Marca o overlay que este script adotou. Numa navegação client-side de
+  // volta à home o React re-injeta o HTML, mas scripts de innerHTML não
+  // rodam — o SplashRemountGuard remove o overlay órfão (sem esta marca).
+  el.setAttribute("data-live", "1");
 
   var show = true;
   try {
