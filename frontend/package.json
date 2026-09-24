@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
+    "build:splash": "bun build src/components/splash/splash-3d.ts --outfile public/splash-3d-v1.js --minify --target browser",
     "start": "next start"
   },
   "dependencies": {

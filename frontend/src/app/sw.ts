@@ -12,13 +12,13 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-// Vídeo e poster do splash: o service worker NÃO se mete. Mídia é o caso em
-// que passar pelo worker dá mais problema que ganho — o <video> pede por
-// pedaços (header Range) e o Safari/iOS é exigente com as respostas 206 que
-// saem de um worker. Mesmo um NetworkOnly ainda chama respondWith(); este
-// listener, registrado ANTES do Serwist, encerra o evento sem responder, e o
-// navegador busca direto do servidor Go (206 via http.ServeContent), com as
-// revisitas vindo do cache HTTP (immutable).
+// Arquivos da abertura (/splash-*: módulo 3D, modelo e poster): o service
+// worker NÃO se mete. São versionados no nome e o servidor Go os serve como
+// immutable, então o cache HTTP já resolve as revisitas; passar pelo worker
+// só atrasaria o 1º acesso, que é justamente quando a abertura toca. (Na
+// época do vídeo havia outro motivo: mídia com Range pelo worker quebrava o
+// Safari/iOS.) Mesmo um NetworkOnly ainda chama respondWith(); este listener,
+// registrado ANTES do Serwist, encerra o evento sem responder.
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.origin === self.location.origin && url.pathname.startsWith("/splash-")) {

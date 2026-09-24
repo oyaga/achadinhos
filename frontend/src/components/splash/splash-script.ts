@@ -1,78 +1,57 @@
-// Splash de abertura em vídeo (mascote-moeda 3D renderizado), fora do React.
+// Splash de abertura 3D (mascote-moeda acenando), fora do React.
 //
-// O overlay e o <video> vêm prontos no HTML estático da home (SPLASH_HTML): o
-// navegador começa a baixar o vídeo no instante em que o parser chega nele —
-// antes do React hidratar, que no celular levava 5s+ e fazia o splash desistir
-// sobrando só a logo. Não dá para fazer isso por script: todo script inline
-// espera as folhas de estilo carregarem para rodar, e o Next as põe no topo do
-// <head>. O <source media> escolhe o corte: vertical 9:16 no celular (<768px),
-// widescreen 16:9 no desktop. O poster (1º quadro do vídeo, via CSS por
-// breakpoint) aparece na hora e o vídeo segue a partir dele.
+// O overlay e o poster vêm prontos no HTML estático da home (SPLASH_HTML): o
+// mascote aparece no instante em que o parser chega nele — antes do React
+// hidratar, que no celular levava 5s+ e fazia a abertura 3D antiga (feita em
+// React Three Fiber, scene-3d.tsx) desistir sobrando só a logo. O poster é o
+// 1º quadro da própria cena 3D, no mesmo enquadramento.
 //
-// SPLASH_SCRIPT roda logo depois, ainda antes do resto da página: decide se o
-// splash fica (1ª vez na sessão, sem prefers-reduced-motion) ou sai, e cuida
-// do play/saída. No celular ele também SEGURA o conteúdo: expõe
-// window.__achSplash = { hold, done } e o cliente da API (lib/splash-gate)
-// espera `done` antes de qualquer requisição — os dados e as imagens da home
-// não disputam banda com o vídeo. `done` resolve quando o vídeo está inteiro
-// no buffer (a home carrega por baixo enquanto ele termina de tocar), quando
-// o splash sai, ou no teto holdMaxMs, o que vier primeiro.
+// SPLASH_SCRIPT roda logo depois, ainda antes do resto da página: decide se a
+// abertura fica (1ª vez na sessão, sem prefers-reduced-motion, aparelho com
+// memória) ou sai. Se fica, começa a baixar o modelo (splash-mascote-vN.glb)
+// e injeta o módulo da cena (splash-3d-vN.js, gerado de splash-3d.ts por
+// `npm run build:splash`). Quando a cena tem o 1º quadro pronto ela chama
+// ready(): o canvas aparece por cima do poster e o mascote dá um pulinho e
+// acena; ao fim, end() faz a saída. Se a cena não ficar pronta em loadMaxMs
+// (rede lenta, sem WebGL), a abertura sai só com o poster — nunca trava.
 //
-// Versione os arquivos (-vN) ao trocar o vídeo — o servidor Go serve splash-*
-// como immutable — e atualize os posters em globals.css (.splash-overlay).
+// No celular ela também SEGURA a API: expõe window.__achSplash = { hold, done }
+// e o cliente da API (lib/splash-gate) espera `done` antes de qualquer
+// requisição, para os dados/imagens da home não disputarem banda com o modelo.
+// `done` resolve quando a cena fica pronta, quando a abertura sai, ou no teto
+// holdMaxMs, o que vier primeiro.
+//
+// Versione os arquivos (-vN) ao trocá-los — o servidor Go serve splash-* como
+// immutable — e atualize os nomes aqui (config + SPLASH_HTML) e no package.json.
 //
 // O host é renderizado com dangerouslySetInnerHTML: o React não reconcilia os
 // filhos desse nó, então o que o script faz com eles sobrevive à hidratação.
 
-// Sem autoplay: o script dá o play só depois de decidir que o splash fica.
 // Uma string literal só, sem concatenação nem interpolação: o minificador do
-// build juntava os pedaços e engolia o `media` do 1º <source>, e o desktop
-// acabava pedindo uma URL quebrada. Ao trocar o vídeo, atualize os -vN aqui.
+// build juntava os pedaços e corrompia atributos. Ao trocar o poster,
+// atualize o -vN aqui.
 export const SPLASH_HTML =
-  '<div class="splash-overlay" role="button" aria-label="Pular abertura"><video class="splash-video" muted playsinline webkit-playsinline disablepictureinpicture preload="auto"><source src="/splash-video-mobile-v1.mp4" type="video/mp4" media="(max-width: 767px)"><source src="/splash-video-v1.mp4" type="video/mp4"></video><span class="splash-hint">toque para pular</span></div>';
+  '<div class="splash-overlay" role="button" aria-label="Pular abertura"><div class="splash-stage"><img class="splash-poster" src="/splash-poster-3d-v1.webp" alt="" width="720" height="720" decoding="async" draggable="false"></div><span class="splash-hint">toque para pular</span></div>';
 
 const config = {
   key: "achadinhos:splash-seen",
-  // Rede lenta: o contador reinicia a cada pedaço que chega, então só desiste
-  // quando o download de fato estanca. loadMaxMs é o teto para começar a tocar.
-  stallMs: 3000,
-  loadMaxMs: 9000,
-  // Teto para segurar o conteúdo, aconteça o que acontecer com o vídeo.
-  holdMaxMs: 15000,
+  glbUrl: "/splash-mascote-v2.glb",
+  jsUrl: "/splash-3d-v1.js",
+  // Teto para a cena 3D ficar pronta; passado isso sai só com o poster.
+  loadMaxMs: 5000,
+  // Teto da animação depois que a cena aparece (o aceno dura ~3,6s).
+  playMaxMs: 6000,
+  // Teto para segurar a API no celular, aconteça o que acontecer.
+  holdMaxMs: 7000,
   exitMs: 550,
-  // Com o splash fora do caminho, deixa o vídeo no cache HTTP para a próxima
-  // abertura (só o corte deste aparelho; respeita o Save-Data).
-  prefetchDelayMs: 5000,
 };
 
 function splash(c: typeof config) {
   var host = document.getElementById("splash-host");
   var overlay = host && (host.firstElementChild as HTMLElement | null);
-  var v = overlay && overlay.querySelector("video");
-  if (!overlay || !v) return;
-  var video = v;
+  var stage = overlay && (overlay.querySelector(".splash-stage") as HTMLElement | null);
+  if (!overlay || !stage) return;
   var el = overlay;
-
-  var prefetch = function (src: string) {
-    var conn = (navigator as Navigator & { connection?: { saveData?: boolean } })
-      .connection;
-    if ((conn && conn.saveData) || !src) return;
-    setTimeout(function () {
-      fetch(src, { cache: "force-cache" }).catch(function () {});
-    }, c.prefetchDelayMs);
-  };
-
-  // Tira o vídeo do caminho: aborta o download e some com o overlay. Devolve
-  // o corte que o <source media> escolheu, para o prefetch.
-  var dispose = function () {
-    var src = video.currentSrc;
-    video.pause();
-    while (video.firstChild) video.removeChild(video.firstChild);
-    video.removeAttribute("src");
-    video.load();
-    el.remove();
-    return src;
-  };
 
   var show = true;
   try {
@@ -86,8 +65,10 @@ function splash(c: typeof config) {
   if (show && matchMedia("(prefers-reduced-motion: reduce)").matches) {
     show = false;
   }
+  var mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+  if (show && mem !== undefined && mem <= 2) show = false;
   if (!show) {
-    prefetch(dispose());
+    el.remove();
     return;
   }
 
@@ -100,78 +81,67 @@ function splash(c: typeof config) {
     done: done,
   };
 
-  var playing = false;
+  var started = false;
   var finished = false;
-  var deadline = Date.now() + c.loadMaxMs;
-  var stallId = 0;
+  var loadId = window.setTimeout(function () {
+    if (!started) finish();
+  }, c.loadMaxMs);
   var holdId = window.setTimeout(release, c.holdMaxMs);
 
   var finish = function () {
     if (finished) return;
     finished = true;
-    clearTimeout(stallId);
+    clearTimeout(loadId);
     clearTimeout(holdId);
     release();
     el.classList.add("splash-exit");
     setTimeout(function () {
-      prefetch(dispose());
+      el.remove();
+      delete (window as Window & { __achSplash3d?: unknown }).__achSplash3d;
+      try {
+        if (ctl.cleanup) ctl.cleanup();
+      } catch (e) {}
     }, c.exitMs);
   };
 
-  // Até chegar o 1º pedaço só vale o teto: no começo o CSS e os chunks do
-  // React levam a banda toda e o vídeo fica parado sem que a rede tenha caído.
-  // Depois disso, desiste se o download estancar por stallMs.
-  var arm = function (gotData: boolean) {
-    if (playing || finished) return;
-    clearTimeout(stallId);
-    var left = deadline - Date.now();
-    stallId = window.setTimeout(
-      finish,
-      Math.max(0, gotData ? Math.min(c.stallMs, left) : left),
-    );
-  };
-
-  // Vídeo inteiro no buffer: o resto da abertura sai da memória, então a
-  // home já pode começar a carregar por baixo.
-  var checkBuffered = function () {
-    var b = video.buffered;
-    if (b.length && video.duration && b.end(b.length - 1) >= video.duration - 0.1) {
+  var ctl: {
+    glb: Promise<ArrayBuffer>;
+    stage: HTMLElement;
+    ready: () => boolean;
+    end: () => void;
+    cleanup?: () => void;
+  } = {
+    glb: fetch(c.glbUrl).then(function (r) {
+      if (!r.ok) throw new Error("glb " + r.status);
+      return r.arrayBuffer();
+    }),
+    stage: stage,
+    ready: function () {
+      if (finished) return false;
+      started = true;
+      clearTimeout(loadId);
+      // Modelo e código já baixados: a home pode carregar por baixo.
       release();
-    }
+      el.classList.add("splash-3d-on");
+      // Rede de segurança: aparelho que não dá conta de animar não prende
+      // a pessoa na abertura.
+      setTimeout(finish, c.playMaxMs);
+      return true;
+    },
+    end: finish,
   };
-  var onPlaying = function () {
-    playing = true;
-    clearTimeout(stallId);
-  };
-  // Autoplay pode ser negado mesmo com muted (Modo Pouca Energia do iOS etc.)
-  // — nesse caso sai direto em vez de ficar parado no poster.
-  var play = function () {
-    if (playing || finished) return;
-    var p = video.play();
-    if (p) p.then(onPlaying, finish);
-  };
+  // Sem o catch, uma falha de rede vira "unhandled rejection" no console;
+  // quem decide a saída é o prazo loadMaxMs.
+  ctl.glb.catch(function () {});
+  (window as Window & { __achSplash3d?: unknown }).__achSplash3d = ctl;
 
-  // `muted` na propriedade também: sem ele o iOS recusa o play sem gesto.
-  video.muted = true;
-  video.addEventListener("progress", function () {
-    arm(true);
-    checkBuffered();
-  });
-  video.addEventListener("playing", onPlaying);
-  video.addEventListener("canplay", play);
-  video.addEventListener("ended", finish);
-  // Com <source>, a falha de carga dispara no próprio <source> — inclusive no
-  // que foi pulado por não bater o `media`. Só o último falhar significa que
-  // nenhum serviu; erro de decodificação chega no <video>.
-  video.addEventListener("error", finish);
-  var sources = video.querySelectorAll("source");
-  if (sources.length) sources[sources.length - 1].addEventListener("error", finish);
+  var s = document.createElement("script");
+  s.type = "module";
+  s.src = c.jsUrl;
+  s.onerror = finish;
+  document.head.appendChild(s);
+
   el.addEventListener("pointerdown", finish);
-
-  // O download começou antes deste script: o vídeo pode já estar pronto.
-  arm(video.buffered.length > 0);
-  checkBuffered();
-  if (video.readyState >= 3) play();
 }
 
 export const SPLASH_SCRIPT = `(${splash.toString()})(${JSON.stringify(config)});`;
