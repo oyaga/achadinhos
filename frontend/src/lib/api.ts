@@ -186,7 +186,7 @@ async function rawRequest<T>(
     init.body = typeof body === "string" ? body : JSON.stringify(body);
   }
 
-  // No celular, o vídeo de abertura baixa antes de tudo (ver splash-gate).
+  // No celular, a abertura 3D baixa antes de tudo (ver splash-gate).
   await waitForSplash();
 
   let res: Response;
