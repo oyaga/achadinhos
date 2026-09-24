@@ -49,10 +49,12 @@ const CLIP = "BoasVindas";
 // O braço volta ao repouso ~0,4s antes do fim do clipe: sai daí.
 const END_EARLY_S = 0.4;
 // Enquadramento fixo para um palco quadrado: o poster é um print deste mesmo
-// quadro, então os dois batem em qualquer tamanho de tela. Folga no topo
-// para a mão do aceno não sair do canvas (era cortada com z=7.4).
-const CAM_POS = new Vector3(0, 2.05, 8.3);
-const CAM_TARGET = new Vector3(0, 1.95, 0);
+// quadro, então os dois batem em qualquer tamanho de tela. A câmera é
+// dimensionada pela varredura da animação (cropdetect quadro a quadro):
+// folga mínima de ~34px no palco de 720 — topo no auge do aceno e borda
+// esquerda quando o braço desce esticado no fim (t≈3,2s).
+const CAM_POS = new Vector3(-0.18, 2.05, 9.2);
+const CAM_TARGET = new Vector3(-0.18, 1.95, 0);
 const OUTLINE_COLOR = 0x4a2a06;
 
 async function run(ctl: Ctl) {

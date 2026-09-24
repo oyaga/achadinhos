@@ -31,12 +31,12 @@
 // build juntava os pedaços e corrompia atributos. Ao trocar o poster,
 // atualize o -vN aqui.
 export const SPLASH_HTML =
-  '<div class="splash-overlay" role="button" aria-label="Pular abertura"><div class="splash-stage"><img class="splash-poster" src="/splash-poster-3d-v2.webp" alt="" width="720" height="720" decoding="async" draggable="false"></div><span class="splash-hint">toque para pular</span></div>';
+  '<div class="splash-overlay" role="button" aria-label="Pular abertura"><div class="splash-stage"><img class="splash-poster" src="/splash-poster-3d-v3.webp" alt="" width="720" height="720" decoding="async" draggable="false"></div><span class="splash-hint">toque para pular</span></div>';
 
 const config = {
   key: "achadinhos:splash-seen",
   glbUrl: "/splash-mascote-v2.glb",
-  jsUrl: "/splash-3d-v2.js",
+  jsUrl: "/splash-3d-v3.js",
   // Teto para a cena 3D ficar pronta; passado isso sai só com o poster.
   loadMaxMs: 5000,
   // Teto da animação depois que a cena aparece (o aceno dura ~3,6s).

@@ -13070,7 +13070,7 @@ input[type="time"].prof-input {
   position: relative;
   /* Um pouco maior que na v1: a câmera afastou (folga para o aceno) e isto
      devolve o tamanho aparente do mascote. */
-  width: min(94vw, 68vh, 570px);
+  width: min(96vw, 72vh, 600px);
   aspect-ratio: 1;
   pointer-events: none;
 }
