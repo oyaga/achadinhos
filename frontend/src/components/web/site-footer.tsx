@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { Icon } from "../icons";
 
+// Canal oficial de atendimento no WhatsApp (link de mensagem do negócio).
+export const WHATSAPP_CONTACT_URL = "https://wa.me/message/3AUJSJJHC2Z4D1";
+
 // Perfis oficiais do Achadinhos do Condomínio. Centralizados aqui para o
-// rodapé (e futuros pontos) usarem o mesmo conjunto: Instagram, Facebook e
-// TikTok — padrão pedido pelo cliente.
+// rodapé (e futuros pontos) usarem o mesmo conjunto: Instagram, Facebook,
+// TikTok e WhatsApp — padrão pedido pelo cliente.
 export const SOCIAL_LINKS = [
   {
     key: "instagram",
@@ -21,6 +24,11 @@ export const SOCIAL_LINKS = [
     key: "tiktok",
     label: "TikTok",
     href: "https://www.tiktok.com/@achadinhosdocondomio",
+  },
+  {
+    key: "whatsapp",
+    label: "WhatsApp",
+    href: WHATSAPP_CONTACT_URL,
   },
 ] as const;
 
@@ -66,7 +74,9 @@ export function SiteFooter({ onShopping, onHighlights, authed }: SiteFooterProps
                     ? Icon.Instagram
                     : s.key === "facebook"
                       ? Icon.Facebook
-                      : Icon.TikTok;
+                      : s.key === "whatsapp"
+                        ? Icon.Whatsapp
+                        : Icon.TikTok;
                 return (
                   <a
                     key={s.key}
@@ -133,6 +143,14 @@ export function SiteFooter({ onShopping, onHighlights, authed }: SiteFooterProps
                 </Link>
               </>
             )}
+            <a
+              href={WHATSAPP_CONTACT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="site-footer-link"
+            >
+              Entre em contato
+            </a>
           </nav>
         </div>
 
