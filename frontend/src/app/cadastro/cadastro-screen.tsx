@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
-import { BrandLockup } from "@/components/auth/brand-lockup";
 import { SindicoSignupScreen, type AccountKind } from "./sindico-signup-screen";
 
-// Tela de escolha do cadastro (handoff desktop): dois cards — Morador/síndico
-// (navy) e Empresa/afiliado (dourado). Escolher um card abre o formulário já
-// no modo certo; o "voltar" do formulário retorna pra cá.
+// Tela de escolha do cadastro na casca 2a do login (barra navy, cartão com
+// moldura de filete duplo, logo centralizado): dois cards — Morador/síndico
+// (navy) e Empresa/afiliado (dourado), lado a lado no desktop. Escolher um
+// card abre o formulário já no modo certo; o "voltar" do formulário retorna
+// pra cá.
 export function CadastroScreen() {
   const [kind, setKind] = useState<AccountKind | null>(null);
 
@@ -22,67 +23,87 @@ export function CadastroScreen() {
   }
 
   return (
-    <main className="auth-shell">
-      <div className="auth-shell-inner">
-        <div className="auth-topbar">
-          <Link href="/" className="auth-back" aria-label="Voltar para o início">
-            <Icon.ChevLeft size={16} />
-          </Link>
-          <div className="auth-topbar-right">
-            <Link href="/" className="auth-tertiary-link">
-              Início
-            </Link>
-            <Link className="auth-tertiary-link" href="/login">
-              Já tem conta? <strong>Entrar</strong>
-            </Link>
-          </div>
-        </div>
+    <main className="login-page">
+      <header className="login-bar">
+        <Link href="/" className="login-bar-home">
+          <Icon.ChevLeft size={14} />
+          Início
+        </Link>
+        <span className="login-bar-area">Criar conta</span>
+        <Link href="/login" className="login-bar-signup">
+          <span className="login-bar-signup-long">
+            Já tem conta? <strong>Entrar</strong>
+          </span>
+          <span className="login-bar-signup-short">
+            <strong>Entrar</strong>
+          </span>
+        </Link>
+      </header>
 
-        <BrandLockup />
+      <div className="login-main">
+        <div className="login-card login-card--wide">
+          <div className="login-frame">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/mobile-logo-achadinhos-do-condominio.png?v=3"
+              alt="Achadinhos do Condomínio"
+              className="login-logo"
+              width={760}
+              height={176}
+              fetchPriority="high"
+              decoding="async"
+            />
 
-        <div className="auth-card">
-          <div className="auth-eyebrow">Criar conta</div>
-          <h1 className="auth-title">
-            Como você quer <em>entrar?</em>
-          </h1>
-          <p className="auth-subtitle">
-            Escolha o tipo de conta para começar seu cadastro.
-          </p>
+            <div className="login-ornament" aria-hidden>
+              <span className="login-ornament-line" />
+              <i className="login-ornament-dot" />
+              <span className="login-ornament-text">Criar conta</span>
+              <i className="login-ornament-dot" />
+              <span className="login-ornament-line" />
+            </div>
 
-          <div className="auth-choice-grid">
-            <button
-              type="button"
-              className="auth-choice-card"
-              onClick={() => setKind("pessoa")}
-            >
-              <span className="auth-choice-card-icon">
-                <Icon.User size={26} />
-              </span>
-              <span className="auth-choice-card-title">Morador ou síndico</span>
-              <span className="auth-choice-card-desc">
-                Para encontrar e contratar serviços para o seu condomínio.
-              </span>
-              <span className="auth-choice-card-cta">
-                Continuar <Icon.ChevRight size={16} />
-              </span>
-            </button>
+            <h1 className="login-title">
+              Como você quer <em>entrar?</em>
+            </h1>
+            <p className="login-subtitle">
+              Escolha o tipo de conta para começar seu cadastro.
+            </p>
 
-            <button
-              type="button"
-              className="auth-choice-card gold"
-              onClick={() => setKind("empresa")}
-            >
-              <span className="auth-choice-card-icon">
-                <Icon.Building size={26} />
-              </span>
-              <span className="auth-choice-card-title">Empresa / afiliado</span>
-              <span className="auth-choice-card-desc">
-                Para oferecer serviços e produtos aos condomínios parceiros.
-              </span>
-              <span className="auth-choice-card-cta">
-                Continuar <Icon.ChevRight size={16} />
-              </span>
-            </button>
+            <div className="auth-choice-grid">
+              <button
+                type="button"
+                className="auth-choice-card"
+                onClick={() => setKind("pessoa")}
+              >
+                <span className="auth-choice-card-icon">
+                  <Icon.User size={26} />
+                </span>
+                <span className="auth-choice-card-title">Morador ou síndico</span>
+                <span className="auth-choice-card-desc">
+                  Para encontrar e contratar serviços para o seu condomínio.
+                </span>
+                <span className="auth-choice-card-cta">
+                  Continuar <Icon.ChevRight size={16} />
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="auth-choice-card gold"
+                onClick={() => setKind("empresa")}
+              >
+                <span className="auth-choice-card-icon">
+                  <Icon.Building size={26} />
+                </span>
+                <span className="auth-choice-card-title">Empresa / afiliado</span>
+                <span className="auth-choice-card-desc">
+                  Para oferecer serviços e produtos aos condomínios parceiros.
+                </span>
+                <span className="auth-choice-card-cta">
+                  Continuar <Icon.ChevRight size={16} />
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

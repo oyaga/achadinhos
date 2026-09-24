@@ -4728,6 +4728,14 @@ textarea.field-input {
   gap: 16px;
   margin-top: 8px;
 }
+/* Dentro da moldura 2a (/cadastro) o palco centraliza os filhos; a grade
+   ocupa a largura toda e os cantos acompanham o cartão de filete. */
+.login-frame .auth-choice-grid {
+  width: 100%;
+}
+.login-frame .auth-choice-card {
+  border-radius: 8px;
+}
 @media (min-width: 768px) {
   .auth-choice-grid {
     grid-template-columns: 1fr 1fr;
@@ -5273,6 +5281,11 @@ textarea.field-input {
   .login-card {
     width: 560px;
     padding: 10px;
+  }
+  /* /cadastro: cartão mais largo para os dois cards de escolha lado a lado. */
+  .login-card--wide {
+    width: 780px;
+    max-width: calc(100vw - 80px);
   }
   .login-frame {
     padding: 34px 44px 30px;
