@@ -13291,6 +13291,10 @@ button.auth-tertiary-link {
   position: fixed;
   z-index: 1000;
 }
+.signup-invite-logo {
+  width: 210px;
+  height: auto;
+}
 .signup-invite-cta {
   display: flex;
   align-items: center;

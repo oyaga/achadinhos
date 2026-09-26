@@ -79,7 +79,15 @@ export function SignupInvite() {
         </button>
 
         <div className="install-sheet-icon">
-          <span className="install-sheet-icon-tile" aria-hidden="true">A</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/mobile-logo-achadinhos-do-condominio.png?v=3"
+            alt="Achadinhos do Condomínio"
+            className="signup-invite-logo"
+            width={760}
+            height={176}
+            decoding="async"
+          />
         </div>
 
         <div className="install-sheet-title" id="signup-invite-title">
