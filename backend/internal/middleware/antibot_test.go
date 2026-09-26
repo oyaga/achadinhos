@@ -37,6 +37,8 @@ func TestAntiBotBlocksScraperUAs(t *testing.T) {
 	blocked := []string{
 		"GPTBot/1.0 (+https://openai.com/gptbot)",
 		"ClaudeBot/1.0",
+		"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; ClaudeBot/1.0; +claudebot@anthropic.com)",
+		"CCBot/2.0 (https://commoncrawl.org/faq/)",
 		"Mozilla/5.0 (compatible; Bytespider; spider-feedback@bytedance.com)",
 		"curl/8.4.0",
 		"Wget/1.21",
@@ -58,6 +60,13 @@ func TestAntiBotAllowsBrowsersAndSearchBots(t *testing.T) {
 		"Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
 		"WhatsApp/2.23.20 A",
 		"facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+		// Assistentes de IA buscando a página para responder a uma pessoa.
+		"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot",
+		"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; OAI-SearchBot/1.0; +https://openai.com/searchbot)",
+		"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-User/1.0; +Claude-User@anthropic.com)",
+		"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-SearchBot/1.0; +Claude-SearchBot@anthropic.com)",
+		"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot)",
+		"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Perplexity-User/1.0; +https://perplexity.ai/perplexity-user)",
 	}
 	for _, ua := range allowed {
 		if code := doGet(r, "/", ua, ""); code != http.StatusOK {

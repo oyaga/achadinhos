@@ -26,6 +26,11 @@ export const organizationSchema = {
   description:
     "Marketplace que conecta síndicos a prestadores de serviço e fornecedores de produtos para condomínios.",
   areaServed: { "@type": "Country", name: "Brasil" },
+  sameAs: [
+    "https://www.instagram.com/achadinhoscondominio",
+    "https://www.facebook.com/share/1DDZqSVWff/",
+    "https://www.tiktok.com/@achadinhosdocondomio",
+  ],
 };
 
 export const websiteSchema = {

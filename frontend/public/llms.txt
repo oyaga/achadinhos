@@ -1,0 +1,41 @@
+# Achadinhos do Condomínio
+
+> Marketplace brasileiro que conecta síndicos e administradores de condomínio a prestadores de serviço, afiliados e fornecedores de produtos verificados. Site: https://achadinhoscondominio.com.br — também disponível como app (PWA) instalável pelo navegador.
+
+O Achadinhos do Condomínio ajuda o síndico a encontrar, comparar e contratar com segurança quem atende o condomínio: elétrica, hidráulica, limpeza, pintura, jardinagem, controle de pragas, elevadores, CFTV e outros serviços, além de produtos no "Shopping do condomínio". O contato com cada empresa é direto, por WhatsApp ("orçamento em 1 toque").
+
+## O que a plataforma oferece
+
+- **Busca de serviços e produtos** por categoria, com filtros como "Verificado", nota 4,5+ e "Homologado".
+- **Perfis de empresas, lojas e afiliados** com portfólio (fotos, PDFs e vídeos), avaliações de clientes e contato por WhatsApp.
+- **Shopping do condomínio**: produtos de fornecedores para condomínios.
+- **Eventos e assembleias**: agenda de eventos para síndicos e condomínios.
+- **Blog** com conteúdo para gestão de condomínios.
+- **Agendamento de reunião** com a equipe do Achadinhos.
+
+## Certificação Achadinhos
+
+Cada empresa e afiliado da plataforma é avaliado e recebe um certificado oficial, verificável por QR code e código único. São três níveis:
+
+- **Blue** — requisitos mínimos: documento (CPF/CNPJ) válido, identidade e contato confirmados, perfil completo.
+- **Top** — requisitos padrão: tudo do Blue + portfólio comprovado, boas avaliações, tempo de atuação e histórico sem pendências.
+- **Black** — avaliação rigorosa: tudo do Top + auditoria aprofundada e referências verificadas pela equipe do Achadinhos.
+
+Podem ser certificados: **empresas** com CNPJ ativo que fornecem produtos e serviços para condomínios, e **afiliados** — prestadores como zeladores e síndicos que atuam como MEI ou microempresa.
+
+## Páginas principais
+
+- [Início](https://achadinhoscondominio.com.br/): busca e destaques de serviços, afiliados e produtos
+- [Certificação Achadinhos](https://achadinhoscondominio.com.br/certificacao/): como funciona a avaliação e os níveis Blue, Top e Black
+- [Planos](https://achadinhoscondominio.com.br/planos/): o que cada plano inclui para empresas e afiliados
+- [Verificar certificado](https://achadinhoscondominio.com.br/verificar/): confirma a autenticidade de um certificado
+- [Eventos](https://achadinhoscondominio.com.br/eventos/): eventos e assembleias
+- [Blog](https://achadinhoscondominio.com.br/blog/): artigos sobre condomínios
+- [Termos de uso](https://achadinhoscondominio.com.br/termos/) e [Política de privacidade](https://achadinhoscondominio.com.br/privacidade/)
+
+## Contato e redes
+
+- WhatsApp: https://wa.me/message/3AUJSJJHC2Z4D1
+- Instagram: https://www.instagram.com/achadinhoscondominio
+- Facebook: https://www.facebook.com/share/1DDZqSVWff/
+- TikTok: https://www.tiktok.com/@achadinhosdocondomio
