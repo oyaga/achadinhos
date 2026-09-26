@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/achadinhos/backend/internal/models"
 	"gorm.io/gorm"
@@ -23,9 +24,9 @@ var CanonicalCategories = []models.Category{
 	{ID: "portaria", Label: "Portaria virtual", Short: "Portaria\nvirtual", Icon: "CatPortaria", Description: "Portaria remota 24h com economia de até 60%", SortOrder: 6},
 	{ID: "facilities", Label: "Facilities", Short: "Facilities", Icon: "CatFacilities", Description: "Gestão integrada de serviços prediais", SortOrder: 7},
 	{ID: "manutencao", Label: "Manutenção geral", Short: "Manutenção\ngeral", Icon: "CatMaintenance", Description: "Hidráulica, elétrica, pintura, marcenaria e mais", SortOrder: 8},
-	{ID: "dedetizacao", Label: "Dedetizadora", Short: "Dedeti-\nzadora", Icon: "CatPest", Description: "Controle de pragas com certificado sanitário", SortOrder: 9},
-	{ID: "armarios", Label: "Armário inteligente", Short: "Armário\ninteligente", Icon: "CatLocker", Description: "Lockers para entregas e correspondências", SortOrder: 10},
-	{ID: "limpeza", Label: "Limpeza", Short: "Limpeza", Icon: "CatCleaning", Description: "Diaristas, faxina geral, pós-obra", SortOrder: 11},
+	{ID: "dedetizacao", Label: "Dedetização", Short: "Dedeti-\nzação", Icon: "CatPest", Description: "Controle de pragas com certificado sanitário", SortOrder: 9},
+	{ID: "armarios", Label: "Armários inteligentes", Short: "Armários\ninteligentes", Icon: "CatLocker", Description: "Lockers para entregas e correspondências", SortOrder: 10},
+	{ID: "limpeza", Label: "Limpeza", Short: "Limpeza", Icon: "CatCleaning", Description: "Diaristas, faxina geral, pós-obra e limpeza profissional", SortOrder: 11},
 	{ID: "hidraulica", Label: "Hidráulica", Short: "Hidráulica", Icon: "CatPlumbing", SortOrder: 12},
 	{ID: "eletrica", Label: "Elétrica", Short: "Elétrica", Icon: "CatElectric", SortOrder: 13},
 
@@ -38,18 +39,14 @@ var CanonicalCategories = []models.Category{
 	{ID: "cabeamento-internet", Label: "Cabeamento e internet", Short: "Cabeamento\ninternet", Icon: "CatElectric", SortOrder: 106},
 	{ID: "manutencao-elevadores", Label: "Manutenção de elevadores", Short: "Manutenção\nelevadores", Icon: "CatMaintenance", SortOrder: 107},
 	{ID: "engenharia", Label: "Engenharia", Short: "Engenharia", Icon: "CatPartners", SortOrder: 108},
-	{ID: "treinamento-brigada", Label: "Treinamento de brigada", Short: "Treinamento\nbrigada", Icon: "CatSecurity", SortOrder: 109},
+	{ID: "treinamento-brigada", Label: "Treinamento de brigada de incêndio", Short: "Treinamento\nbrigada", Icon: "CatSecurity", SortOrder: 109},
 	{ID: "portaria-terceirizada", Label: "Portaria terceirizada", Short: "Portaria\nterceirizada", Icon: "CatPortaria", SortOrder: 110},
-	{ID: "facilities-terceirizada", Label: "Facilities", Short: "Facilities", Icon: "CatFacilities", SortOrder: 111},
-	{ID: "limpeza-profissional", Label: "Limpeza profissional", Short: "Limpeza\nprofissional", Icon: "CatCleaning", SortOrder: 112},
 	{ID: "vigilancia-armada", Label: "Vigilância armada", Short: "Vigilância\narmada", Icon: "CatSecurity", SortOrder: 113},
 	{ID: "telhadista", Label: "Telhadista", Short: "Telhadista", Icon: "CatMaintenance", SortOrder: 114},
 	{ID: "pintura-predial", Label: "Pintura predial", Short: "Pintura\npredial", Icon: "CatMaintenance", SortOrder: 115},
 	{ID: "cobertura-garagem", Label: "Cobertura de garagem", Short: "Cobertura\ngaragem", Icon: "CatMaintenance", SortOrder: 116},
-	{ID: "armarios-inteligentes", Label: "Armários inteligentes", Short: "Armários\ninteligentes", Icon: "CatLocker", SortOrder: 117},
 	{ID: "projetos-seguranca-eletronica", Label: "Projetos de segurança eletrônica", Short: "Projetos\nsegurança", Icon: "CatSecurity", SortOrder: 118},
 	{ID: "chaveiro", Label: "Chaveiro", Short: "Chaveiro", Icon: "CatMaintenance", SortOrder: 119},
-	{ID: "dedetizacao-extra", Label: "Dedetização", Short: "Dedetização", Icon: "CatPest", SortOrder: 120},
 	{ID: "limpeza-caixa-dagua", Label: "Limpeza de caixa d'água", Short: "Caixa\nd'água", Icon: "CatCleaning", SortOrder: 121},
 	{ID: "auditoria-financeira", Label: "Auditoria financeira", Short: "Auditoria\nfinanceira", Icon: "CatPartners", SortOrder: 122},
 	{ID: "vidracaria", Label: "Vidraçaria", Short: "Vidraçaria", Icon: "CatMaintenance", SortOrder: 123},
@@ -57,14 +54,12 @@ var CanonicalCategories = []models.Category{
 	{ID: "manutencao-bombas", Label: "Manutenção de bombas", Short: "Manutenção\nbombas", Icon: "CatPlumbing", SortOrder: 125},
 	{ID: "seguros-garantidoras", Label: "Seguros e garantidoras", Short: "Seguros e\ngarantidoras", Icon: "CatPartners", SortOrder: 126},
 	{ID: "financiamentos-projetos", Label: "Financiamentos para projetos", Short: "Financia-\nmentos", Icon: "CatPartners", SortOrder: 127},
-	{ID: "manutencao-geral", Label: "Manutenção em geral", Short: "Manutenção\ngeral", Icon: "CatMaintenance", SortOrder: 128},
 	{ID: "caca-vazamentos", Label: "Caça vazamentos", Short: "Caça\nvazamentos", Icon: "CatPlumbing", SortOrder: 129},
 	{ID: "marcenaria", Label: "Marcenaria", Short: "Marcenaria", Icon: "CatMaintenance", SortOrder: 130},
 	{ID: "presentes-corporativos", Label: "Presentes corporativos", Short: "Presentes\ncorporativos", Icon: "CatShopping", SortOrder: 131},
 	{ID: "tecnologia", Label: "Tecnologia", Short: "Tecnologia", Icon: "CatElectric", SortOrder: 132},
 	{ID: "analise-risco", Label: "Projetos de análise de risco", Short: "Análise\nde risco", Icon: "CatSecurity", SortOrder: 133},
 	{ID: "avcb", Label: "AVCB", Short: "AVCB", Icon: "CatSecurity", SortOrder: 134},
-	{ID: "treinamentos-brigada", Label: "Treinamentos de brigada de incêndio", Short: "Treinamento\nincêndio", Icon: "CatSecurity", SortOrder: 135},
 	{ID: "piscineiro", Label: "Piscineiro", Short: "Piscineiro", Icon: "CatMaintenance", SortOrder: 136},
 	{ID: "projetos-arquitetura", Label: "Projetos de arquitetura", Short: "Projetos\narquitetura", Icon: "CatPartners", SortOrder: 137},
 	{ID: "brinquedos-playground", Label: "Brinquedos para playground", Short: "Brinquedos\nplayground", Icon: "CatShopping", SortOrder: 138},
@@ -75,6 +70,16 @@ var CanonicalCategories = []models.Category{
 	{ID: "administracao-condominios", Label: "Administração de condomínios", Short: "Administração\ncondomínios", Icon: "CatPartners", SortOrder: 143},
 	{ID: "escritorio-advocacia", Label: "Escritório de Advocacia", Short: "Escritório\nadvocacia", Icon: "CatPartners", SortOrder: 144},
 	{ID: "imobiliaria", Label: "Imobiliária", Short: "Imobi-\nliária", Icon: "CatPartners", SortOrder: 145},
+}
+
+// mergedCategories: categorias duplicadas (id removido → id que fica).
+var mergedCategories = map[string]string{
+	"armarios-inteligentes":   "armarios",
+	"facilities-terceirizada": "facilities",
+	"manutencao-geral":        "manutencao",
+	"dedetizacao-extra":       "dedetizacao",
+	"treinamentos-brigada":    "treinamento-brigada",
+	"limpeza-profissional":    "limpeza",
 }
 
 // EnsureCategories upserts the canonical category list. Existing categories
@@ -106,6 +111,16 @@ func cleanupRemovedCategories(ctx context.Context, gdb *gorm.DB) error {
 		{`UPDATE sellers SET category_id = NULL WHERE category_id = 'parceiros'`},
 		{`UPDATE providers SET category_id = 'administracao-condominios' WHERE category_id = 'parceiros'`},
 		{`DELETE FROM categories WHERE id IN ('administradora', 'parceiros')`},
+	}
+	// Duplicadas (migration 0030): cada uma é absorvida pela categoria original.
+	for dup, keep := range mergedCategories {
+		steps = append(steps,
+			struct{ sql string }{fmt.Sprintf(`UPDATE sellers SET category_id = '%s' WHERE category_id = '%s'`, keep, dup)},
+			struct{ sql string }{fmt.Sprintf(`UPDATE providers SET category_id = '%s' WHERE category_id = '%s'`, keep, dup)},
+			struct{ sql string }{fmt.Sprintf(`INSERT INTO seller_categories (seller_id, category_id) SELECT seller_id, '%s' FROM seller_categories WHERE category_id = '%s' ON CONFLICT DO NOTHING`, keep, dup)},
+			struct{ sql string }{fmt.Sprintf(`DELETE FROM seller_categories WHERE category_id = '%s'`, dup)},
+			struct{ sql string }{fmt.Sprintf(`DELETE FROM categories WHERE id = '%s'`, dup)},
+		)
 	}
 	for _, s := range steps {
 		if err := gdb.WithContext(ctx).Exec(s.sql).Error; err != nil {
