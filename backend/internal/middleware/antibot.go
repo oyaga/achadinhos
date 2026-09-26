@@ -41,6 +41,21 @@ var blockedUAFragments = []string{
 	"headlesschrome", "phantomjs", "puppeteer", "playwright", "selenium",
 }
 
+// allowedAIAgentFragments são assistentes de IA que buscam páginas para
+// RESPONDER a uma pessoa (busca e navegação a pedido), não para treinar
+// modelos nem espelhar o site. Liberados para o Achadinhos aparecer e ser
+// identificado quando alguém pergunta sobre ele no ChatGPT, Claude,
+// Perplexity etc. Têm precedência sobre blockedUAFragments (o UA do
+// ChatGPT-User contém "chatgpt", o do Claude-User contém "anthropic") e
+// continuam sujeitos ao rate limit. Os robôs de treinamento (GPTBot,
+// ClaudeBot, CCBot…) seguem bloqueados.
+var allowedAIAgentFragments = []string{
+	"chatgpt-user", "oai-searchbot",
+	"claude-user", "claude-searchbot",
+	"perplexitybot", "perplexity-user",
+	"mistralai-user", "duckassistbot",
+}
+
 // rate limit: token bucket per client IP. Generous enough for a real user
 // loading asset-heavy pages E para o build do Next no CI, que faz ~2 fetches
 // por página de entidade contra a produção (generateStaticParams/Metadata) de
@@ -85,11 +100,9 @@ func AntiBot(cfg AntiBotConfig) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
 			return
 		}
-		for _, frag := range blockedUAFragments {
-			if strings.Contains(ua, frag) {
-				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
-				return
-			}
+		if !containsAny(ua, allowedAIAgentFragments) && containsAny(ua, blockedUAFragments) {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
 		}
 
 		now := time.Now()
@@ -126,4 +139,13 @@ func AntiBot(cfg AntiBotConfig) gin.HandlerFunc {
 		}
 		c.Next()
 	}
+}
+
+func containsAny(s string, frags []string) bool {
+	for _, f := range frags {
+		if strings.Contains(s, f) {
+			return true
+		}
+	}
+	return false
 }
