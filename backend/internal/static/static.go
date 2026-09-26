@@ -57,6 +57,15 @@ func Mount(r *gin.Engine) error {
 			serveFile(c, sub, "blog/_unavailable/index.html")
 			return
 		}
+		// Empresas criadas depois do build (autocadastro da empresa free) não
+		// têm página exportada: serve a casca que lê o id da URL e busca a
+		// empresa na API. Só a página em si (empresa/<id>); subcaminhos seguem
+		// o fluxo normal abaixo.
+		if seg := strings.TrimPrefix(clean, "empresa/"); seg != clean && seg != "" &&
+			!strings.Contains(seg, "/") && isFile(sub, "empresa/_unavailable/index.html") {
+			serveFile(c, sub, "empresa/_unavailable/index.html")
+			return
+		}
 		// Subdomínio de agendamento (ex.: ligia.achadinhoscondominio.com.br):
 		// quando o primeiro rótulo do host corresponde a um slug de agenda
 		// exportado, a raiz (e qualquer rota não resolvida) serve a página

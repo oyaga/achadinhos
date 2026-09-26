@@ -31,6 +31,13 @@ type Seller struct {
 	// desnormalizado para alimentar o selo no marketplace. Vazio = sem selo.
 	CertTier string `gorm:"size:8;not null;default:''" json:"cert_tier,omitempty"`
 
+	// SelfRegistered marca a empresa free, que se cadastrou sozinha pelo site
+	// (POST /auth/register/empresa) e edita os próprios dados em /me/empresa.
+	// Aparece no site como as outras, mas sem selo nem "Parceira" até o admin
+	// emitir um certificado. OwnerUserID é a conta (role=empresa) dona dela.
+	SelfRegistered bool       `gorm:"not null;default:false;index" json:"self_registered"`
+	OwnerUserID    *uuid.UUID `gorm:"type:uuid;uniqueIndex" json:"-"`
+
 	// Dados internos do contrato (mesmos campos da ficha de cadastro). São de
 	// uso administrativo: json:"-" garante que NUNCA vazam nas rotas públicas —
 	// o admin os recebe via adminSellerResponse (handlers/admin.go).

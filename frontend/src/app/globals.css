@@ -9779,6 +9779,12 @@ input[type="time"].prof-input {
   background: #e7f6ec;
   color: #1c7a40;
 }
+/* Empresa free (autocadastro pelo site, sem certificado até o admin emitir). */
+.admin-chip.biz-free {
+  background: var(--bone-100);
+  color: var(--ink-500);
+  border: 1px dashed var(--bone-300);
+}
 
 /* Eventos: tile de data (mês + dia) no lugar do avatar genérico */
 .admin-event-date {
@@ -13060,4 +13066,258 @@ input[type="time"].prof-input {
   margin-top: 14px;
   font-size: 12px;
   color: var(--ink-400);
+}
+/* ===== Empresa free: cadastro (/cadastro, 3º card) e /minha-empresa ===== */
+/* Três cards de escolha: lado a lado a partir de 1024px, com o cartão mais
+   largo; entre 768 e 1023 o 3º desce e ocupa a linha inteira. */
+@media (min-width: 768px) {
+  .auth-choice-grid--3 > :last-child {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
+}
+@media (min-width: 1024px) {
+  .login-card--3 {
+    width: 1060px;
+  }
+  .auth-choice-grid--3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .auth-choice-grid--3 > :last-child {
+    grid-column: auto;
+    min-height: 220px;
+  }
+}
+
+.auth-label-hint {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-400);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Categorias da empresa: chips de múltipla escolha; a primeira marcada é a
+   principal (borda dourada). */
+.auth-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.auth-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--bone-300);
+  background: #fff;
+  color: var(--ink-700);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.auth-chip:hover {
+  border-color: var(--gold-500);
+}
+.auth-chip.active {
+  background: var(--navy-900);
+  border-color: var(--navy-900);
+  color: #fff;
+}
+.auth-chip.primary {
+  box-shadow: 0 0 0 2px var(--gold-400);
+}
+.auth-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-textarea {
+  padding: 12px 14px;
+  resize: vertical;
+  min-height: 96px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.auth-success {
+  background: rgba(46, 125, 91, 0.08);
+  border: 1px solid rgba(46, 125, 91, 0.3);
+  color: var(--success);
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  line-height: 1.45;
+}
+
+button.auth-tertiary-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.my-company-logo {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin: 18px 0;
+}
+.my-company-logo-img {
+  width: 84px;
+  height: 84px;
+  flex: none;
+  border-radius: 18px;
+  border: 1px solid var(--bone-300);
+  background: var(--bone-100);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 34px;
+  font-weight: 600;
+  color: var(--navy-900);
+}
+.my-company-logo-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.my-company-logo-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.my-company-btn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--navy-900);
+  background: #fff;
+  color: var(--navy-900);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.my-company-btn:hover:not(:disabled) {
+  background: var(--navy-900);
+  color: #fff;
+}
+.my-company-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.my-company-portfolio {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--bone-200);
+}
+.my-company-portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+.my-company-portfolio-item,
+.my-company-portfolio-add {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--bone-300);
+  background: var(--bone-100);
+}
+.my-company-portfolio-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.my-company-portfolio-file {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--navy-900);
+  text-decoration: none;
+}
+.my-company-portfolio-del {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(11, 27, 59, 0.78);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.my-company-portfolio-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-style: dashed;
+  color: var(--ink-500);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.my-company-portfolio-add:hover:not(:disabled) {
+  border-color: var(--gold-500);
+  color: var(--navy-900);
+}
+
+
+/* Convite para criar conta (components/signup-invite.tsx): reusa o visual do
+   install-sheet, mas fixo na janela e acima do resto do app. */
+.signup-invite-backdrop {
+  position: fixed;
+  z-index: 1000;
+}
+.signup-invite-logo {
+  width: 210px;
+  height: auto;
+}
+.signup-invite-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 22px;
+  text-decoration: none;
+}
+.signup-invite-foot {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-500);
+}
+.signup-invite-foot a {
+  color: var(--navy-900);
+  font-weight: 700;
+}
+.signup-invite-foot button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--ink-500);
+  text-decoration: underline;
+  cursor: pointer;
 }

@@ -59,6 +59,63 @@ func (h *AuthHandler) RegisterSindico(c *gin.Context) {
 	})
 }
 
+// RegisterEmpresa handles POST /auth/register/empresa — autocadastro da
+// empresa free (sem certificado). Cria a conta role=empresa e a empresa, que
+// já aparece no site, sem selo.
+func (h *AuthHandler) RegisterEmpresa(c *gin.Context) {
+	var req dto.RegisterEmpresaRequest
+	if !BindJSON(c, &req) {
+		return
+	}
+	user, seller, pair, err := h.svc.RegisterEmpresa(c.Request.Context(), auth.EmpresaProfile{
+		Name:         req.Name,
+		Email:        req.Email,
+		Password:     req.Password,
+		CompanyName:  req.CompanyName,
+		CategoryIDs:  req.CategoryIDs,
+		WhatsApp:     req.WhatsApp,
+		DocumentType: req.DocumentType,
+		Document:     req.Document,
+		Description:  req.Description,
+		Link:         req.Link,
+		Instagram:    req.Instagram,
+		Facebook:     req.Facebook,
+		TikTok:       req.TikTok,
+		YouTube:      req.YouTube,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, auth.ErrCompanyNameTaken):
+			c.AbortWithStatusJSON(http.StatusConflict, ErrorResponse{Error: "company_name_taken", Code: http.StatusConflict})
+		case errors.Is(err, auth.ErrCompanyDocTaken):
+			c.AbortWithStatusJSON(http.StatusConflict, ErrorResponse{Error: "document_taken", Code: http.StatusConflict})
+		case errors.Is(err, auth.ErrInvalidDocument):
+			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, ErrorResponse{
+				Error:   "validation_error",
+				Code:    http.StatusUnprocessableEntity,
+				Details: map[string]string{"document": "invalid"},
+			})
+		case errors.Is(err, auth.ErrInvalidCategories):
+			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, ErrorResponse{
+				Error:   "validation_error",
+				Code:    http.StatusUnprocessableEntity,
+				Details: map[string]string{"category_ids": "invalid"},
+			})
+		default:
+			writeRegisterError(c, err)
+		}
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{
+		"user":          user,
+		"seller":        seller,
+		"access_token":  pair.AccessToken,
+		"refresh_token": pair.RefreshToken,
+		"token_type":    pair.TokenType,
+		"expires_in":    pair.ExpiresIn,
+	})
+}
+
 // writeRegisterError translates service errors into the right HTTP status.
 func writeRegisterError(c *gin.Context, err error) {
 	switch {

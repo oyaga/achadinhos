@@ -16,8 +16,9 @@ const BASE_URL =
 
 // ============== Types ==============
 
-// Only síndicos (public sign-up) and admins (internal) have login accounts.
-export type UserRole = "sindico" | "admin";
+// Contas com login: síndicos e empresas free (sign-up público) e admins
+// (internos). A conta "empresa" é dona de uma empresa (myCompanyApi).
+export type UserRole = "sindico" | "admin" | "empresa";
 
 export type AccountType = "pessoa" | "empresa";
 
@@ -342,7 +343,35 @@ export interface RegisterSindicoPayload {
   condo_role?: "morador" | "sindico" | "conselho";
 }
 
+// Autocadastro da empresa free (sem certificado): cria o login do
+// responsável e a empresa, que aparece no site na hora, sem selo.
+export interface RegisterEmpresaPayload {
+  name: string; // responsável
+  email: string;
+  password: string;
+  company_name: string;
+  category_ids: string[]; // a primeira é a principal
+  whatsapp: string;
+  document_type: "cpf" | "cnpj";
+  document: string;
+  description?: string;
+  link?: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  youtube?: string;
+}
+
 export const auth = {
+  async registerEmpresa(
+    payload: RegisterEmpresaPayload,
+  ): Promise<AuthResponse & { seller: AdminSeller }> {
+    return request<AuthResponse & { seller: AdminSeller }>("/auth/register/empresa", {
+      method: "POST",
+      body: payload,
+      skipAuth: true,
+    });
+  },
   async registerSindico(payload: RegisterSindicoPayload): Promise<AuthResponse> {
     return request<AuthResponse>("/auth/register/sindico", {
       method: "POST",
@@ -594,6 +623,9 @@ export interface AdminSeller {
   rating?: number;
   reviews_count?: number;
   cert_tier?: CertTier | "";
+  // Empresa free: se cadastrou sozinha pelo site (sem certificado até o admin
+  // emitir um) e edita os próprios dados em /minha-empresa.
+  self_registered?: boolean;
   document_type?: string;
   document?: string;
   portfolio_photos?: PortfolioPhoto[];
@@ -1322,6 +1354,50 @@ export const certificatesApi = {
       `/certificates/${encodeURIComponent(code)}`,
       { skipAuth: true },
     );
+  },
+};
+
+// Área da empresa free logada (role=empresa): os próprios dados, logo e
+// portfólio. Selo, "Parceira" e destaque só o admin muda.
+export type MyCompanyPatch = Partial<
+  Pick<
+    AdminSellerPayload,
+    | "name"
+    | "category_ids"
+    | "description"
+    | "whatsapp"
+    | "link"
+    | "instagram"
+    | "facebook"
+    | "tiktok"
+    | "youtube"
+  >
+>;
+
+export const myCompanyApi = {
+  async get(): Promise<AdminSeller> {
+    return request<AdminSeller>("/me/empresa");
+  },
+  async update(patch: MyCompanyPatch): Promise<AdminSeller> {
+    return request<AdminSeller>("/me/empresa", { method: "PATCH", body: patch });
+  },
+  async uploadLogo(file: File): Promise<{ logo_url: string }> {
+    return uploadImage("/me/empresa/logo", file);
+  },
+  async uploadPortfolio(file: File): Promise<PortfolioPhoto> {
+    return uploadImage("/me/empresa/portfolio", file);
+  },
+  async addPortfolioLink(url: string): Promise<PortfolioPhoto> {
+    return request<PortfolioPhoto>("/me/empresa/portfolio/link", {
+      method: "POST",
+      body: { url },
+    });
+  },
+  async deletePortfolio(photoId: string): Promise<void> {
+    return request<void>(`/me/empresa/portfolio/${photoId}`, {
+      method: "DELETE",
+      parseAs: "none",
+    });
   },
 };
 

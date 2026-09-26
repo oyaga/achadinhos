@@ -3,24 +3,26 @@ import { notFound } from "next/navigation";
 import { sellersApi } from "@/lib/api";
 import { JsonLd, sellerLocalBusinessSchema } from "@/components/seo/json-ld";
 import { EmpresaPageScreen } from "./empresa-page-screen";
+import { EmpresaDynamicScreen } from "./empresa-dynamic-screen";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
 
-// Sentinel ID used as a placeholder when the build can't reach the API.
-// The page calls notFound() for this ID at build time so no real page is
-// emitted; it only exists so Next is happy that the dynamic route has at
-// least one entry under "output: export".
+// Casca para empresas criadas depois do build (autocadastro da empresa
+// free): sempre exportada, lê o id da URL e busca a empresa no navegador. O
+// servidor Go serve esta página para qualquer /empresa/<id>/ sem página
+// própria (internal/static). Também cobre o build sem acesso à API.
 const FALLBACK_ID = "_unavailable";
 
 export async function generateStaticParams() {
+  const params = [{ id: FALLBACK_ID }];
   try {
     const sellers = await sellersApi.list();
-    if (sellers.length > 0) return sellers.map((s) => ({ id: s.id }));
+    params.push(...sellers.map((s) => ({ id: s.id })));
   } catch {
-    /* swallow — fall through to placeholder */
+    /* swallow — só a casca */
   }
-  return [{ id: FALLBACK_ID }];
+  return params;
 }
 
 export async function generateMetadata({
@@ -29,6 +31,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
+  if (id === FALLBACK_ID) return { title: "Empresa" };
   try {
     const { seller } = await sellersApi.get(id);
     const desc =
@@ -59,7 +62,7 @@ export default async function EmpresaPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  if (id === FALLBACK_ID) notFound();
+  if (id === FALLBACK_ID) return <EmpresaDynamicScreen />;
   let seller;
   try {
     const res = await sellersApi.get(id);
