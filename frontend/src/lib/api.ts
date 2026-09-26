@@ -8,8 +8,6 @@
 // - localStorage is intentionally used (PWA must work offline). XSS risk
 //   is acknowledged for this phase.
 
-import { waitForSplash } from "./splash-gate";
-
 const STORAGE_ACCESS = "achadinhos.auth.access";
 const STORAGE_REFRESH = "achadinhos.auth.refresh";
 
@@ -185,9 +183,6 @@ async function rawRequest<T>(
   if (body !== undefined) {
     init.body = typeof body === "string" ? body : JSON.stringify(body);
   }
-
-  // No celular, a abertura 3D baixa antes de tudo (ver splash-gate).
-  await waitForSplash();
 
   let res: Response;
   try {
