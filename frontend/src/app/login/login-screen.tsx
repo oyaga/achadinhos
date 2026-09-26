@@ -39,6 +39,13 @@ function QrIcon({ size = 17 }: { size?: number }) {
   );
 }
 
+// Destino depois do login: admin vai ao painel; empresa free, à área dela.
+function homeForRole(role?: string): string {
+  if (role === "admin") return "/admin";
+  if (role === "empresa") return "/minha-empresa";
+  return "/";
+}
+
 export function LoginScreen() {
   const router = useRouter();
   const { login, user, isAuthenticated, isLoading } = useAuth();
@@ -56,7 +63,7 @@ export function LoginScreen() {
   // (admins go straight to the admin panel).
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace(user?.role === "admin" ? "/admin" : "/");
+      router.replace(homeForRole(user?.role));
     }
   }, [isAuthenticated, isLoading, user, router]);
 
@@ -86,7 +93,7 @@ export function LoginScreen() {
     setSubmitting(true);
     try {
       const loggedIn = await login(email.trim(), password);
-      router.replace(loggedIn.role === "admin" ? "/admin" : "/");
+      router.replace(homeForRole(loggedIn.role));
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 401 || err.status === 403) {

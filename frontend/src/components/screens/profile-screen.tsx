@@ -227,7 +227,9 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
   const roleLabel =
     user?.role === "admin"
       ? "Admin"
-      : isEmpresa
+      : user?.role === "empresa"
+        ? "Empresa"
+        : isEmpresa
         ? "Administradora"
         : { morador: "Morador", sindico: "Síndico", conselho: "Conselho", administradora: "Administradora" }[
             condoRole
@@ -284,6 +286,20 @@ export function ProfileScreen({ onBack }: ProfileScreenProps) {
               <span className="prof-admin-link-text">
                 <strong>Painel administrativo</strong>
                 <span>Gerenciar produtos, empresas e afiliados</span>
+              </span>
+              <Icon.ChevRight size={16} />
+            </Link>
+          )}
+
+          {/* Empresa free: atalho para editar a empresa */}
+          {user?.role === "empresa" && (
+            <Link href="/minha-empresa" className="prof-admin-link">
+              <span className="prof-admin-link-icon">
+                <Icon.Building size={18} />
+              </span>
+              <span className="prof-admin-link-text">
+                <strong>Minha empresa</strong>
+                <span>Editar dados, logo e portfólio da sua empresa</span>
               </span>
               <Icon.ChevRight size={16} />
             </Link>

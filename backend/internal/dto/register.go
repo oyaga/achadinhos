@@ -32,3 +32,38 @@ type RegisterSindicoRequest struct {
 	CondoName   string     `json:"condo_name" binding:"omitempty,max=120"`
 	CondoRole   string     `json:"condo_role" binding:"omitempty,oneof=morador sindico conselho"`
 }
+
+// RegisterEmpresaRequest is the body for POST /api/v1/auth/register/empresa —
+// autocadastro de empresa free (sem certificado). Cria a conta de login do
+// responsável e a empresa, que aparece no site na hora, sem selo.
+type RegisterEmpresaRequest struct {
+	Name         string   `json:"name" binding:"required,min=2,max=128"`
+	Email        string   `json:"email" binding:"required,email"`
+	Password     string   `json:"password" binding:"required,min=8,max=128"`
+	CompanyName  string   `json:"company_name" binding:"required,min=2,max=255"`
+	CategoryIDs  []string `json:"category_ids" binding:"required,min=1,max=10"`
+	WhatsApp     string   `json:"whatsapp" binding:"required,min=8,max=32"`
+	DocumentType string   `json:"document_type" binding:"required,oneof=cpf cnpj"`
+	Document     string   `json:"document" binding:"required"`
+	Description  string   `json:"description" binding:"omitempty,max=2000"`
+	Link         string   `json:"link" binding:"omitempty,max=500"`
+	Instagram    string   `json:"instagram" binding:"omitempty,max=255"`
+	Facebook     string   `json:"facebook" binding:"omitempty,max=255"`
+	TikTok       string   `json:"tiktok" binding:"omitempty,max=255"`
+	YouTube      string   `json:"youtube" binding:"omitempty,max=255"`
+}
+
+// MyCompanyPatch is the body for PATCH /api/v1/me/empresa — o que a empresa
+// free pode editar em si mesma. Selo, "Parceira", destaque e contrato ficam
+// só com o admin.
+type MyCompanyPatch struct {
+	Name        *string   `json:"name" binding:"omitempty,min=2,max=255"`
+	CategoryIDs *[]string `json:"category_ids" binding:"omitempty,min=1,max=10"`
+	Description *string   `json:"description" binding:"omitempty,max=2000"`
+	WhatsApp    *string   `json:"whatsapp" binding:"omitempty,min=8,max=32"`
+	Link        *string   `json:"link" binding:"omitempty,max=500"`
+	Instagram   *string   `json:"instagram" binding:"omitempty,max=255"`
+	Facebook    *string   `json:"facebook" binding:"omitempty,max=255"`
+	TikTok      *string   `json:"tiktok" binding:"omitempty,max=255"`
+	YouTube     *string   `json:"youtube" binding:"omitempty,max=255"`
+}

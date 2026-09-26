@@ -19,10 +19,11 @@ import {
   me as meApi,
   setTokens,
   type User,
+  type RegisterEmpresaPayload,
   type RegisterSindicoPayload,
 } from "@/lib/api";
 
-export type { RegisterSindicoPayload };
+export type { RegisterEmpresaPayload, RegisterSindicoPayload };
 
 export interface AuthContextValue {
   user: User | null;
@@ -31,6 +32,7 @@ export interface AuthContextValue {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<User>;
   registerSindico: (data: RegisterSindicoPayload) => Promise<void>;
+  registerEmpresa: (data: RegisterEmpresaPayload) => Promise<void>;
   logout: () => void;
   updateUser: (patch: Partial<User>) => void;
 }
@@ -119,6 +121,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.user);
   }, []);
 
+  const registerEmpresa = useCallback(async (data: RegisterEmpresaPayload) => {
+    const res = await authApi.registerEmpresa(data);
+    setTokens(res.access_token, res.refresh_token);
+    setAccessToken(res.access_token);
+    setUser(res.user);
+  }, []);
+
   const logout = useCallback(() => {
     void authApi.logout();
     reset();
@@ -140,10 +149,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       login,
       registerSindico,
+      registerEmpresa,
       logout,
       updateUser,
     }),
-    [user, accessToken, isLoading, login, registerSindico, logout, updateUser]
+    [user, accessToken, isLoading, login, registerSindico, registerEmpresa, logout, updateUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

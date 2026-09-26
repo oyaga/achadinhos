@@ -14,7 +14,8 @@ import (
 )
 
 // SellersHandler exposes the public seller (empresa) endpoints. Sellers are
-// catalog records managed by admins — they have no login of their own.
+// catalog records managed by admins; a exceção são as empresas free
+// (SelfRegistered), que se editam por /me/empresa.
 type SellersHandler struct {
 	db *gorm.DB
 }
@@ -40,12 +41,17 @@ func (h *SellersHandler) List(c *gin.Context) {
 		)
 	}
 	var sellers []models.Seller
-	if err := q.Order("name ASC").Find(&sellers).Error; err != nil {
+	// Certificadas primeiro (Black, Top, Blue), depois as free — incentivo
+	// para buscar o certificado.
+	if err := q.Order(sellerTierOrder).Order("name ASC").Find(&sellers).Error; err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to list sellers")
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": sellers})
 }
+
+// sellerTierOrder ordena pelo nível do certificado; sem certificado por último.
+const sellerTierOrder = "CASE cert_tier WHEN 'black' THEN 0 WHEN 'ouro' THEN 1 WHEN 'blue' THEN 2 ELSE 3 END"
 
 // Get handles GET /sellers/:id — public seller profile + products.
 func (h *SellersHandler) Get(c *gin.Context) {

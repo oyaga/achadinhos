@@ -1147,6 +1147,14 @@ export function NegociosSection() {
                     >
                       {b.kind === "empresa" ? "Empresa" : b.kind === "loja" ? "Loja" : "Afiliado"}
                     </span>
+                    {b.kind !== "prestador" && b.seller.self_registered && (
+                      <span
+                        className="admin-chip biz-free"
+                        title="Empresa free: se cadastrou pelo site e edita os próprios dados"
+                      >
+                        Autocadastro
+                      </span>
+                    )}
                   </div>
                   <div className="admin-row-meta">{meta}</div>
                 </div>

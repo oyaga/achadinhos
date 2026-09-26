@@ -196,6 +196,16 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 	if !BindJSON(c, &req) {
 		return
 	}
+	if !h.applySellerPatch(c, &s, &req) {
+		return
+	}
+	c.JSON(http.StatusOK, adminSeller(&s))
+}
+
+// applySellerPatch grava em s os campos presentes em req (admin e a própria
+// empresa free, em /me/empresa, que só monta os campos que pode editar). Em
+// erro, já escreve a resposta HTTP e retorna false.
+func (h *AdminHandler) applySellerPatch(c *gin.Context, s *models.Seller, req *dto.AdminSellerPatch) bool {
 	updates := map[string]any{}
 	// Categorias: category_ids (lista completa, primeira = principal) tem
 	// precedência; category_id sozinho vale como lista de um item. Em ambos os
@@ -212,7 +222,7 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 		}
 		cats, ok := h.resolveSellerCategories(c, primary, ids)
 		if !ok {
-			return
+			return false
 		}
 		newCats = cats
 		updates["category_id"] = cats[0].ID
@@ -266,7 +276,7 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 		} else {
 			doc, ok := validateDocument(c, docType, raw)
 			if !ok {
-				return
+				return false
 			}
 			updates["document_type"] = docType
 			updates["document"] = doc
@@ -285,20 +295,20 @@ func (h *AdminHandler) UpdateSeller(c *gin.Context) {
 		updates["valor_anual"] = strings.TrimSpace(*req.ValorAnual)
 	}
 	if len(updates) > 0 {
-		if err := h.db.WithContext(c.Request.Context()).Model(&s).Updates(updates).Error; err != nil {
+		if err := h.db.WithContext(c.Request.Context()).Model(s).Updates(updates).Error; err != nil {
 			JSONError(c, http.StatusInternalServerError, "failed to update seller")
-			return
+			return false
 		}
 	}
 	if newCats != nil {
-		if err := h.db.WithContext(c.Request.Context()).Model(&s).
+		if err := h.db.WithContext(c.Request.Context()).Model(s).
 			Association("Categories").Replace(newCats); err != nil {
 			JSONError(c, http.StatusInternalServerError, "failed to update seller categories")
-			return
+			return false
 		}
 		s.Categories = newCats
 	}
-	c.JSON(http.StatusOK, adminSeller(&s))
+	return true
 }
 
 // DeleteSeller handles DELETE /admin/sellers/:id.

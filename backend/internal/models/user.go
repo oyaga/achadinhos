@@ -7,14 +7,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// Role represents the user's role. Only síndicos (public sign-up) and admins
-// (seeded / internal) have login accounts. Empresas and prestadores are
-// catalog records managed through the admin panel — they do not log in.
+// Role represents the user's role. Síndicos and empresas sign up publicly;
+// admins are seeded / internal. A conta "empresa" é a de uma empresa free
+// (autocadastro, sem certificado) e é dona de um Seller (Seller.OwnerUserID).
+// Empresas cadastradas pelo admin e prestadores seguem sem login.
 type Role string
 
 const (
 	RoleSindico Role = "sindico"
 	RoleAdmin   Role = "admin"
+	RoleEmpresa Role = "empresa"
 )
 
 // CondoRole is the granular role inside a condomínio. "administradora" is used

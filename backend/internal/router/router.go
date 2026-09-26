@@ -50,6 +50,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	prodH := handlers.NewProductsHandler(db)
 	sellH := handlers.NewSellersHandler(db)
 	adminH := handlers.NewAdminHandler(db)
+	myCompanyH := handlers.NewMyCompanyHandler(db)
 	mailer := email.NewClient(cfg.ResendAPIKey, cfg.MailFrom)
 	fichaH := handlers.NewFichaHandler(db, mailer, cfg.AppBaseURL)
 	evH := handlers.NewEventHandler(db)
@@ -67,10 +68,11 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 
-	// Public auth. Síndico register is the only public sign-up flow.
+	// Public auth. Sign-up público: síndico/morador e empresa free.
 	v1Auth := v1.Group("/auth")
 	{
 		v1Auth.POST("/register/sindico", authH.RegisterSindico)
+		v1Auth.POST("/register/empresa", authH.RegisterEmpresa)
 		v1Auth.POST("/login", authH.Login)
 		v1Auth.POST("/refresh", authH.Refresh)
 	}
@@ -128,6 +130,18 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		authed.GET("/favorites", favH.List)
 		authed.POST("/favorites", favH.Create)
 		authed.DELETE("/favorites", favH.Delete)
+	}
+
+	// Empresa free (autocadastro): edita os próprios dados.
+	myCompany := v1.Group("/me/empresa")
+	myCompany.Use(middleware.RequireAuth(cfg.JWTSecret), middleware.RequireRole(string(models.RoleEmpresa)))
+	{
+		myCompany.GET("", myCompanyH.Get)
+		myCompany.PATCH("", myCompanyH.Patch)
+		myCompany.POST("/logo", myCompanyH.UploadLogo)
+		myCompany.POST("/portfolio", myCompanyH.UploadPortfolio)
+		myCompany.POST("/portfolio/link", myCompanyH.AddPortfolioLink)
+		myCompany.DELETE("/portfolio/:photo_id", myCompanyH.DeletePortfolio)
 	}
 
 	// Admin panel — products, empresas (sellers) and prestadores (providers).

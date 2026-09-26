@@ -4,15 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
 import { SindicoSignupScreen, type AccountKind } from "./sindico-signup-screen";
+import { EmpresaSignupScreen } from "./empresa-signup-screen";
 
 // Tela de escolha do cadastro na casca 2a do login (barra navy, cartão com
-// moldura de filete duplo, logo centralizado): dois cards — Morador/síndico
-// (navy) e Empresa/afiliado (dourado), lado a lado no desktop. Escolher um
-// card abre o formulário já no modo certo; o "voltar" do formulário retorna
-// pra cá.
+// moldura de filete duplo, logo centralizado): três cards — Morador/síndico
+// (navy), Empresa/afiliado (dourado, conta de administradora) e Cadastrar
+// minha empresa (empresa free, sem certificado), lado a lado no desktop.
+// Escolher um card abre o formulário já no modo certo; o "voltar" do
+// formulário retorna pra cá.
 export function CadastroScreen() {
-  const [kind, setKind] = useState<AccountKind | null>(null);
+  const [kind, setKind] = useState<AccountKind | "empresa-free" | null>(null);
 
+  if (kind === "empresa-free") {
+    return <EmpresaSignupScreen onBack={() => setKind(null)} />;
+  }
   if (kind) {
     return (
       <SindicoSignupScreen
@@ -41,7 +46,7 @@ export function CadastroScreen() {
       </header>
 
       <div className="login-main">
-        <div className="login-card login-card--wide">
+        <div className="login-card login-card--wide login-card--3">
           <div className="login-frame">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -69,7 +74,7 @@ export function CadastroScreen() {
               Escolha o tipo de conta para começar seu cadastro.
             </p>
 
-            <div className="auth-choice-grid">
+            <div className="auth-choice-grid auth-choice-grid--3">
               <button
                 type="button"
                 className="auth-choice-card"
@@ -101,6 +106,24 @@ export function CadastroScreen() {
                 </span>
                 <span className="auth-choice-card-cta">
                   Continuar <Icon.ChevRight size={16} />
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="auth-choice-card"
+                onClick={() => setKind("empresa-free")}
+              >
+                <span className="auth-choice-card-icon">
+                  <Icon.Plus size={26} />
+                </span>
+                <span className="auth-choice-card-title">Cadastrar minha empresa</span>
+                <span className="auth-choice-card-desc">
+                  Grátis: sua empresa aparece no site para os condomínios. O selo
+                  vem com a Certificação Achadinhos.
+                </span>
+                <span className="auth-choice-card-cta">
+                  Cadastrar <Icon.ChevRight size={16} />
                 </span>
               </button>
             </div>
