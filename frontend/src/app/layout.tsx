@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import { RegisterPWA } from "@/components/register-pwa";
+import { SignupInvite } from "@/components/signup-invite";
 import { AuthProvider } from "@/contexts/auth-context";
 import {
   JsonLd,
@@ -116,6 +117,7 @@ export default function RootLayout({
         <AuthProvider>
           <RegisterPWA />
           {children}
+          <SignupInvite />
         </AuthProvider>
       </body>
     </html>

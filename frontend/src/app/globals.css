@@ -13283,3 +13283,37 @@ button.auth-tertiary-link {
   border-color: var(--gold-500);
   color: var(--navy-900);
 }
+
+
+/* Convite para criar conta (components/signup-invite.tsx): reusa o visual do
+   install-sheet, mas fixo na janela e acima do resto do app. */
+.signup-invite-backdrop {
+  position: fixed;
+  z-index: 1000;
+}
+.signup-invite-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 22px;
+  text-decoration: none;
+}
+.signup-invite-foot {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-500);
+}
+.signup-invite-foot a {
+  color: var(--navy-900);
+  font-weight: 700;
+}
+.signup-invite-foot button {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--ink-500);
+  text-decoration: underline;
+  cursor: pointer;
+}
