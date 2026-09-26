@@ -6,11 +6,11 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { Icon } from "./icons";
 
-// Convite para criar conta: pop-up para o visitante sem login, depois de um
-// tempo navegando. Quem fecha só vê de novo depois de DISMISS_DAYS; aparece
+// Convite para criar conta: pop-up para o visitante sem login, assim que ele
+// entra no site. Quem fecha só vê de novo depois de DISMISS_DAYS; aparece
 // no máximo uma vez por sessão. Não abre nas telas de login/cadastro, nas
 // áreas logadas nem nos formulários de link (ficha, agenda).
-const SHOW_AFTER_MS = 20_000;
+const SHOW_AFTER_MS = 0;
 const DISMISS_DAYS = 7;
 const DISMISSED_KEY = "achadinhos.signupInvite.dismissedAt";
 const SESSION_KEY = "achadinhos.signupInvite.shown";
