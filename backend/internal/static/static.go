@@ -161,13 +161,7 @@ func contentTypeFor(p string) string {
 
 func applyCacheHeaders(c *gin.Context, p string) {
 	switch {
-	case strings.HasPrefix(p, "_next/static/"),
-		strings.HasPrefix(p, "splash-"):
-		// Vídeos e posters do splash já são versionados no nome (-vN), como os
-		// assets do Next: trocar o vídeo troca a URL. Sem "immutable" eles
-		// caíam no max-age=3600 do default e, passada a hora, a abertura
-		// voltava a esperar o download — que é o que fazia o celular exibir
-		// só a logo e desistir.
+	case strings.HasPrefix(p, "_next/static/"):
 		c.Writer.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
 	case strings.HasSuffix(p, "sw.js"):
 		// O service worker NUNCA pode ficar em cache de intermediários. O
