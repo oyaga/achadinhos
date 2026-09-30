@@ -739,6 +739,8 @@ export interface AdminSindico {
   phone?: string;
   condo_name?: string;
   condo_role?: string;
+  // Conta de administradora (CNPJ): razão social da empresa.
+  company_name?: string;
   cep?: string;
   street?: string;
   number?: string;

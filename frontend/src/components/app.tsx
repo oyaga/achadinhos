@@ -15,6 +15,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { Icon } from "./icons";
 import { Header } from "./home/header";
 import { LocationBar } from "./home/location-bar";
+import { LeadPaths } from "./home/lead-paths";
 import { HeroSlider } from "./home/hero-slider";
 import { EventsWidget } from "./home/events-widget";
 import { CategoriesSection } from "./home/categories-section";
@@ -232,6 +233,9 @@ export function App({ initialRoute }: AppProps = {}) {
               </aside>
               <div className="web-main">
                 <LocationBar />
+                {/* Caminhos rápidos de cadastro logo na entrada — só pra quem
+                    ainda não tem conta. */}
+                {!isAuthenticated && <LeadPaths />}
                 {/* Mural (agenda + slides do admin) abre a home, como no
                     protótipo do handoff; os destaques vêm em seguida. */}
                 <EventsWidget

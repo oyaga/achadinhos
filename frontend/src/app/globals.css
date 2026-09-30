@@ -13283,3 +13283,119 @@ button.auth-tertiary-link {
   border-color: var(--gold-500);
   color: var(--navy-900);
 }
+
+/* ── Home: caminhos rápidos de cadastro (Sou Síndico / Quero ser Afiliado) ── */
+.lead-paths {
+  padding-top: 14px;
+}
+.lead-paths-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.lead-path {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 14px 16px;
+  border-radius: var(--radius);
+  background: linear-gradient(160deg, var(--navy-900), var(--navy-800));
+  color: #fff;
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.lead-path:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(11, 27, 59, 0.16);
+}
+.lead-path:active {
+  transform: scale(0.98);
+}
+.lead-path:focus-visible {
+  outline: 2px solid var(--gold-500);
+  outline-offset: 2px;
+}
+.lead-path-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--gold-300);
+  border: 1px solid rgba(217, 188, 120, 0.35);
+}
+.lead-path-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lead-path-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.15;
+}
+.lead-path-desc {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.72);
+}
+.lead-path-chev {
+  flex-shrink: 0;
+  color: var(--gold-300);
+}
+.lead-path.gold {
+  background: linear-gradient(140deg, var(--gold-300), var(--gold-500));
+  color: var(--navy-900);
+}
+.lead-path.gold .lead-path-icon {
+  background: var(--navy-900);
+  color: var(--gold-300);
+  border-color: transparent;
+}
+.lead-path.gold .lead-path-desc {
+  color: rgba(11, 27, 59, 0.75);
+}
+.lead-path.gold .lead-path-chev {
+  color: var(--navy-900);
+}
+@media (min-width: 768px) {
+  .lead-paths-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .lead-path {
+    padding: 18px 20px;
+  }
+  .lead-path-title {
+    font-size: 22px;
+  }
+  .lead-path-desc {
+    font-size: 13.5px;
+  }
+}
+
+/* ── Admin: aba Leads do site (síndicos x afiliados) ── */
+.admin-lead-kind {
+  max-width: 360px;
+  margin-bottom: 16px;
+}
+.admin-lead-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.admin-lead-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
