@@ -7,7 +7,7 @@ import { Icon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { ProdutosSection } from "./produtos-section";
 import { NegociosSection } from "./negocios-section";
-import { SindicosSection } from "./sindicos-section";
+import { LeadsSection } from "./leads-section";
 import { CadastroEmpresasSection } from "./cadastro-empresas-section";
 import { EventosSection } from "./eventos-section";
 import { MuralSection } from "./mural-section";
@@ -24,7 +24,7 @@ type AdminTab =
   | "mural"
   | "agenda"
   | "blog"
-  | "sindicos";
+  | "leads";
 
 const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "produtos", label: "Produtos", icon: "CatShopping" },
@@ -35,7 +35,7 @@ const TABS: Array<{ id: AdminTab; label: string; icon: keyof typeof Icon }> = [
   { id: "mural", label: "Mural", icon: "Tag" },
   { id: "agenda", label: "Agenda", icon: "Clock" },
   { id: "blog", label: "Blog", icon: "Tag" },
-  { id: "sindicos", label: "Síndicos", icon: "User" },
+  { id: "leads", label: "Leads do site", icon: "User" },
 ];
 
 export function AdminPanel() {
@@ -132,7 +132,7 @@ export function AdminPanel() {
         {tab === "mural" && <MuralSection onGoEventos={() => setTab("eventos")} />}
         {tab === "agenda" && <AgendaSection />}
         {tab === "blog" && <BlogSection />}
-        {tab === "sindicos" && <SindicosSection />}
+        {tab === "leads" && <LeadsSection />}
       </div>
     </main>
   );

@@ -66,12 +66,15 @@ const CONDO_ROLES: Array<{ id: "morador" | "sindico" | "conselho"; label: string
 interface SindicoSignupScreenProps {
   /** Modo inicial vindo da tela de escolha (/cadastro). */
   initialAccountType?: AccountKind;
+  /** Papel já marcado no condomínio (ex.: /cadastro/sindico chega em "sindico"). */
+  initialCondoRole?: FormState["condoRole"];
   /** Quando presente, o botão de voltar retorna à tela de escolha. */
   onBack?: () => void;
 }
 
 export function SindicoSignupScreen({
   initialAccountType,
+  initialCondoRole,
   onBack,
 }: SindicoSignupScreenProps = {}) {
   const router = useRouter();
@@ -90,7 +93,7 @@ export function SindicoSignupScreen({
     companyName: "",
     phone: "",
     condoName: "",
-    condoRole: "",
+    condoRole: initialCondoRole ?? "",
     cep: "",
     street: "",
     number: "",
