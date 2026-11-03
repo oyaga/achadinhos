@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"strings"
@@ -49,6 +50,20 @@ type TokenPair struct {
 	ExpiresIn    int64  `json:"expires_in"`
 }
 
+// dummyHash is compared against when the e-mail is unknown so that "no such
+// user" and "wrong password" take the same time (prevents user enumeration
+// through response timing).
+var dummyHash, _ = HashPassword("timing-equalizer-not-a-real-password")
+
+// hashRefreshToken returns the value stored in the database for a refresh
+// token. Only the SHA-256 digest is persisted, so a database leak does not hand
+// out usable sessions. The token itself is 384 bits of entropy, so a fast hash
+// is appropriate here (unlike passwords).
+func hashRefreshToken(raw string) string {
+	sum := sha256.Sum256([]byte(raw))
+	return hex.EncodeToString(sum[:])
+}
+
 // Login authenticates a user and issues a new token pair.
 func (s *Service) Login(ctx context.Context, email, password string) (*models.User, *TokenPair, error) {
 	email = strings.ToLower(strings.TrimSpace(email))
@@ -56,6 +71,7 @@ func (s *Service) Login(ctx context.Context, email, password string) (*models.Us
 	var u models.User
 	if err := s.db.WithContext(ctx).Where("email = ?", email).First(&u).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			_ = CheckPassword(dummyHash, password)
 			return nil, nil, ErrInvalidCredentials
 		}
 		return nil, nil, err
@@ -71,9 +87,13 @@ func (s *Service) Login(ctx context.Context, email, password string) (*models.Us
 }
 
 // Refresh validates an existing refresh token, revokes it, and issues a new pair.
+//
+// Rotation is atomic: the revoke is a conditional UPDATE (revoked_at IS NULL),
+// so if two requests race with the same token only one wins; the loser gets
+// ErrInvalidRefresh instead of both minting a fresh session.
 func (s *Service) Refresh(ctx context.Context, refreshToken string) (*models.User, *TokenPair, error) {
 	var rt models.RefreshToken
-	if err := s.db.WithContext(ctx).Where("token = ?", refreshToken).First(&rt).Error; err != nil {
+	if err := s.db.WithContext(ctx).Where("token = ?", hashRefreshToken(refreshToken)).First(&rt).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil, ErrInvalidRefresh
 		}
@@ -89,8 +109,15 @@ func (s *Service) Refresh(ctx context.Context, refreshToken string) (*models.Use
 	}
 
 	now := time.Now()
-	if err := s.db.WithContext(ctx).Model(&rt).Update("revoked_at", &now).Error; err != nil {
-		return nil, nil, err
+	res := s.db.WithContext(ctx).Model(&models.RefreshToken{}).
+		Where("id = ? AND revoked_at IS NULL", rt.ID).
+		Update("revoked_at", &now)
+	if res.Error != nil {
+		return nil, nil, res.Error
+	}
+	if res.RowsAffected != 1 {
+		// Already used by a concurrent request (or a replay of a stolen token).
+		return nil, nil, ErrInvalidRefresh
 	}
 
 	pair, err := s.issueTokens(ctx, &u)
@@ -126,7 +153,7 @@ func (s *Service) issueTokens(ctx context.Context, u *models.User) (*TokenPair, 
 
 	rt := &models.RefreshToken{
 		UserID:    u.ID,
-		Token:     refresh,
+		Token:     hashRefreshToken(refresh),
 		ExpiresAt: time.Now().Add(s.cfg.JWTRefreshTTL),
 	}
 	if err := s.db.WithContext(ctx).Create(rt).Error; err != nil {

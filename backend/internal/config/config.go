@@ -32,6 +32,13 @@ type Config struct {
 
 	CORSOrigins []string
 
+	// TrustedProxies lists the proxy IPs/CIDRs whose X-Forwarded-For /
+	// CF-Connecting-IP headers are believed when resolving the client IP.
+	// Anything else connecting directly has its forwarding headers ignored, so
+	// a client cannot spoof its IP to dodge the rate limiter. Empty = trust
+	// nobody (use the TCP peer address).
+	TrustedProxies []string
+
 	// Optional transactional email (Resend). When both are empty the welcome
 	// email is silently skipped — the app still works.
 	ResendAPIKey string
@@ -97,11 +104,44 @@ func Load() (*Config, error) {
 		}
 	}
 
-	if cfg.JWTSecret == "dev-insecure-secret-change-me" && cfg.AppEnv == "production" {
-		slog.Warn("JWT_SECRET is using the insecure default in production")
+	for _, p := range strings.Split(getEnv("TRUSTED_PROXIES", ""), ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			cfg.TrustedProxies = append(cfg.TrustedProxies, p)
+		}
 	}
 
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
 	return cfg, nil
+}
+
+// Validate refuses to start in production with weak or placeholder secrets.
+// Outside production only a warning is logged so local dev keeps working.
+func (c *Config) Validate() error {
+	var problems []string
+	if len(c.JWTSecret) < 32 || isPlaceholder(c.JWTSecret) {
+		problems = append(problems, "JWT_SECRET must be a random string of at least 32 chars (openssl rand -hex 48)")
+	}
+	if c.DBPassword == "achadinhos_dev" || isPlaceholder(c.DBPassword) {
+		problems = append(problems, "DB_PASSWORD is a development/placeholder value")
+	}
+	if len(problems) == 0 {
+		return nil
+	}
+	if c.AppEnv == "production" {
+		return fmt.Errorf("insecure production configuration: %s", strings.Join(problems, "; "))
+	}
+	for _, p := range problems {
+		slog.Warn("insecure configuration (allowed outside production)", "problem", p)
+	}
+	return nil
+}
+
+func isPlaceholder(v string) bool {
+	l := strings.ToLower(v)
+	return strings.Contains(l, "change-me") || strings.Contains(l, "changeme") ||
+		strings.Contains(l, "insecure") || l == "secret" || l == "password"
 }
 
 // DSN returns the PostgreSQL connection DSN.

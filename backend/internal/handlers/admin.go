@@ -1208,7 +1208,19 @@ func saveUploadedFile(c *gin.Context, subdir string, allowPDF, allowVideo bool) 
 		videoTypes["video/webm"] = true
 		videoTypes["video/quicktime"] = true
 	}
-	contentType := fileHeader.Header.Get("Content-Type")
+	// Never trust the client-declared Content-Type or file name: sniff the
+	// real bytes. The stored extension comes only from the sniffed type, so an
+	// attacker cannot plant "x.html"/"x.svg" labelled as image/png.
+	src, err := fileHeader.Open()
+	if err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to open uploaded file")
+		return "", false
+	}
+	defer src.Close()
+	head := make([]byte, 512)
+	n, _ := io.ReadFull(src, head)
+	head = head[:n]
+	contentType := sniffUploadType(head)
 	ext, ok := allowed[contentType]
 	if !ok {
 		msg := "tipo de arquivo não permitido (use jpg, png, webp)"
@@ -1237,10 +1249,6 @@ func saveUploadedFile(c *gin.Context, subdir string, allowPDF, allowVideo bool) 
 		JSONError(c, http.StatusBadRequest, sizeMsg)
 		return "", false
 	}
-	if origExt := filepath.Ext(fileHeader.Filename); origExt != "" {
-		ext = strings.ToLower(origExt)
-	}
-
 	filename := uuid.New().String() + ext
 	dir := filepath.Join(".", "uploads", subdir)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -1249,31 +1257,57 @@ func saveUploadedFile(c *gin.Context, subdir string, allowPDF, allowVideo bool) 
 	}
 	destPath := filepath.Join(dir, filename)
 
-	src, err := fileHeader.Open()
-	if err != nil {
-		JSONError(c, http.StatusInternalServerError, "failed to open uploaded file")
+	if _, err := src.Seek(0, io.SeekStart); err != nil {
+		JSONError(c, http.StatusInternalServerError, "failed to read uploaded file")
 		return "", false
 	}
-	defer src.Close()
-
-	dst, err := os.Create(destPath)
+	dst, err := os.OpenFile(destPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		JSONError(c, http.StatusInternalServerError, "failed to save file")
 		return "", false
 	}
-	defer dst.Close()
-
-	if _, err := io.Copy(dst, src); err != nil {
+	// Copy at most maxSize+1 bytes: fileHeader.Size is client-influenced, so
+	// enforce the cap on what is actually written.
+	written, err := io.Copy(dst, io.LimitReader(src, maxSize+1))
+	closeErr := dst.Close()
+	if err != nil || closeErr != nil || written > maxSize {
+		_ = os.Remove(destPath)
+		if written > maxSize {
+			JSONError(c, http.StatusBadRequest, sizeMsg)
+			return "", false
+		}
 		JSONError(c, http.StatusInternalServerError, "failed to write file")
 		return "", false
 	}
 	return "/uploads/" + subdir + "/" + filename, true
 }
 
+// sniffUploadType detects the real MIME type from the file's leading bytes.
+// QuickTime/MP4 variants that net/http cannot classify are recognised by their
+// ISO "ftyp" box.
+func sniffUploadType(head []byte) string {
+	t := http.DetectContentType(head)
+	if i := strings.IndexByte(t, ';'); i >= 0 {
+		t = t[:i]
+	}
+	if t == "application/octet-stream" && len(head) >= 12 && string(head[4:8]) == "ftyp" {
+		if string(head[8:12]) == "qt  " {
+			return "video/quicktime"
+		}
+		return "video/mp4"
+	}
+	return t
+}
+
 // removeUploadedFile best-effort deletes a file referenced by its URL path.
 func removeUploadedFile(url string) {
 	if strings.HasPrefix(url, "/uploads/") {
-		_ = os.Remove(filepath.Join(".", url))
+		// filepath.Join cleans "..", but double-check the result stays inside
+		// ./uploads in case a URL was ever stored with traversal segments.
+		p := filepath.Join(".", url)
+		if strings.HasPrefix(p, "uploads"+string(filepath.Separator)) {
+			_ = os.Remove(p)
+		}
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/achadinhos/backend/internal/agenda"
@@ -236,6 +237,13 @@ func (h *AgendaHandler) Book(c *gin.Context) {
 	}
 	start = start.In(loc)
 
+	// Serialize bookings per agenda: without this, two concurrent requests for
+	// the same slot both pass the FreeBusy check and both create an event
+	// (double booking). In-process lock — enough for the single-instance
+	// deploy; use a DB advisory lock if the API is ever scaled horizontally.
+	unlock := lockBooking(s.Slug)
+	defer unlock()
+
 	// Revalidate the requested slot against work hours, lead time, horizon and
 	// a fresh FreeBusy snapshot — recomputing the day's slots and requiring
 	// membership closes the race between listing and booking.
@@ -318,6 +326,23 @@ func (h *AgendaHandler) Book(c *gin.Context) {
 		"end":       end.Format(time.RFC3339),
 		"meet_link": created.MeetLink,
 	})
+}
+
+var (
+	bookingLocksMu sync.Mutex
+	bookingLocks   = map[string]*sync.Mutex{}
+)
+
+func lockBooking(slug string) func() {
+	bookingLocksMu.Lock()
+	m, ok := bookingLocks[slug]
+	if !ok {
+		m = &sync.Mutex{}
+		bookingLocks[slug] = m
+	}
+	bookingLocksMu.Unlock()
+	m.Lock()
+	return m.Unlock
 }
 
 // GoogleCallback handles GET /agenda/google/callback?code&state — the public
