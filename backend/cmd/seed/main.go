@@ -16,45 +16,45 @@ import (
 )
 
 type providerSeed struct {
-	Slug              string
-	Name              string
-	Cat               string
-	Avatar            string
-	Rating            float64
-	Reviews           int
-	Badge             string
-	Verified          bool
-	Distance          string
-	Price             string
-	ResponseTime      string
-	Desc              string
-	Services          []string
-	YearsActive       int
-	JobsDone          int
-	WhatsApp          string
-	Highlight         bool
+	Slug         string
+	Name         string
+	Cat          string
+	Avatar       string
+	Rating       float64
+	Reviews      int
+	Badge        string
+	Verified     bool
+	Distance     string
+	Price        string
+	ResponseTime string
+	Desc         string
+	Services     []string
+	YearsActive  int
+	JobsDone     int
+	WhatsApp     string
+	Highlight    bool
 }
 
 type productSeed struct {
-	ID         string
-	Name       string
-	Cat        string
-	Price      float64
-	OldPrice   *float64
-	Rating     float64
-	Reviews    int
-	Seller     string
-	Tag        string
-	WhatsApp   string
-	Link       string
-	Badge      string
-	Stock      string
+	ID       string
+	Name     string
+	Cat      string
+	Price    float64
+	OldPrice *float64
+	Rating   float64
+	Reviews  int
+	Seller   string
+	Tag      string
+	WhatsApp string
+	Link     string
+	Badge    string
+	Stock    string
 }
 
 func ptr[T any](v T) *T { return &v }
 
 var providers = []providerSeed{
-		{Slug: "premium-admin", Name: "Premium Administradora", Cat: "administracao-condominios", Avatar: "P", Rating: 5.0, Reviews: 2, Badge: "Ouro", Verified: true, Distance: "2,5km", Price: "Sob consulta", ResponseTime: "15min", Desc: "Gestão completa e transparente para o seu condomínio. Equipe especializada e tecnologia de ponta.", Services: []string{"Gestão financeira", "Assessoria jurídica", "Recursos humanos", "App do morador"}, YearsActive: 10, JobsDone: 150, WhatsApp: "11987654333", Highlight: true},
+	{Slug: "premium-admin", Name: "Premium Administradora", Cat: "administracao-condominios", Avatar: "P", Rating: 5.0, Reviews: 2, Badge: "Ouro", Verified: true, Distance: "2,5km", Price: "Sob consulta", ResponseTime: "15min", Desc: "Gestão completa e transparente para o seu condomínio. Equipe especializada e tecnologia de ponta.", Services: []string{"Gestão financeira", "Assessoria jurídica", "Recursos humanos", "App do morador"}, YearsActive: 10, JobsDone: 150, WhatsApp: "11987654333", Highlight: true},
 }
 
 // Sample products. Each references a seller (empresa) by name; the seller
@@ -87,6 +87,12 @@ func main() {
 		slog.Error("failed to load config", "err", err)
 		os.Exit(1)
 	}
+	// The seed creates demo accounts (including an admin) with a known
+	// password. Never let it run against production by accident.
+	if cfg.AppEnv == "production" && os.Getenv("SEED_ALLOW_PRODUCTION") != "1" {
+		slog.Error("refusing to seed with APP_ENV=production (creates demo admin/sindico accounts); set SEED_ALLOW_PRODUCTION=1 to override")
+		os.Exit(1)
+	}
 	gdb, err := db.New(cfg)
 	if err != nil {
 		slog.Error("failed to connect to db", "err", err)
@@ -100,6 +106,15 @@ func main() {
 		os.Exit(1)
 	}
 	slog.Info("seed complete")
+}
+
+// seedPassword is the password of the demo accounts: SEED_PASSWORD when set,
+// otherwise the well-known development default.
+func seedPassword() string {
+	if v := os.Getenv("SEED_PASSWORD"); v != "" {
+		return v
+	}
+	return "senha123"
 }
 
 // Run is the public seed entrypoint. Reusable from tests.
@@ -138,7 +153,7 @@ func Run(ctx context.Context, gdb *gorm.DB) error {
 	if err := gdb.WithContext(ctx).Create(condo).Error; err != nil {
 		return err
 	}
-	pwHash, err := auth.HashPassword("senha123")
+	pwHash, err := auth.HashPassword(seedPassword())
 	if err != nil {
 		return err
 	}
@@ -158,7 +173,7 @@ func Run(ctx context.Context, gdb *gorm.DB) error {
 	}
 
 	// Admin account — manages products, empresas and prestadores via the admin panel.
-	adminHash, err := auth.HashPassword("senha123")
+	adminHash, err := auth.HashPassword(seedPassword())
 	if err != nil {
 		return err
 	}

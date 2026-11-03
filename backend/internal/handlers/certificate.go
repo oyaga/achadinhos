@@ -82,6 +82,9 @@ func saveSignaturePNG(dataURL string) (string, error) {
 	if len(raw) > 2<<20 { // 2 MB cap — assinaturas são pequenas
 		return "", os.ErrInvalid
 	}
+	if len(raw) < 8 || string(raw[:8]) != "\x89PNG\r\n\x1a\n" {
+		return "", os.ErrInvalid
+	}
 	dir := filepath.Join(".", "uploads", "signatures")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", err

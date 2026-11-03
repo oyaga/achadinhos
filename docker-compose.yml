@@ -39,6 +39,10 @@ services:
       DB_SSLMODE: disable
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
+      # Proxies cujos cabeçalhos X-Forwarded-For/CF-Connecting-IP são aceitos
+      # (rede docker do Traefik). Sem isso o rate limit usaria o IP do proxy;
+      # com "confiar em todos" ele seria burlável por cabeçalho forjado.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.16.0.0/12,10.0.0.0/8,192.168.0.0/16}
       # E-mail transacional (Resend). Vazios desligam o envio de boas-vindas.
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       MAIL_FROM: ${MAIL_FROM:-}
@@ -50,6 +54,15 @@ services:
       ANTIBOT_BYPASS_TOKEN: ${ANTIBOT_BYPASS_TOKEN:-}
     volumes:
       - achadinhos_uploads:/app/uploads
+    # Endurecimento do container: sem privilégios extras, FS raiz somente
+    # leitura (uploads é volume; /tmp em tmpfs).
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
     networks:
       - achadinhos
       - traefik-public

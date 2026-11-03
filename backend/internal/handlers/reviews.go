@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // ReviewsHandler manages reviews.
@@ -141,15 +142,16 @@ func (h *ReviewsHandler) MarkHelpful(c *gin.Context) {
 		if err := tx.First(&r, "id = ?", rid).Error; err != nil {
 			return err
 		}
-		// Idempotent insert.
-		var existing models.ReviewHelpful
-		if err := tx.Where("review_id = ? AND user_id = ?", rid, uid).First(&existing).Error; err == nil {
-			return nil
-		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return err
+		// Idempotent insert. ON CONFLICT DO NOTHING (unique review_id+user_id)
+		// makes two concurrent clicks safe: only the request that actually
+		// inserted the row increments the counter.
+		res := tx.Clauses(clause.OnConflict{DoNothing: true}).
+			Create(&models.ReviewHelpful{ReviewID: rid, UserID: uid})
+		if res.Error != nil {
+			return res.Error
 		}
-		if err := tx.Create(&models.ReviewHelpful{ReviewID: rid, UserID: uid}).Error; err != nil {
-			return err
+		if res.RowsAffected == 0 {
+			return nil
 		}
 		return tx.Model(&models.Review{}).Where("id = ?", rid).
 			UpdateColumn("helpful_count", gorm.Expr("helpful_count + 1")).Error

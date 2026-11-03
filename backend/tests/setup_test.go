@@ -42,22 +42,35 @@ func SetupTestEnv(t *testing.T) *testEnv {
 		ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 		defer cancel()
 
-		container, err := postgres.Run(ctx,
-			"postgres:18-alpine",
-			postgres.WithDatabase("achadinhos_test"),
-			postgres.WithUsername("test"),
-			postgres.WithPassword("test"),
-			testcontainers.WithWaitStrategy(
-				wait.ForLog("database system is ready to accept connections").
-					WithOccurrence(2).
-					WithStartupTimeout(60*time.Second),
-			),
-		)
-		if err != nil {
-			t.Fatalf("failed to start postgres container: %v", err)
+		// TEST_DB_HOST/TEST_DB_PORT (user/pass/db "test"/"test"/"achadinhos_test")
+		// point the suite at an already-running Postgres, for machines without
+		// Docker. Otherwise a throwaway container is started via testcontainers.
+		var host, port, containerID string
+		if h := os.Getenv("TEST_DB_HOST"); h != "" {
+			host, port = h, os.Getenv("TEST_DB_PORT")
+			if port == "" {
+				port = "5432"
+			}
+		} else {
+			container, err := postgres.Run(ctx,
+				"postgres:18-alpine",
+				postgres.WithDatabase("achadinhos_test"),
+				postgres.WithUsername("test"),
+				postgres.WithPassword("test"),
+				testcontainers.WithWaitStrategy(
+					wait.ForLog("database system is ready to accept connections").
+						WithOccurrence(2).
+						WithStartupTimeout(60*time.Second),
+				),
+			)
+			if err != nil {
+				t.Fatalf("failed to start postgres container: %v", err)
+			}
+			host, _ = container.Host(ctx)
+			mp, _ := container.MappedPort(ctx, "5432/tcp")
+			port = mp.Port()
+			containerID = container.GetContainerID()
 		}
-		host, _ := container.Host(ctx)
-		port, _ := container.MappedPort(ctx, "5432/tcp")
 
 		gin.SetMode(gin.TestMode)
 
@@ -66,7 +79,7 @@ func SetupTestEnv(t *testing.T) *testEnv {
 			AppPort:       "0",
 			AppLogLevel:   "warn",
 			DBHost:        host,
-			DBPort:        port.Port(),
+			DBPort:        port,
 			DBUser:        "test",
 			DBPassword:    "test",
 			DBName:        "achadinhos_test",
@@ -90,7 +103,7 @@ func SetupTestEnv(t *testing.T) *testEnv {
 
 		// Cleanup hook (best-effort) on process exit.
 		// Note: testcontainers-go also auto-cleans via Reaper.
-		_ = os.Setenv("TESTCONTAINERS_CONTAINER", container.GetContainerID())
+		_ = os.Setenv("TESTCONTAINERS_CONTAINER", containerID)
 	})
 	return &testEnv{Router: sharedR, DB: sharedG, Config: sharedC}
 }

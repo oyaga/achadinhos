@@ -22,6 +22,14 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r := gin.New()
+	// Only believe forwarding headers coming from our own reverse proxy
+	// (Traefik/Cloudflare). Without this gin trusts every peer, and anyone can
+	// send "X-Forwarded-For: <random>" to get a fresh rate-limit bucket.
+	if err := r.SetTrustedProxies(cfg.TrustedProxies); err != nil {
+		slog.Error("invalid TRUSTED_PROXIES, trusting no proxy", "err", err)
+		_ = r.SetTrustedProxies(nil)
+	}
+	r.RemoteIPHeaders = []string{"CF-Connecting-IP", "X-Forwarded-For"}
 	r.Use(middleware.Recover())
 	r.Use(middleware.Logger())
 	// Anti-clonagem: bloqueia user-agents de agentes de IA/scrapers e aplica
@@ -31,6 +39,18 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		BypassToken: cfg.AntibotBypassToken,
 	}))
 	r.Use(middleware.CORS(cfg.CORSOrigins))
+	r.Use(middleware.SecurityHeaders(cfg.AppEnv == "production"))
+	// 1 MB for JSON bodies; 60 MB for multipart (videos up to 50 MB).
+	r.Use(middleware.MaxBodyFor(1<<20, 60<<20))
+
+	// Strict per-IP limits for abuse-prone public endpoints. On in production
+	// only (same policy as AntiBot), so dev and the test-suite are unaffected.
+	limitOn := cfg.AppEnv == "production"
+	loginLimit := middleware.RateLimit(limitOn, 10, 10)   // 10 burst, 10/min sustained
+	signupLimit := middleware.RateLimit(limitOn, 5, 5)    // account creation
+	refreshLimit := middleware.RateLimit(limitOn, 30, 30) // token refresh
+	publicWrite := middleware.RateLimit(limitOn, 10, 10)  // booking, ficha submit
+	authedWrite := middleware.RateLimit(limitOn, 60, 60)  // reviews, favorites, etc.
 
 	// Serve uploaded product photos as static files.
 	r.Static("/uploads", "./uploads")
@@ -71,10 +91,10 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	// Public auth. Sign-up público: síndico/morador e empresa free.
 	v1Auth := v1.Group("/auth")
 	{
-		v1Auth.POST("/register/sindico", authH.RegisterSindico)
-		v1Auth.POST("/register/empresa", authH.RegisterEmpresa)
-		v1Auth.POST("/login", authH.Login)
-		v1Auth.POST("/refresh", authH.Refresh)
+		v1Auth.POST("/register/sindico", signupLimit, authH.RegisterSindico)
+		v1Auth.POST("/register/empresa", signupLimit, authH.RegisterEmpresa)
+		v1Auth.POST("/login", loginLimit, authH.Login)
+		v1Auth.POST("/refresh", refreshLimit, authH.Refresh)
 	}
 
 	// Public reads.
@@ -93,8 +113,8 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	v1.GET("/sellers/:id/reviews", sellH.ListReviews)
 
 	// Public ficha de cadastro (preenchimento via link com token).
-	v1.GET("/fichas/:token", fichaH.GetByToken)
-	v1.POST("/fichas/:token", fichaH.Submit)
+	v1.GET("/fichas/:token", publicWrite, fichaH.GetByToken)
+	v1.POST("/fichas/:token", publicWrite, fichaH.Submit)
 
 	// Public events (calendário do condomínio).
 	v1.GET("/events", evH.List)
@@ -113,7 +133,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 	v1.GET("/agenda/google/callback", agendaH.GoogleCallback)
 	v1.GET("/agenda/:slug", agendaH.GetPublic)
 	v1.GET("/agenda/:slug/slots", agendaH.Slots)
-	v1.POST("/agenda/:slug/book", agendaH.Book)
+	v1.POST("/agenda/:slug/book", publicWrite, agendaH.Book)
 
 	// Authenticated (any logged-in user: síndico or admin).
 	authed := v1.Group("")
@@ -122,10 +142,10 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 		authed.GET("/me", meH.Get)
 		authed.PATCH("/me", meH.Patch)
 
-		authed.POST("/providers/:id/reviews", revH.Create)
-		authed.POST("/sellers/:id/reviews", sellH.CreateReview)
+		authed.POST("/providers/:id/reviews", authedWrite, revH.Create)
+		authed.POST("/sellers/:id/reviews", authedWrite, sellH.CreateReview)
 		authed.DELETE("/reviews/:id", revH.Delete)
-		authed.POST("/reviews/:id/helpful", revH.MarkHelpful)
+		authed.POST("/reviews/:id/helpful", authedWrite, revH.MarkHelpful)
 
 		authed.GET("/favorites", favH.List)
 		authed.POST("/favorites", favH.Create)
@@ -134,7 +154,7 @@ func New(cfg *config.Config, db *gorm.DB) *gin.Engine {
 
 	// Empresa free (autocadastro): edita os próprios dados.
 	myCompany := v1.Group("/me/empresa")
-	myCompany.Use(middleware.RequireAuth(cfg.JWTSecret), middleware.RequireRole(string(models.RoleEmpresa)))
+	myCompany.Use(middleware.RequireAuth(cfg.JWTSecret), middleware.RequireRole(string(models.RoleEmpresa)), authedWrite)
 	{
 		myCompany.GET("", myCompanyH.Get)
 		myCompany.PATCH("", myCompanyH.Patch)
